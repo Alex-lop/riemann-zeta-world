@@ -116,10 +116,14 @@
   #panel { position: relative; z-index: 2; min-height: 100dvh; display: flex; align-items: safe center; justify-content: center; padding: calc(46px + 4vh) var(--pad) 72px; }
   #step { width: min(100%, 36rem); }
   #fly { width: 100%; }
+  /* A step hangs from the top of the page, so nothing above a control moves when something appears below it. */
+  html[data-mode=paper] #panel { align-items: flex-start; padding-top: calc(46px + clamp(1.5rem, 9vh, 6rem)); }
   @media (min-width: 900px) {
-    html[data-mode=paper] #step { width: min(100%, 1112px); display: grid; grid-template-columns: minmax(0, 25rem) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "top fig" "bottom fig"; column-gap: clamp(2rem, 5vw, 4.5rem); }
-    html[data-mode=paper] #s-top { grid-area: top; } html[data-mode=paper] #s-bottom { grid-area: bottom; }
-    html[data-mode=paper] #s-fig { grid-area: fig; align-self: center; }
+    /* The words keep one height from step to step, with Next and Back at its foot: the pointer can stay on Next. */
+    html[data-mode=paper] #step { width: min(100%, 1112px); min-height: min(34.5rem, 100dvh - 46px - 9vh - 5rem); display: grid; grid-template-columns: minmax(0, 25rem) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "top fig" "bottom fig"; column-gap: clamp(2rem, 5vw, 4.5rem); }
+    html[data-mode=paper] #s-top { grid-area: top; } html[data-mode=paper] #s-bottom { grid-area: bottom; display: flex; flex-direction: column; }
+    html[data-mode=paper] #s-bottom nav.go { margin-top: auto; padding-top: .9rem; }
+    html[data-mode=paper] #s-fig { grid-area: fig; align-self: start; }
   }
   html[data-mode=world] #panel, html[data-mode=fly] #panel {
     position: fixed; left: 0; bottom: 0; display: block; min-height: 0; max-height: calc(100dvh - 46px); overflow-y: auto; width: min(30rem, 100%); padding: 1rem 1.4rem 1.1rem;
@@ -155,6 +159,8 @@
   .sw.band { height: 9px; border-bottom: 2px solid currentColor; background: color-mix(in srgb, currentColor 18%, transparent); }
   .blue { color: var(--blue); } .gold { color: var(--gold); } .red { color: var(--red); } .inked { color: var(--ink); } .low { color: #05070b; filter: drop-shadow(0 0 0 var(--hair-strong)); outline: 1px solid var(--hair-strong); }
   .readout { margin: .5rem 0 0; font: 400 .74rem/1.5 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .later { visibility: hidden; }   /* a control that comes second keeps its place from the start */
+  .slide, .btn, .top, #tabs, .legend, .count { user-select: none; -webkit-user-select: none; }
   .bar { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-top: .6rem; } .bar .slide { flex: 1 1 14rem; } .bar [hidden], .slide[hidden] { display: none; }
   #s-stage > canvas + canvas, #s-stage > .slide { margin-top: .6rem; }
   /* The two tags that follow the hypothetical zero and its twin in the 3D world. */
@@ -288,6 +294,6 @@
 <button type="button" class="motion-dock" id="motion">Pause motion</button>
 
 <script src="./guide/field.js" defer></script>
-<script type="module" src="./guide/guide.js?v=9"></script>
+<script type="module" src="./guide/guide.js?v=10"></script>
 </body>
 </html>
