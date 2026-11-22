@@ -29,12 +29,14 @@
      and one red. The ticks behind everything are from his personal site. Colours have one meaning each, in every step:
      ink is what is real (text, ticks, the zeros), gold is the critical line and the band the primes keep to if every zero is on it,
      blue is the primes, and red is the hypothetical zero and everything it causes. Nothing real is ever red.
+     Mint is for the visitor: every link, button, slider and field, and nothing else.
      Contrast on the ground: ink 15.9, muted 7.2, gold 11.7, blue 7.8, red 4.5. */
   :root {
     color-scheme: dark;
     --bg: #0d1117; --bg-raised: #121722; --bg-plot: #0a0e14;
     --ink: #ecebe6; --muted: #9aa0aa; --hair: #222937; --hair-strong: #364052;
     --red: #e6392d; --gold: #f5c542; --blue: #6ea8ff;
+    --act: #4fd6be;   /* everything you can click, drag or type in. Mint: blue, gold and red already mean something */
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
     --pad: 24px;
@@ -43,9 +45,9 @@
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; background: var(--bg); }
   body { margin: 0; color: var(--ink); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
-  a { color: inherit; text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
-  a:hover { color: var(--red); text-decoration-color: currentColor; }
-  :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+  a { color: var(--act); text-decoration-color: color-mix(in srgb, var(--act) 45%, transparent); text-underline-offset: 3px; }
+  a:hover { color: var(--ink); text-decoration-color: var(--act); }
+  :focus-visible { outline: 2px solid var(--act); outline-offset: 3px; }
   .mono { font-family: var(--mono); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .wrap { width: min(100%, 1160px); margin-inline: auto; padding-inline: var(--pad); }
