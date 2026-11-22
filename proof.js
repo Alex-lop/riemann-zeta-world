@@ -1,6 +1,8 @@
 // The four pictures of proof.html. One hypothetical zero (beta + i gamma) is shared by steps 1-3.
 import { criticalZeros } from './zeta.js';
-import { normalizedPrimeSum, logSpace, rogueWave, breachPoint, RH_BAND } from './proofMath.js';
+import { normalizedPrimeSum, logSpace, rogueWave, breachPoint, RH_BAND,
+  FIELDS, kroneckerPrime, quadraticChiValues, askMain } from './proofMath.js';
+import { lChi } from './dirichlet.js';
 
 const C = {
   bg: '#12151d', grid: 'rgba(255,255,255,0.07)', axis: 'rgba(255,255,255,0.22)', text: 'rgba(154,161,178,0.95)',
@@ -28,7 +30,7 @@ function setup(canvas, aspect) {
   const dpr = Math.min(devicePixelRatio, 2);
   const w = canvas.clientWidth || 600;
   let h;
-  if (canvas.classList.contains('fill')) h = canvas.clientHeight || Math.round(w * aspect);
+  if (/\bfill/.test(canvas.className)) h = canvas.clientHeight || Math.round(w * aspect);
   else { h = Math.round(w * aspect); canvas.style.height = `${h}px`; }
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   const g = canvas.getContext('2d');
@@ -264,53 +266,114 @@ for (const ev of ['pointerup', 'pointercancel']) $('strip').addEventListener(ev,
 $('strip').style.touchAction = 'none';
 
 // ---- step 4 --------------------------------------------------------------------------
-const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
-const UPPER = 13; // log10 of the schematic upper estimate on the size
+// The field Q(sqrt(-d)), its character chi, L'/L(1, chi), and ASK/MAIN up to 10^6 (cached per field).
+const fieldCache = new Map();
+function fieldData(D) {
+  if (!fieldCache.has(D)) {
+    const vals = quadraticChiValues(D);
+    const h = 1e-4;
+    const logDeriv = (lChi(vals, 1 + h, 0).re - lChi(vals, 1 - h, 0).re) / (2 * h) / lChi(vals, 1, 0).re;
+    const as = logSpace(100, 1e6, 1500);
+    const { ask, main } = askMain(D, as, 1e6, logDeriv);
+    let worst = 0;
+    for (let i = 0; i < as.length; i++) worst = Math.max(worst, Math.abs(ask[i] - main[i]) / Math.sqrt(as[i]));
+    fieldCache.set(D, { logDeriv, as, ask, main, worst });
+  }
+  return fieldCache.get(D);
+}
+const isPrime = (n) => { if (n < 2) return false; for (let p = 2; p * p <= n; p++) if (n % p === 0) return false; return true; };
+// n = p^k -> [p, k], else null
+const primePower = (n) => { for (let p = 2; p <= n; p++) if (n % p === 0) { let k = 0; while (n % p === 0) { n /= p; k++; } return n === 1 ? [p, k] : null; } return null; };
 
-function drawSqueeze() {
-  const { g, w, h } = setup($('squeeze'), 1.05);
-  const k = Number($('k').value);
-  $('kVal').textContent = k;
-  const L = 34, R = w - 8, T = 16, B = h - 22;
-  const top = 17; // log10 scale shown
-  const py = (l) => B - (l / top) * (B - T);
-  g.fillStyle = C.text;
-  for (let l = 0; l <= top; l += 4) {
-    g.strokeStyle = C.grid; g.beginPath(); g.moveTo(L, py(l)); g.lineTo(R, py(l)); g.stroke();
-    g.fillText(`10${sup(l)}`, 2, py(l) + 4);
+// A: primes colored by split / inert / ramified, with each prime power's contribution to ASK(a)
+function drawInert(D, a) {
+  const { g, w, h } = setup($('inert'), 0.3);
+  const L = 34, R = w - 8, T = 18, B = h - 30;
+  const px = (n) => L + ((n - 1) / (a - 0.5)) * (R - L);
+  const terms = [];
+  for (let n = 2; n <= a; n++) {
+    const pp = primePower(n);
+    if (!pp) continue;
+    const [p, k] = pp;
+    const c = kroneckerPrime(D, p) ** k;
+    terms.push({ n, p, k, c, v: Math.log(p) * (1 - c) * (a / n - 1) });
   }
-  // stacked log p segments: the size divisibility forces
-  const bx = L + (R - L) * 0.22, bw = (R - L) * 0.32;
-  let acc = 0;
-  for (let i = 0; i < k; i++) {
-    const lp = Math.log10(PRIMES[i]);
-    g.fillStyle = `hsl(${(i * 37) % 360} 60% 55%)`;
-    g.fillRect(bx, py(acc + lp), bw, py(acc) - py(acc + lp) - 1);
-    acc += lp;
-  }
-  const over = acc > UPPER;
-  // the upper estimate
-  g.strokeStyle = over ? C.red : C.gold; g.lineWidth = 2.5;
-  g.beginPath(); g.moveTo(L, py(UPPER)); g.lineTo(R, py(UPPER)); g.stroke();
-  g.fillStyle = over ? C.red : C.gold;
-  g.fillText('upper estimate of its size', L + 4, py(UPPER) - 6);
+  const vmax = Math.max(1, ...terms.map((t) => t.v));
+  const py = (v) => B - (v / vmax) * (B - T);
   g.fillStyle = C.text;
-  g.fillText('at least p₁⋯p_k', bx + bw + 6, py(acc) + 4);
-  g.fillText('size (log scale)', L + 4, T - 4);
-  return { k, acc, over };
+  g.fillText('each inert prime adds Λ(n)(1 − χ(n))(a/n − 1) to ASK', L, T - 6);
+  g.strokeStyle = C.axis; g.beginPath(); g.moveTo(L, B); g.lineTo(R, B); g.stroke();
+  const bw = Math.max(2, Math.min(10, ((R - L) / a) * 0.7));
+  let ask = 0;
+  for (const t of terms) {
+    ask += t.v;
+    if (t.v > 0) {
+      g.fillStyle = t.c === 0 ? 'rgba(154,161,178,0.8)' : C.gold;
+      g.fillRect(px(t.n) - bw / 2, py(t.v), bw, B - py(t.v));
+    }
+    if (t.k === 1) { // a dot for every prime, colored by its type
+      g.beginPath(); g.arc(px(t.n), B + 7, 3, 0, 2 * Math.PI);
+      if (t.c === 0) { g.strokeStyle = C.text; g.lineWidth = 1; g.stroke(); }
+      else { g.fillStyle = t.c < 0 ? C.gold : '#6fd6ff'; g.fill(); }
+    }
+  }
+  g.fillStyle = C.text;
+  for (const n of [2, 10, 20, 50, 100, 150, 200]) if (n <= a) g.fillText(String(n), px(n) - 4, B + 22);
+  g.fillStyle = C.gold; g.fillText('● inert', R - 150, T - 6);
+  g.fillStyle = '#6fd6ff'; g.fillText('● split', R - 96, T - 6);
+  g.fillStyle = C.text; g.fillText('○ ramified', R - 46 - 18, T + 8);
+  return { ask, inert: terms.filter((t) => t.k === 1 && t.c < 0).map((t) => t.n) };
 }
 
-function drawBalance() {
-  const { g, w, h } = setup($('balance'), 1.05);
-  const lx = Number($('lx').value);
-  $('lxVal').textContent = lx.toFixed(1);
-  const L = 34, R = w - 8, T = 16, B = h - 22;
+// B: ASK and MAIN from the primes up to 10^6, and their difference / sqrt(a)
+function drawAskMain(D) {
+  const F = fieldData(D);
+  const { g, w, h } = setup($('askmain'), 0.6);
+  const L = 40, R = w - 8, T = 16, B = h - 22, M = T + (B - T) * 0.42;
+  const lx0 = 2, lx1 = 6;
+  const px = (a) => L + ((Math.log10(a) - lx0) / (lx1 - lx0)) * (R - L);
+  // top: both curves on a log-log scale
+  const ly0 = Math.log10(F.main[0]), ly1 = Math.log10(F.ask.at(-1));
+  const pyTop = (v) => M - 6 - ((Math.log10(v) - ly0) / (ly1 - ly0)) * (M - 6 - T);
+  g.fillStyle = C.text; g.fillText('ASK and MAIN (log scales)', L, T - 4);
+  const line = (arr, color, dash, width) => {
+    g.strokeStyle = color; g.setLineDash(dash); g.lineWidth = width; g.beginPath();
+    F.as.forEach((a, i) => (i ? g.lineTo : g.moveTo).call(g, px(a), pyTop(Math.max(arr[i], 1e-9))));
+    g.stroke(); g.setLineDash([]);
+  };
+  line(F.ask, C.gold, [], 3);
+  line(F.main, C.white, [5, 4], 1.4);
+  g.fillStyle = C.gold; g.fillText('ASK', R - 64, T + 10);
+  g.fillStyle = C.white; g.fillText('MAIN', R - 34, T + 10);
+  // bottom: the difference, which is G - g_chi
+  const lim = 0.5;
+  const pyB = (v) => (M + 14 + B) / 2 - (Math.max(-lim, Math.min(lim, v)) / lim) * ((B - M - 14) / 2);
+  g.fillStyle = C.text; g.fillText('(ASK − MAIN)/√a  =  (G − g_χ)/√a', L, M + 10);
+  g.strokeStyle = C.grid;
+  for (const v of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(L, pyB(v)); g.lineTo(R, pyB(v)); g.stroke(); g.fillStyle = C.text; g.fillText(v.toFixed(1), 6, pyB(v) + 4); }
+  g.strokeStyle = C.data; g.lineWidth = 1.2; g.beginPath();
+  F.as.forEach((a, i) => (i ? g.lineTo : g.moveTo).call(g, px(a), pyB((F.ask[i] - F.main[i]) / Math.sqrt(a))));
+  g.stroke();
+  g.fillStyle = C.text;
+  for (let k = lx0; k <= lx1; k++) g.fillText(`10${sup(k)}`, Math.min(px(10 ** k) - 9, R - 26), B + 16);
+  return F;
+}
+
+// C: the costs x/m and m, with the source's chain length and the window the comparison allows
+function drawBalance(lx, eps) {
+  const { g, w, h } = setup($('balance'), 0.6);
+  const L = 40, R = w - 8, T = 16, B = h - 22;
   const yLo = lx / 2 - 0.5, yHi = lx + 0.3;
   const px = (lm) => L + (lm / lx) * (R - L);
   const py = (l) => B - ((l - yLo) / (yHi - yLo)) * (B - T);
+  const x = 10 ** lx;
+  const lmSrc = lx / 2 - (eps * lx) / 16;           // m = sqrt(x delta), delta = x^(-eps/8)
+  const wLo = lx * (0.5 - eps), wHi = lx * (0.5 + eps / 2);
+  g.fillStyle = 'rgba(245,197,66,0.12)';
+  g.fillRect(px(wLo), T, Math.max(2, px(wHi) - px(wLo)), B - T);
   g.fillStyle = C.text;
-  g.fillText('cost (log scale)', L + 4, T - 4);
-  g.fillText('number of lifts m (log scale) →', L + 4, B + 16);
+  g.fillText('cost (log scale)', L, T - 4);
+  g.fillText('chain length m (log scale) →', L + 4, B + 16);
   const curve = (f, col, width) => {
     g.strokeStyle = col; g.lineWidth = width; g.beginPath();
     for (let i = 0; i <= 200; i++) {
@@ -320,21 +383,20 @@ function drawBalance() {
     }
     g.stroke();
   };
-  const x = 10 ** lx;
   g.save(); g.beginPath(); g.rect(L, T, R - L, B - T); g.clip();
   curve((m) => x / m, C.data, 1.3);
   curve((m) => m, C.data, 1.3);
   curve((m) => x / m + m, C.gold, 2.4);
   g.restore();
-  const mx = px(lx / 2), my = py(Math.log10(2 * Math.sqrt(x)));
+  const mx = px(lmSrc), my = py(Math.log10(x / 10 ** lmSrc + 10 ** lmSrc));
   g.strokeStyle = C.white; g.lineWidth = 2;
   g.beginPath(); g.arc(mx, my, 6, 0, 2 * Math.PI); g.stroke();
-  g.fillStyle = C.white; g.fillText('m = √x', mx + 9, my + 14);
+  g.fillStyle = C.white; g.fillText('m ≈ √x', mx + 9, my + 14);
   g.fillStyle = C.text;
   g.fillText('x/m', L + 6, py(lx - 0.2));
   g.fillText('m', R - 14, py(lx - 0.2));
-  g.fillStyle = C.gold; g.fillText('x/m + m', px(lx * 0.72), py(Math.log10(x / 10 ** (lx * 0.72) + 10 ** (lx * 0.72))) - 8);
-  return { x };
+  g.fillStyle = C.gold; g.fillText('allowed window', Math.min(px(wHi) + 4, R - 96), T + 12);
+  return { x, m: 10 ** lmSrc, lo: 10 ** wLo, hi: 10 ** wHi };
 }
 
 // ---- wiring ----------------------------------------------------------------------------
@@ -366,15 +428,16 @@ function drawAll() {
 }
 
 function drawStep4() {
-  const sq = drawSqueeze(), bl = drawBalance();
-  const prod = PRIMES.slice(0, sq.k).reduce((a, p) => a * p, 1);
-  let maxK = 0;
-  for (let p = 1; maxK < PRIMES.length && p * PRIMES[maxK] <= 10 ** UPPER; ) p *= PRIMES[maxK++];
+  const D = Number($('field').value), a = Number($('a').value), lx = Number($('lx').value), eps = Number($('eps').value);
+  $('aVal').textContent = a; $('lxVal').textContent = lx.toFixed(1); $('epsVal').textContent = eps.toFixed(3);
+  const name = FIELDS.find((f) => f.D === D).name;
+  const A = drawInert(D, a), F = drawAskMain(D), Bl = drawBalance(lx, eps);
+  const main = a * (Math.log(a) - 1 - 0.5772156649015329 + F.logDeriv);
+  const list = A.inert.length > 12 ? `${A.inert.slice(0, 12).join(', ')}, …` : A.inert.join(', ') || 'none';
   $('step4Readout').innerHTML =
-    (sq.over
-      ? `<span class="bad">k = ${sq.k}: the product ${sci(prod)} exceeds the size estimate 10${sup(UPPER)}. Impossible, so at most ${maxK} such primes.</span>`
-      : `k = ${sq.k}: the product ${sci(prod)} fits under the size estimate 10${sup(UPPER)}.`) +
-    `<br>x = 10<sup>${Number($('lx').value).toFixed(1)}</sup>: the best m is √x ≈ ${sci(Math.sqrt(bl.x))}, total cost ≈ 2√x ≈ ${sci(2 * Math.sqrt(bl.x))}.`;
+    `${name}: inert primes ≤ ${a}: ${list}. ASK(${a}) = ${A.ask.toFixed(1)}, MAIN = ${main.toFixed(1)}.<br>` +
+    `Up to a = 10⁶, ASK reaches ${sci(F.ask.at(-1))}, yet |ASK − MAIN| stays below ${F.worst.toFixed(2)}·√a.<br>` +
+    `x = 10<sup>${lx.toFixed(1)}</sup>, ε = ${eps.toFixed(3)}: chain length m ≈ ${sci(Bl.m)} (√x ≈ ${sci(Math.sqrt(Bl.x))}), window ${sci(Bl.lo)} to ${sci(Bl.hi)}.`;
 }
 
 $('beta').addEventListener('input', () => {
@@ -389,13 +452,15 @@ for (const tab of document.querySelectorAll('.tab')) {
     for (const t of document.querySelectorAll('.tab')) t.setAttribute('aria-selected', String(t === tab));
     for (const p of document.querySelectorAll('[data-mode]')) p.hidden = p.dataset.mode !== state.mode;
     $('chart').closest('[data-panel]').hidden = state.mode === 'step4';
-    $('squeeze').closest('[data-panel]').hidden = state.mode !== 'step4';
+    $('inert').closest('[data-panel]').hidden = state.mode !== 'step4';
     $('bandLabel').textContent = state.mode === 'windows' ? 'ceiling +0.0462, walls over the windows' : 'band ±0.0462 forced by RH';
     drawAll();
   });
 }
 $('rogueOn').addEventListener('change', () => { state.on = $('rogueOn').checked; drawAll(); });
-$('k').addEventListener('input', drawAll);
+for (const f of FIELDS) $('field').add(new Option(`${f.name}  (D = ${f.D})`, f.D));
+$('field').value = -7;
+for (const id of ['field', 'a', 'eps']) $(id).addEventListener('input', drawAll);
 $('lx').addEventListener('input', drawAll);
 let resizeTimer = 0;
 addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawAll, 100); });
