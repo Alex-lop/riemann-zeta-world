@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { ZEROS } from './zeros.js';
+
+export { ZEROS };
 
 // The 3D world of Zeta World, shared by every page that shows it. ZEROS and zetaGrid live here and nowhere else.
 
@@ -11,22 +14,10 @@ export const T_MAX = 237;                          // the road ends between zero
 const FOG0 = 45, FOG1 = 130, FOG_H = 6.5;          // fog from 45 to 130 up to the start pose's height. Above that it scales with height
 const PIN = 1.5 * RISE, HEAD = 0.1;                // pin height and head radius
 const LUM0 = 0.06, LUM1 = 0.5;                     // lightness at the floor and how much full height adds: pits must read as dark
+const SUN = [0.68, 0.57, 0.46], SHADE0 = 0.8;      // wash look: slopes facing away from this direction darken to 0.8, baked into the colours
 const ROLL_MS = 40;                                // roll call: one pin every 40 ms, 4 s for all 100
 
 // ---- the math --------------------------------------------------------------
-// Heights (imaginary parts) of the first 100 nontrivial zeros, from mpmath.zetazero.
-export const ZEROS = [
-  14.134725, 21.022040, 25.010858, 30.424876, 32.935062, 37.586178, 40.918719, 43.327073, 48.005151, 49.773832,
-  52.970321, 56.446248, 59.347044, 60.831779, 65.112544, 67.079811, 69.546402, 72.067158, 75.704691, 77.144840,
-  79.337375, 82.910381, 84.735493, 87.425275, 88.809111, 92.491899, 94.651344, 95.870634, 98.831194, 101.317851,
-  103.725538, 105.446623, 107.168611, 111.029536, 111.874659, 114.320221, 116.226680, 118.790783, 121.370125, 122.946829,
-  124.256819, 127.516684, 129.578704, 131.087689, 133.497737, 134.756510, 138.116042, 139.736209, 141.123707, 143.111846,
-  146.000982, 147.422765, 150.053520, 150.925258, 153.024694, 156.112909, 157.597592, 158.849988, 161.188964, 163.030710,
-  165.537069, 167.184440, 169.094515, 169.911976, 173.411537, 174.754192, 176.441434, 178.377408, 179.916484, 182.207078,
-  184.874468, 185.598784, 187.228923, 189.416159, 192.026656, 193.079727, 195.265397, 196.876482, 198.015310, 201.264752,
-  202.493595, 204.189672, 205.394697, 207.906259, 209.576510, 211.690863, 213.347919, 214.547045, 216.169539, 219.067596,
-  220.714919, 221.430706, 224.007000, 224.983325, 227.421444, 229.337413, 231.250189, 231.987235, 233.693404, 236.524230,
-];
 
 // zeta(sigma + i t) on a (ns+1) x (nt+1) vertex grid by Euler-Maclaurin summation: N terms plus 3 Bernoulli corrections.
 // Returns { re, im } as Float32Arrays, index j * (ns + 1) + i, with i along sigma and j along t.
@@ -76,16 +67,22 @@ console.assert(CHECKED.every(Boolean) && ZETA2_OK, 'zeta self-check failed');
 // y = RISE * (2 / pi) * atan|zeta(s)|: a zero is a pit to the floor and the pole s = 1 is a spire of height RISE.
 export const xOf = sigma => WIDTH * (sigma - 0.5), zOf = t => LEN * (T_MAX / 2 - t);
 
-// Starts the world on a canvas and returns { camera, controls, zeros, resize, tick }. Throws where WebGL is unavailable.
+// The wash look, for the guide: the canvas is transparent so the page's ground and ticks show around the land.
+// The land is a wash by height, from WELL at the floor to HIGH on top, and nothing is lit, so these are the colours on screen.
+// The palette is the guide's (guide.html): a near-black ground, light ink for what is real, gold for the critical line.
+const GROUND = 0x0d1117, WELL = 0x05070b, HIGH = 0x566279, GOLD = 0xf5c542, INK = 0xecebe6, UNCHECKED = 0x364052;
+
+// Starts the world on a canvas and returns { camera, controls, zeros, resize, run, tick }. Throws where WebGL is unavailable.
 // panel: the text panel a portrait layout frames the scene above. Call resize() when its height changes.
-// count: the element the roll call writes to. Set tick to a function of the frame timestamp to move the camera.
-export function startWorld(canvas, { panel, count } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+// count: the element the roll call writes to. wash: the wash look above, in place of the phase colours.
+// Set tick to a function of the frame timestamp to move the camera. run(false) stops drawing and run(true) resumes.
+export function startWorld(canvas, { panel, count, wash = false } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: wash });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x05060f);
-  scene.fog = new THREE.Fog(0x05060f, FOG0, FOG1);   // the render loop rescales it
+  if (!wash) scene.background = new THREE.Color(0x05060f);    // in the wash look the canvas stays clear. Never setClearColor: its alpha defaults to 1
+  scene.fog = new THREE.Fog(wash ? GROUND : 0x05060f, FOG0, FOG1);   // the render loop rescales it
   scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a3a, 1.6));
   const sun = new THREE.DirectionalLight(0xffffff, 2.2);
   sun.position.set(30, 25, 20);
@@ -98,10 +95,16 @@ export function startWorld(canvas, { panel, count } = {}) {
   const terrain = new THREE.PlaneGeometry(WIDTH * (SIG1 - SIG0), LEN * T_MAX, NS, NT).rotateX(-Math.PI / 2);
   const pos = terrain.attributes.position, colors = new Float32Array(pos.count * 3), c = new THREE.Color();
   const ROAD = NS * (0.5 - SIG0) / (SIG1 - SIG0);                             // the vertex column of Re(s) = 1/2
+  for (let v = 0; v < pos.count; v++) pos.setY(v, RISE * (2 / Math.PI) * Math.atan(Math.hypot(re[v], im[v])));   // the pole is Infinity, which atan turns into RISE
+  terrain.computeVertexNormals();
+  const normal = terrain.attributes.normal, well = new THREE.Color(WELL), high = new THREE.Color(HIGH);
   for (let v = 0; v < pos.count; v++) {
-    const y = RISE * (2 / Math.PI) * Math.atan(Math.hypot(re[v], im[v]));     // the pole is Infinity, which atan turns into RISE
-    pos.setY(v, y);
-    if (v % (NS + 1) === ROAD) c.set(0xf5c542);                               // the critical line, painted on
+    const col = Math.abs(v % (NS + 1) - ROAD), y = pos.getY(v);
+    if (wash) {
+      if (col === 0) c.set(GOLD);                                             // the critical line, painted on,
+      else if (col === 1) c.set(GROUND);                                      // with a dark casing so it is gold against the ground even on high land
+      else c.lerpColors(well, high, Math.sqrt(y / RISE)).multiplyScalar(SHADE0 + (1 - SHADE0) * Math.max(0, normal.getX(v) * SUN[0] + normal.getY(v) * SUN[1] + normal.getZ(v) * SUN[2]));
+    } else if (col === 0) c.set(0xf5c542);                                    // the critical line, painted on
     else c.setHSL(Math.atan2(im[v], re[v]) / (2 * Math.PI) + 0.5, 0.75, LUM0 + LUM1 * y / RISE);   // +0.5: positive real is cyan, so the gold line stands out
     c.toArray(colors, v * 3);
   }
@@ -110,12 +113,13 @@ export function startWorld(canvas, { panel, count } = {}) {
   const vPit = Math.round((1 - ZEROS[0] / T_MAX) * NT) * (NS + 1) + ROAD, vPole = NT * (NS + 1) + NS * (1 - SIG0) / (SIG1 - SIG0);
   console.assert(Math.abs(pos.getZ(vPit) - zOf(ZEROS[0])) < LEN * T_MAX / NT && pos.getY(vPit) < 0.05 * RISE
     && Math.hypot(pos.getX(vPole) - xOf(1), pos.getZ(vPole) - zOf(0)) < 1e-3 && pos.getY(vPole) === RISE, 'terrain self-check failed: the mesh is flipped');
-  terrain.computeVertexNormals();
-  scene.add(new THREE.Mesh(terrain, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1, side: THREE.DoubleSide })));
+  scene.add(new THREE.Mesh(terrain, wash ? new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
+    : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1, side: THREE.DoubleSide })));
 
   // Pin heads sit above everything (the land never exceeds RISE) so no ridge hides them; the stalk's foot is the zero.
   const pin = new THREE.CylinderGeometry(HEAD / 7, HEAD / 7, PIN).translate(0, PIN / 2, 0), head = new THREE.SphereGeometry(HEAD, 16, 12).translate(0, PIN, 0);
-  const dim = new THREE.MeshBasicMaterial({ color: 0x4a4d66 }), glow = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false });
+  const dim = new THREE.MeshBasicMaterial({ color: wash ? UNCHECKED : 0x4a4d66 });
+  const glow = new THREE.MeshBasicMaterial({ color: wash ? INK : 0xffffff, fog: false });   // a checked pin shows through the fog
   const markers = ZEROS.map(t => {
     const marker = new THREE.Group().add(new THREE.Mesh(pin, dim), new THREE.Mesh(head, dim));
     marker.position.set(0, 0, zOf(t));
@@ -151,15 +155,16 @@ export function startWorld(canvas, { panel, count } = {}) {
   addEventListener('resize', resize);
   resize();
 
-  const world = { camera, controls, zeros: ZEROS, resize, tick: null };
+  const world = { camera, controls, zeros: ZEROS, resize, tick: null, run: on => renderer.setAnimationLoop(on ? frame : null) };
   const start = performance.now();
-  renderer.setAnimationLoop(now => {
+  const frame = now => {
     rollCall(now - start);
     world.tick?.(now);                                                        // a page's own camera moves go here, before update() re-aims the camera
     controls.update();
     const k = Math.max(camera.position.y / FOG_H, 1);                         // fog thins as the camera climbs: low down the road vanishes into it,
     scene.fog.near = FOG0 * k; scene.fog.far = FOG1 * k;                      // from high up the whole road is clear
     renderer.render(scene, camera);
-  });
+  };
+  world.run(true);
   return world;
 }

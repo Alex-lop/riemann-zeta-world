@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en" data-mode="intro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d1117">
+<title>Zeta World: ride the line, watch the primes appear</title>
+<meta name="description" content="A ten-step climb from the primes to the Riemann hypothesis, through a 3D landscape of the zeta function you can ride.">
+<meta property="og:title" content="Zeta World: ride the line, watch the primes appear">
+<meta property="og:description" content="A ten-step climb from the primes to the Riemann hypothesis, through a 3D landscape of the zeta function you can ride.">
+<meta property="og:type" content="website">
+<!-- Link previews need absolute URLs. Everything else on this site must stay relative (./x): it is served under /zeta-world/. -->
+<meta property="og:url" content="https://alex-lop.github.io/zeta-world/">
+<meta property="og:image" content="https://alex-lop.github.io/zeta-world/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d1117'/><path d='M16 2v28' stroke='%23f5c542' stroke-width='1.5'/><rect x='13' y='7' width='6' height='6' fill='%23ecebe6'/><rect x='13' y='19' width='6' height='6' fill='%23ecebe6'/><rect x='22.5' y='13.5' width='5' height='5' fill='none' stroke='%23e6392d' stroke-width='1.5'/></svg>">
+<!-- Before first paint: a reload on a step or on #fly must not flash the intro. -->
+<script>document.documentElement.dataset.mode = { '': 'intro', '#': 'intro', '#fly': 'fly' }[location.hash] || 'paper';</script>
+<!-- No build step: three.js comes from a pinned CDN version, and is fetched only when a step first needs the 3D world. -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
+} }
+</script>
+<style>
+  /* The theme is Alex's Nemisis site (Alex-lop/Nemisis, site/site.css): a near-black ground, hairlines for structure, mono labels,
+     and one red. The ticks behind everything are from his personal site. Colours have one meaning each, in every step:
+     ink is what is real (text, ticks, the zeros), gold is the critical line and the band the primes keep to if every zero is on it,
+     blue is the primes, and red is the hypothetical zero and everything it causes. Nothing real is ever red.
+     Contrast on the ground: ink 15.9, muted 7.2, gold 11.7, blue 7.8, red 4.5. */
+  :root {
+    color-scheme: dark;
+    --bg: #0d1117; --bg-raised: #121722; --bg-plot: #0a0e14;
+    --ink: #ecebe6; --muted: #9aa0aa; --hair: #222937; --hair-strong: #364052;
+    --red: #e6392d; --gold: #f5c542; --blue: #6ea8ff;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+    --pad: 24px;
+  }
+  @media (max-width: 720px) { :root { --pad: 18px; } }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+  body { margin: 0; color: var(--ink); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
+  a:hover { color: var(--red); text-decoration-color: currentColor; }
+  :focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+  .mono { font-family: var(--mono); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .wrap { width: min(100%, 1160px); margin-inline: auto; padding-inline: var(--pad); }
+  .eyebrow { margin: 0 0 14px; color: var(--muted); font: 650 .7rem/1.4 var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+  h1 { margin: 0; text-wrap: balance; letter-spacing: -.035em; line-height: 1.04; font-weight: 620; }
+  .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 18px; border: 1px solid var(--hair-strong); background: var(--bg-raised); color: var(--ink); font: inherit; font-size: .9rem; text-decoration: none; cursor: pointer; }
+  .btn:hover { border-color: var(--red); color: var(--ink); }
+  .btn-go { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn-go:hover { background: var(--red); border-color: var(--red); color: var(--ink); }
+
+  /* Two canvases behind everything: the ticks, and over them the 3D world, which is transparent around the land. */
+  #field, #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #field { z-index: 0; pointer-events: none; }
+  #world { z-index: 1; opacity: 0; visibility: hidden; transition: opacity .9s, visibility 0s .9s; touch-action: none; }
+  html[data-mode=world] #world, html[data-mode=fly] #world { opacity: 1; visibility: visible; transition: opacity .9s; }
+  .count { position: fixed; z-index: 2; top: 0; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
+  html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
+
+  /* One screen at a time. */
+  html:not([data-mode=intro]) #intro, html[data-mode=intro] #panel, html[data-mode=fly] #step, html:not([data-mode=fly]) #fly { display: none; }
+
+  /* The intro: Nemisis's nav and hero. On the right, the critical line with the first zeros on it. */
+  #intro { position: relative; z-index: 2; min-height: 100dvh; display: flex; flex-direction: column; }
+  .nav { border-bottom: 1px solid var(--hair); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 60px; gap: 24px; }
+  .wordmark { font-weight: 650; letter-spacing: -.02em; text-decoration: none; font-size: 1.05rem; }
+  .nav ul { display: flex; gap: 22px; margin: 0; padding: 0; list-style: none; font-size: .86rem; }
+  .nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .hero { position: relative; flex: 1; display: flex; align-items: center; overflow: hidden; }
+  .hero-copy { position: relative; z-index: 1; width: min(100%, 43rem); padding-block: clamp(40px, 8vh, 96px); }
+  .hero-copy > :not(h1) { max-width: 34rem; }
+  .hero-copy .eyebrow { color: var(--ink); }
+  .hero h1 { margin: 0 0 22px; font-size: clamp(2.3rem, 4.4vw, 3.5rem); }
+  .lede { margin: 0; max-width: 46ch; font-size: 1.05rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 0; }
+  .rows { margin: 30px 0 0; border-top: 1px solid var(--hair-strong); }
+  .rows > div { display: grid; grid-template-columns: 9.5rem 1fr; gap: 16px; align-items: center; min-height: 46px; border-bottom: 1px solid var(--hair); }
+  .rows dt { font: 650 .7rem/1.5 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+  .rows dd { margin: 0; font-size: .92rem; }
+  .rows a { display: inline-flex; align-items: center; min-height: 44px; margin-right: 14px; }
+  /* The strip beside the copy: walls at 0 and 1, the line in the middle, a square on each of the first zeros, and one open red square. */
+  .strip { position: absolute; top: 0; bottom: 0; right: max(var(--pad), calc(50% - 560px)); width: min(32vw, 380px); pointer-events: none; font: 11px/1 var(--mono); color: var(--muted); }
+  .strip i { position: absolute; }
+  .strip .wall { top: 0; bottom: 0; width: 1px; background: var(--hair-strong); }
+  .strip .line { top: 0; bottom: 0; left: 50%; width: 1px; background: var(--gold); }
+  .strip .zero { left: 50%; width: 9px; height: 9px; margin: -4.5px 0 0 -4px; background: var(--ink); }
+  .strip .ghost { width: 11px; height: 11px; margin: -5.5px 0 0 -5px; border: 1.5px solid var(--red); transition: left .25s cubic-bezier(.2, .8, .2, 1), top .25s cubic-bezier(.2, .8, .2, 1); }
+  .strip span { position: absolute; white-space: nowrap; }
+  .strip .gold { color: var(--gold); } .strip .red { color: var(--red); }
+  @media (max-width: 900px) { .strip { display: none; } }
+
+  /* The step card. On a step with a 2D figure it is two columns: the words, then the figure. Over the 3D world it docks
+     at the bottom left and lets drags through to the canvas, and the figure docks beside it. */
+  #panel { position: relative; z-index: 2; min-height: 100dvh; display: flex; align-items: safe center; justify-content: center; padding: 5vh var(--pad) 72px; }
+  #step { width: min(100%, 36rem); }
+  #fly { width: 100%; }
+  @media (min-width: 900px) {
+    html[data-mode=paper] #step { width: min(100%, 1112px); display: grid; grid-template-columns: minmax(0, 25rem) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "top fig" "bottom fig"; column-gap: clamp(2rem, 5vw, 4.5rem); }
+    html[data-mode=paper] #s-top { grid-area: top; } html[data-mode=paper] #s-bottom { grid-area: bottom; }
+    html[data-mode=paper] #s-fig { grid-area: fig; align-self: center; }
+  }
+  html[data-mode=world] #panel, html[data-mode=fly] #panel {
+    position: fixed; left: 0; bottom: 0; display: block; min-height: 0; max-height: 100dvh; overflow-y: auto; width: min(30rem, 100%); padding: 1rem 1.4rem 1.1rem;
+    background: rgb(13 17 23 / .92); border-top: 1px solid var(--hair-strong); border-right: 1px solid var(--hair-strong); pointer-events: none;
+  }
+  #panel :is(a, button, input, summary, label, canvas) { pointer-events: auto; }
+  @media (min-width: 900px) {   /* beside the docked card, along the bottom of the world */
+    html[data-mode=world] #s-fig:not(:empty) { position: fixed; left: 30rem; right: 0; bottom: 0; padding: .8rem 1.2rem .9rem; background: rgb(13 17 23 / .92); border-top: 1px solid var(--hair-strong); }
+  }
+  .top { display: flex; justify-content: space-between; align-items: center; margin: 0 0 .7rem; color: var(--muted); font: 400 .72rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+  .top a { text-decoration: none; padding: 10px 0; }
+  .ticks { display: inline-flex; align-items: flex-end; gap: 5px; height: 14px; margin-left: .7rem; vertical-align: -2px; }
+  .ticks i { width: 1px; height: 8px; background: var(--hair-strong); }
+  .ticks i.done { background: var(--muted); } .ticks i.now { height: 14px; width: 2px; background: var(--ink); }
+  #step h1, #fly h1 { font-size: clamp(1.7rem, 3vw, 2.4rem); }
+  #step h1:focus { outline: none; }
+  #step p, #fly p, #fly details { margin: .7rem 0 0; }
+  #s-do { font: 400 .86rem/1.5 var(--mono); }
+  #s-do::before { content: "→ "; color: var(--red); }
+  #s-stage:not(:empty) { margin-top: .8rem; }
+  #s-payoff { visibility: hidden; opacity: 0; transition: opacity .5s; }
+  #s-payoff.on { visibility: visible; opacity: 1; }
+  .small, #s-more, .legend, .status { font-size: .8rem; color: var(--muted); }
+  #s-more details { margin-top: .5rem; } summary { cursor: pointer; }
+  nav.go { display: flex; justify-content: space-between; align-items: center; margin-top: .9rem; }
+
+  /* Figures: a frame like Nemisis's terminal, mono labels, hairlines. */
+  .fig { margin: 0; padding: 2.2rem 1rem; border: 1px solid var(--hair-strong); background: var(--bg-plot); font: 400 clamp(1.1rem, 3.4vw, 1.7rem)/1.4 var(--mono); text-align: center; }
+  canvas.plot { display: block; width: 100%; border: 1px solid var(--hair-strong); background: var(--bg-plot); touch-action: none; }
+  input[type=range] { width: 100%; margin: 0; accent-color: var(--ink); }
+  .slide { display: grid; grid-template-columns: auto 1fr auto; gap: .7rem; align-items: center; font: 400 .72rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .legend { display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; margin: .5rem 0 0; font-family: var(--mono); font-size: .72rem; }
+  .sw { display: inline-block; width: 16px; height: 0; margin-right: 6px; vertical-align: middle; border-top: 2px solid currentColor; }
+  .sw.dash { border-top-style: dashed; }
+  .sw.dot { width: 8px; height: 8px; border: 0; background: currentColor; }
+  .sw.open { width: 10px; height: 10px; border: 1.5px solid currentColor; }
+  .sw.band { height: 9px; border-bottom: 2px solid currentColor; background: color-mix(in srgb, currentColor 18%, transparent); }
+  .blue { color: var(--blue); } .gold { color: var(--gold); } .red { color: var(--red); } .inked { color: var(--ink); } .low { color: #05070b; filter: drop-shadow(0 0 0 var(--hair-strong)); outline: 1px solid var(--hair-strong); }
+  .checks { border-top: 1px solid var(--hair-strong); }
+  .checks details { border-bottom: 1px solid var(--hair); padding: .55rem 0; }
+  .checks summary { display: grid; grid-template-columns: 1.6rem 1fr auto; gap: 10px; align-items: baseline; list-style: none; }
+  .checks summary::-webkit-details-marker { display: none; }
+  .checks summary b { font: 620 1.15rem/1 var(--mono); color: var(--muted); }
+  .checks summary span { font: 400 .68rem/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+  .checks details p { margin: .4rem 0 .1rem 2.2rem; color: var(--muted); font-size: .86rem; }
+  .checks details[open] summary b { color: var(--ink); }
+
+  .motion-dock { position: fixed; z-index: 3; right: var(--pad); bottom: 10px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--muted); font: 400 .7rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+  .motion-dock:hover { color: var(--red); } .motion-dock[disabled] { cursor: default; }
+  html[data-mode=world] .motion-dock, html[data-mode=fly] .motion-dock { top: 0; bottom: auto; left: var(--pad); right: auto; }
+
+  @media (max-width: 30rem) {   /* phones: leave the scene some room above the card */
+    body { font-size: 15px; } html[data-mode=world] #panel, html[data-mode=fly] #panel { padding: .7rem 1rem .8rem; }
+    #fly .long { display: none; } .count { font-size: .85rem; margin: .8rem .75rem; }
+    .hero h1 { font-size: clamp(2.3rem, 11vw, 3rem); } .rows > div { grid-template-columns: 7rem 1fr; }
+    html:is([data-mode=intro], [data-mode=paper]) .motion-dock { position: relative; display: block; margin: -56px 0 12px auto; }   /* at the end of the page, not over the words */
+  }
+  @media (max-height: 30rem) and (orientation: landscape) {
+    body { font-size: 14px; } #fly .long, .legend, #s-more { display: none; }
+    html[data-mode=world] #panel, html[data-mode=fly] #panel { width: min(24rem, 60%); padding: .5rem .9rem .6rem; pointer-events: auto; }
+    #step h1, #fly h1 { font-size: 1.25rem; } .btn { min-height: 36px; padding: 6px 14px; } #step p { margin-top: .4rem; }
+    .hero-copy { padding-block: 16px; } .hero h1 { font-size: 2rem; margin-bottom: 10px; } .actions, .rows { margin-top: 12px; } .rows > div { min-height: 36px; }
+  }
+  @media (prefers-reduced-motion: reduce) { #world, #s-payoff, .strip .ghost { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="field" aria-hidden="true"></canvas>
+<canvas id="world" role="img" aria-label="3D terrain showing the size of the Riemann zeta function. One hundred pins mark its first nontrivial zeros, all on the gold line where the real part is one half."></canvas>
+<!-- Two counters, outside the card so they stay readable on a shared screen: the roll call's, and the ride's. -->
+<p class="count" id="count"></p>
+<p class="count" id="passed"></p>
+
+<div id="intro">
+  <nav class="nav" aria-label="Primary">
+    <div class="wrap">
+      <a class="wordmark" href="#">Zeta World</a>
+      <ul>
+        <li><a href="https://github.com/Alex-lop/zeta-world/blob/main/PLAN.md">Plan</a></li>
+        <li><a href="https://github.com/Alex-lop/zeta-world">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+  <header class="hero">
+    <!-- Filled in by guide.js: the critical line, the first zeros, and one open red square that follows the pointer. -->
+    <div class="strip" id="strip" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="eyebrow">Zeta World · the Riemann hypothesis, as a place you can look at</p>
+        <h1>Ride the line.<br>Watch the primes appear.</h1>
+        <p class="lede">Helloooo. This is a ten-step climb from what a prime is to what was released in November 2026, through a 3D land of the zeta function that you can ride.</p>
+        <p class="actions">
+          <a class="btn btn-go" href="#primes">Get started</a>
+          <a class="btn" href="#suppose">What the paper actually proved</a>
+        </p>
+        <dl class="rows">
+          <div><dt>No guide</dt><dd><a href="#fly">Just let me fly</a></dd></div>
+          <div><dt>Roam</dt><dd><a href="./landscape.html">The explorer</a></dd></div>
+          <div><dt>Read / source</dt><dd><a href="./learn.html">The long version</a><a href="https://github.com/Alex-lop/zeta-world/blob/main/PLAN.md">The plan</a><a href="https://github.com/Alex-lop/zeta-world">GitHub</a></dd></div>
+        </dl>
+        <noscript><p class="small">The guided climb needs JavaScript. The long version does not.</p></noscript>
+      </div>
+    </div>
+  </header>
+</div>
+
+<main id="panel">
+  <article id="step">
+    <div id="s-top">
+      <p class="top"><a href="#">‹ Zeta World</a><span><span id="s-count"></span><span class="ticks" id="s-ticks" aria-hidden="true"></span></span></p>
+      <h1 id="s-title" tabindex="-1"></h1>
+      <p id="s-idea"></p>
+      <p id="s-do"></p>
+    </div>
+    <div id="s-fig"><div id="s-stage"></div><p class="legend" id="s-legend"></p></div>
+    <div id="s-bottom">
+      <p id="s-payoff"></p>
+      <div id="s-more"></div>
+      <nav class="go" aria-label="Steps"><a class="btn" id="s-back">‹ Back</a><a class="btn btn-go" id="s-next">Next ›</a></nav>
+      <p class="sr" id="s-live" aria-live="polite"></p>
+    </div>
+  </article>
+
+  <!-- "Just let me fly": the plain 3D world with free controls. -->
+  <aside id="fly">
+    <p class="top"><a href="#">‹ Zeta World</a></p>
+    <h1>Zeta World</h1>
+    <p>The Riemann hypothesis, as a place you can look at.</p>
+    <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each pin stands on a zero, where the land drops to height zero. These are the first 100 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
+    <!-- The one place this page says anything about proof. Keep it dated and attributed. The last step of the climb shows a copy of this paragraph. -->
+    <p class="long status" id="proof-status">Status, 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement of the Lean and Mathlib communities</a>. Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. This page shows what the statement says. It proves nothing.</p>
+    <p class="small" id="fly-status">Loading the 3D view. It needs JavaScript and WebGL.</p>
+    <details class="small">
+      <summary>How to read it</summary>
+      Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The mound at the south end is the pole at s = 1, where ζ is infinite.
+    </details>
+    <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
+    <p class="small">Built for Sundai Hack 150. <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
+  </aside>
+</main>
+
+<button type="button" class="motion-dock" id="motion">Pause motion</button>
+
+<script src="./guide/field.js" defer></script>
+<script type="module" src="./guide/guide.js?v=1"></script>
+</body>
+</html>
