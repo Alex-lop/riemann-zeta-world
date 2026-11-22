@@ -153,6 +153,7 @@
   /* Figures: a frame like Nemisis's terminal, mono labels, hairlines. */
   .fig { margin: 0; padding: 2.2rem 1rem; border: 1px solid var(--hair-strong); background: var(--bg-plot); font: 400 clamp(1.1rem, 3.4vw, 1.7rem)/1.4 var(--mono); text-align: center; }
   canvas.plot { display: block; width: 100%; border: 1px solid var(--hair-strong); background: var(--bg-plot); touch-action: none; }
+  canvas.plot.bare { border: 0; background: none; pointer-events: none; }
   input[type=range] { width: 100%; margin: 0; accent-color: var(--act); cursor: pointer; }
   .slide { display: grid; grid-template-columns: auto 1fr auto; gap: .7rem; align-items: center; font: 400 .72rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
   .legend { display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; margin: .5rem 0 0; font-family: var(--mono); font-size: .72rem; }
