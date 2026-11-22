@@ -589,6 +589,7 @@ function show() {
 }
 // The step bar: the way home, the ten steps by number and name, and the open world.
 $('tabs').innerHTML = '<a class="wordmark" href="#">Zeta World</a>' + STEPS.map((s, k) => `<a href="#${s.id}" aria-label="Step ${k + 1}: ${s.tab}"><b>${k + 1}</b><span>${s.tab}</span></a>`).join('') + '<a class="fly" href="#fly" aria-label="Fly the world, no guide"><span>Fly</span></a>';
+$('steps').innerHTML = STEPS.map((s, k) => `<a href="#${s.id}"><b>${k + 1}</b>${s.tab}</a>`).join('');   // the same ten, on the home page
 addEventListener('hashchange', show);
 show();
 

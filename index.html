@@ -104,6 +104,8 @@
   .rows dt { font: 650 .7rem/1.5 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
   .rows dd { margin: 0; font-size: .92rem; }
   .rows a { display: inline-flex; align-items: center; min-height: 44px; margin-right: 14px; }
+  .rows .steps { padding: 4px 0; } .rows .steps a { min-height: 32px; text-decoration: none; font: 400 .78rem/1 var(--mono); color: var(--ink); } .rows .steps a:hover { color: var(--act); }
+  .rows .steps b { margin-right: .4rem; font-weight: 400; color: var(--act); }
   /* The strip beside the copy: walls at 0 and 1, the line in the middle, a square on each of the first zeros, and one open red square. */
   .strip { position: absolute; top: 0; bottom: 0; right: max(var(--pad), calc(50% - 560px)); width: min(32vw, 380px); pointer-events: none; font: 11px/1 var(--mono); color: var(--muted); }
   .strip i { position: absolute; }
@@ -266,6 +268,8 @@
           <a class="btn" href="#suppose">What the paper actually proved</a>
         </p>
         <dl class="rows">
+          <!-- Filled in by guide.js from the steps themselves, so the list cannot fall out of step with the climb. -->
+          <div><dt>The ten steps</dt><dd class="steps" id="steps"></dd></div>
           <div><dt>No guide</dt><dd><a href="#fly">Just let me fly</a></dd></div>
           <div><dt>Roam</dt><dd><a href="./landscape.html">The explorer</a><a href="./proof.html">The proof page</a></dd></div>
           <div><dt>Read / source</dt><dd><a href="./learn.html">The long version</a><a href="https://github.com/Alex-lop/zeta-world/blob/main/PLAN.md">The plan</a><a href="https://github.com/Alex-lop/zeta-world">GitHub</a></dd></div>
