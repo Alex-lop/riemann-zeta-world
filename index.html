@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zeta World</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: rgba(18, 21, 29, 0.88);
+      --text: #e6e8ee;
+      --muted: #9aa1b2;
+      --accent: #ffffff;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+    #scene { position: fixed; inset: 0; }
+    .panel { position: fixed; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(6px); }
+    #controls { top: 16px; left: 16px; width: 320px; max-width: calc(100vw - 32px); }
+    #controls h1 { font-size: 16px; margin: 0 0 4px; }
+    #controls p { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
+    label { display: block; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+    label b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+    input[type=range] { width: 100%; }
+    #readout { margin-top: 10px; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    #readout .zero { color: #7dffb2; }
+    #curvePanel { right: 16px; bottom: 16px; width: 300px; }
+    #curvePanel h2 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
+    #curvePanel p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    #curve { width: 100%; aspect-ratio: 1; display: block; }
+    .label { color: var(--muted); font: 11px ui-monospace, Menlo, monospace; pointer-events: none;
+      text-shadow: 0 0 3px #000; }
+    .label.crit { color: #fff; }
+    .label.zero { color: #7dffb2; }
+    .hint { color: var(--muted); font-size: 11.5px; margin-top: 10px; }
+    @media (max-width: 700px) {
+      #curvePanel { width: 180px; }
+      #curvePanel p { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div id="controls" class="panel">
+    <h1>Zeta World</h1>
+    <p>Ground: s = σ + it. Height: log(1 + |ζ(s)|). Color: the phase (angle) of ζ(s).
+      The white line is the critical line σ = ½. Green dots are zeros.</p>
+
+    <label>Window starts at t = <b id="tStartVal"></b>
+      <input id="tStart" type="range" min="0" max="70" step="0.1" value="10" />
+    </label>
+    <label>Probe on the critical line, t = <b id="probeVal"></b>
+      <input id="probe" type="range" min="0" max="1" step="0.0005" value="0.105" />
+    </label>
+    <div id="readout"></div>
+    <div class="hint">Drag to orbit · scroll to zoom · W/S to move along t</div>
+  </div>
+
+  <div id="curvePanel" class="panel">
+    <h2>ζ(½ + it) in the output plane</h2>
+    <canvas id="curve" width="560" height="560"></canvas>
+    <p>As t moves through the window, this curve passes through the origin at every zero on the critical line.</p>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
