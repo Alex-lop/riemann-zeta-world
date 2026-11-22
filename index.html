@@ -37,7 +37,9 @@
       background: rgba(255, 255, 255, 0.05); color: var(--text);
       font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; overflow-x: auto; }
     .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: 0; }
-    #controls h1 { font-size: 16px; margin: 0 0 4px; }
+    #controls h1 { font-size: 16px; margin: 0 0 2px; }
+    .prooflink { display: inline-block; margin: 0 0 8px; color: #8fd3ff; font-size: 12.5px; text-decoration: none; }
+    .prooflink:hover { text-decoration: underline; }
     #controls p { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
     label { display: block; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
     label b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -87,6 +89,7 @@
 
   <div id="controls" class="panel">
     <h1>Zeta World</h1>
+    <a class="prooflink" href="./proof.html">How the announced proof works →</a>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="zeta" aria-selected="true">ζ(s) &nbsp;zeta</button>
       <button class="tab" role="tab" data-mode="dirichlet" aria-selected="false">L(s,χ)</button>

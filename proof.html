@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proof Strategy · Zeta World</title>
+  <meta name="description" content="The strategy of the announced proof of the Riemann hypothesis, in four interactive pictures." />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #12151d;
+      --text: #e6e8ee;
+      --muted: #9aa1b2;
+      --border: rgba(255, 255, 255, 0.12);
+      --gold: #f5c542;
+      --green: #7dffb2;
+      --red: #ff6b6b;
+      --cyan: #6fd6ff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: var(--cyan); }
+    header, section, footer { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+    header { padding-top: 28px; }
+    .back { font-size: 13px; text-decoration: none; }
+    h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 8px; }
+    .lede { color: var(--muted); max-width: 760px; margin: 0 0 16px; }
+    .status { border: 1px solid var(--border); border-left: 3px solid var(--gold); background: var(--panel);
+      border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--muted); max-width: 860px; }
+    .status b { color: var(--text); }
+    nav.steps { position: sticky; top: 0; z-index: 5; background: rgba(11, 13, 18, 0.92); backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border); margin-top: 22px; }
+    nav.steps div { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+    nav.steps a { text-decoration: none; color: var(--muted); font-size: 13px; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--border); }
+    nav.steps a:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+    section { padding-top: 40px; scroll-margin-top: 48px; }
+    .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 28px; align-items: start; }
+    .num { color: var(--gold); font: 600 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
+    h2 { font-size: 21px; line-height: 1.25; margin: 4px 0 10px; }
+    .text p { margin: 0 0 10px; color: #cfd3dc; }
+    .text p.small { font-size: 13px; color: var(--muted); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+    canvas { display: block; width: 100%; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .controls label { display: block; }
+    .controls b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .controls input[type=range] { width: 100%; }
+    .check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .readout { margin-top: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); min-height: 3em; }
+    .readout .bad { color: var(--red); }
+    .readout .ok { color: var(--green); }
+    .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .sw { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metaphor { display: inline-block; font-size: 11px; color: var(--gold); border: 1px solid rgba(245, 197, 66, 0.4);
+      border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+    footer { padding-top: 40px; padding-bottom: 48px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 860px) {
+      .step { grid-template-columns: 1fr; gap: 14px; }
+      .two { grid-template-columns: 1fr; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" href="./index.html">← Zeta World explorer</a>
+    <h1>How the announced proof works, in four pictures</h1>
+    <p class="lede">If a zero of ζ sat off the critical line, the primes would show it: their count would swing too far
+      from its expected value. The announced proof caps those swings from above, using arithmetic. These pictures
+      walk through that strategy one step at a time. One hypothetical zero, which you can move, carries through
+      the steps.</p>
+    <div class="status"><b>Status.</b> On 20 November 2026 Levent Alpöge announced a proof of the Riemann hypothesis
+      and of its generalization to Dirichlet L-functions, as a formal proof in Lean. It has been machine-checked
+      by independent kernels but not yet refereed, and no human-readable write-up exists. This page follows the
+      account in <a href="https://github.com/nasqret/riemann-rev">riemann-rev</a>. The prime data in steps 2 and 3 are
+      computed here and match riemann-rev's figures. Step 4 is a metaphor, not the actual construction.</div>
+  </header>
+
+  <nav class="steps" aria-label="Steps">
+    <div>
+      <a href="#step1">1 · The mirror</a>
+      <a href="#step2">2 · The ceiling</a>
+      <a href="#step3">3 · One side, some windows</a>
+      <a href="#step4">4 · Divisibility</a>
+    </div>
+  </nav>
+
+  <section id="step1">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 1</div>
+        <h2>A zero off the line has a mirror twin</h2>
+        <p>The functional equation pairs every zero at β + iγ with one at 1 − β + iγ, its reflection across the
+          white line (the symmetry you can see in the ξ(s) view of the explorer).</p>
+        <p>So a zero left of the line forces one to the right of it. To prove the Riemann hypothesis it is
+          therefore enough to show that <b>no zero lies to the right of the line</b>, in the shaded half.</p>
+        <p class="small">Drag the red point. It is hypothetical: no zero off the line has ever been found. The green
+          points are the actual first zeros, all on the line.</p>
+      </div>
+      <div class="card">
+        <canvas id="strip" aria-label="The critical strip with the first zeros and a draggable hypothetical zero and its mirror twin"></canvas>
+        <div class="readout" id="stripReadout"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step2">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 2</div>
+        <h2>An off-line zero would break a ceiling in the primes</h2>
+        <p>The proof works with a weighted count of primes, G(x). Each zero ρ adds a wave to it, and the wave's size
+          grows like x<sup>β</sup>, where β is the zero's real part.</p>
+        <p>Divided by √x, G must stay inside a fixed band if every zero is on the line: ±0.0462. The gray curve is the
+          actual value, computed from every prime up to 10 million. It stays well inside the band.</p>
+        <p>Add the hypothetical zero, and its wave grows like x<sup>β − ½</sup>. However small it starts, it
+          eventually breaks through the band. Move β toward ½ and the breakthrough moves later, but it never goes away.</p>
+        <p class="small">Beyond 10⁷ only the hypothetical wave is drawn; the primes there are not computed on this page.</p>
+      </div>
+      <div class="card">
+        <canvas id="ceiling" aria-label="The normalized prime sum inside the band, with the wave of a hypothetical zero breaking out"></canvas>
+        <div class="legend">
+          <span><i class="sw" style="background:#c9ced8"></i>actual primes (G(x) − log 2π)/√x</span>
+          <span><i class="sw" style="background:var(--red)"></i>with the hypothetical zero</span>
+          <span><i class="sw" style="background:var(--gold)"></i>band ±0.0462 forced by RH</span>
+        </div>
+        <div class="controls">
+          <label>Real part β = <b id="betaVal"></b><input id="beta" type="range" min="0.5" max="0.95" step="0.005" /></label>
+          <label>Height γ = <b id="gammaVal"></b><input id="gamma" type="range" min="10" max="60" step="0.1" /></label>
+          <label class="check"><input id="rogueOn" type="checkbox" checked /> add the hypothetical zero</label>
+        </div>
+        <div class="readout" id="ceilingReadout"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step3">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 3</div>
+        <h2>Only the upward swings, and only on some windows</h2>
+        <p>This is the analytic heart of the proof, a "localized Landau theorem". You do not need to show the prime
+          count stays in the band everywhere. It is enough to show it never goes <b>above</b> a ceiling of about
+          √x, on infinitely many long windows from Y to Y<sup>3/2</sup>.</p>
+        <p>The reason: an off-line zero's wave swings up as well as down, and grows. Sooner or later it must push
+          above the ceiling inside one of those windows. Weights that are all positive keep the waves of different
+          zeros from cancelling each other out.</p>
+        <p>So the lower half is grayed out here, and the ceiling is a wall only over the windows.</p>
+        <p class="small">In the proof the ceiling is x<sup>½ + ε</sup> for any small ε, and the windows can be chosen
+          as far out as needed. The three windows here are only an illustration.</p>
+      </div>
+      <div class="card">
+        <canvas id="windows" aria-label="The same chart with only the upper ceiling over three windows"></canvas>
+        <div class="readout" id="windowsReadout"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="step4">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4 <span class="metaphor">metaphor</span></div>
+        <h2>The ceiling comes from divisibility, and the balance gives √x</h2>
+        <p>Where can an <i>upper</i> bound on a prime count come from? From a basic fact: a whole number that is not
+          zero and is divisible by many primes cannot be small. It is at least their product.</p>
+        <p>The proof builds special numbers out of arithmetic geometry (theta functions and a chain of "theta lifts")
+          that are divisible by many primes, and it also bounds their size from above. Squeezed between the two,
+          only so many primes can divide them. That limit turns into the ceiling of step 3.</p>
+        <p>The construction is repeated m times. One cost grows like x/m, the other like m. Their sum is smallest
+          at m = √x, and that is where the square root in the Riemann hypothesis comes from.</p>
+        <p class="small">Both pictures are schematic: they show the shape of the argument, not the actual objects.</p>
+      </div>
+      <div class="card">
+        <div class="two">
+          <div>
+            <canvas id="squeeze" aria-label="Divisibility forces the size up, an upper estimate pushes it down"></canvas>
+            <div class="controls" style="grid-template-columns:1fr">
+              <label>Primes dividing the number: k = <b id="kVal"></b><input id="k" type="range" min="1" max="15" step="1" value="6" /></label>
+            </div>
+          </div>
+          <div>
+            <canvas id="balance" aria-label="The costs x over m and m, with their minimum at m equal to the square root of x"></canvas>
+            <div class="controls" style="grid-template-columns:1fr">
+              <label>x = 10<sup><b id="lxVal"></b></sup><input id="lx" type="range" min="2" max="12" step="0.1" value="6" /></label>
+            </div>
+          </div>
+        </div>
+        <div class="readout" id="step4Readout"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Putting it together: the arithmetic of step 4 caps the upward swings (step 3); an off-line zero would break
+    that cap (step 2); so no zero lies right of the line, and by the mirror (step 1) none lies left of it.
+    Running the same argument with Dirichlet characters gives the generalized hypothesis.
+    <br /><br /><a href="./index.html">← Back to the Zeta World explorer</a>
+  </footer>
+
+  <script type="module" src="./proof.js"></script>
+</body>
+</html>

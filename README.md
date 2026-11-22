@@ -38,6 +38,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), the completed function ξ(s), Hardy's Z(t), and a zero finder.
 - `main.js`: the terrain (ζ, ξ or L(s, χ) computed per vertex in a shader, chosen with tabs and radio buttons), critical-line probe, and the critical-line curve.
 - `dirichlet.js`: Dirichlet characters, L(s, χ) via Hurwitz sums with Euler–Maclaurin, the completed Λ(s, χ), and its zeros (the L(s,χ) tab).
+- `proof.html`, `proof.js`, `proofMath.js`: a separate page that walks through the strategy of the announced proof in four interactive pictures (mirror, ceiling, one-sided windows, divisibility).
 - `primes.js`, `primesView.js`: ψ(x), the explicit formula, and the Primes tab chart (the zeros rebuilding the prime staircase).
 
 See [docs/riemann_graph_v1.md](docs/riemann_graph_v1.md) for how it works, with the math.
