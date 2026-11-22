@@ -179,19 +179,92 @@ const STEPS = [
     idea: 'Every whole number above 1 breaks into primes, and it does so in exactly one way.',
     todo: 'Type a number.',
     payoff: 'Start 360 another way, as 8 × 45, and you get the same primes: three 2s, two 3s and one 5.',
-    fig: '360 = 2<sup>3</sup> × 3<sup>2</sup> × 5' },
+    legend: [['blue', 'open', 'a prime']],
+    mount(stage, ui) {
+      const MAX = 999999999;
+      const box = el(`<div><label class="slide" style="grid-template-columns:auto 1fr">a whole number<input class="num" type="number" min="2" max="${MAX}" value="360" inputmode="numeric"></label><p class="atoms"></p><p class="readout"></p></div>`);
+      const input = box.querySelector('input'), [atoms, read] = box.querySelectorAll('p');
+      const split = () => {
+        const n = +input.value, parts = [];
+        if (!Number.isInteger(n) || n < 2 || n > MAX) { atoms.innerHTML = ''; read.textContent = 'a whole number from 2 to 999,999,999'; return; }
+        let m = n;
+        for (let d = 2; d * d <= m; d++) while (m % d === 0) { parts.push(d); m /= d; }
+        if (m > 1) parts.push(m);
+        atoms.innerHTML = parts.map(p => `<span>${p}</span>`).join('<i>×</i>');
+        const powers = [...new Set(parts)].map(p => { const k = parts.filter(q => q === p).length; return k > 1 ? `${p}<sup>${k}</sup>` : p; });
+        read.innerHTML = parts.length === 1 ? `${n.toLocaleString('en')} is a prime: one atom` : `${n.toLocaleString('en')} = ${powers.join(' × ')}`;
+      };
+      input.addEventListener('input', () => { split(); ui.done(); });
+      stage.append(box); split();
+    } },
 
   { id: 'counting', learn: 'counting', title: 'Random up close, smooth from afar',
     idea: 'Primes get rarer as numbers grow, but unevenly. Still, the number of primes up to x is roughly x / ln x.',
     todo: 'Drag along the number line.',
     payoff: 'Up to 100 there are 25 primes, and x / ln x says about 21.7. The central question is how far a sharpened estimate misses.',
-    fig: 'π(100) = 25 &nbsp;·&nbsp; 100 / ln 100 ≈ 21.7' },
+    legend: [['blue', '', 'the count of primes, one step at each'], ['inked', '', 'the smooth guess, x / ln x']],
+    mount(stage, ui) {
+      const X0 = 2, X1 = 200, TOP = 50, PRIMES = Array.from({ length: X1 - 1 }, (_, k) => k + 2).filter(isPrime);   // the axis starts at 2: ln 1 is 0
+      const box = el(`<label class="slide">2<input type="range" min="${X0}" max="${X1}" step="1" value="100" aria-label="x, how far along the number line">200</label>`);
+      const input = box.querySelector('input'), read = el('<p class="readout"></p>');
+      let px = v => v;
+      const fig = plot(stage, 'clamp(200px, 42vh, 330px)', (ctx, w, h) => {
+        const x = +input.value, L = 30, base = h - 26, py = v => base - (base - 12) * v / TOP;
+        px = v => L + (w - L - 12) * (v - X0) / (X1 - X0);
+        ctx.fillStyle = C.muted; ctx.textAlign = 'right';
+        for (let v = 10; v < TOP; v += 10) { line(ctx, L, py(v) + 0.5, w - 12, py(v) + 0.5, C.hair); ctx.fillText(v, L - 6, py(v) + 4); }
+        ctx.textAlign = 'center';
+        for (const v of [2, 50, 100, 150, 200]) ctx.fillText(v, px(v), h - 6);
+        line(ctx, L, base + 0.5, w - 12, base + 0.5, C.strong);
+        for (const p of PRIMES) line(ctx, Math.round(px(p)) + 0.5, base - (p <= x ? 9 : 4), Math.round(px(p)) + 0.5, base, p <= x ? C.blue : C.strong);   // a tick on each prime
+        ctx.strokeStyle = C.ink; ctx.beginPath();
+        for (let v = X0; v <= X1; v += 0.5) ctx.lineTo(px(v), py(v / Math.log(v)));
+        ctx.stroke();
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px(X0), py(0));
+        let count = 0;
+        for (const p of PRIMES) { if (p > x) break; ctx.lineTo(px(p), py(count)); ctx.lineTo(px(p), py(++count)); }
+        ctx.lineTo(px(x), py(count)); ctx.stroke(); ctx.lineWidth = 1;
+        line(ctx, px(x) + 0.5, 12, px(x) + 0.5, base, C.strong);
+        ctx.textAlign = x > 150 ? 'right' : 'left'; const dx = x > 150 ? -8 : 8;
+        ctx.fillStyle = C.blue; ctx.fillText(`${count} primes up to ${x}`, px(x) + dx, py(count) - 8);
+        read.textContent = `up to ${x}: ${count} primes, and x / ln x ≈ ${(x / Math.log(x)).toFixed(1)}`;
+      });
+      const move = () => { fig.paint(); ui.done(); };
+      input.addEventListener('input', move);
+      // Dragging on the picture moves x too.
+      fig.canvas.addEventListener('pointermove', e => { if (!e.buttons) return; const r = fig.canvas.getBoundingClientRect(), a = px(X0), b = px(X1); input.value = Math.round(X0 + (X1 - X0) * clamp((e.clientX - r.left - a) / (b - a), 0, 1)); move(); });
+      stage.append(box, read);
+    } },
 
   { id: 'zeta', learn: 'complex', title: 'One function knows every prime',
     idea: 'ζ(s) adds 1/n<sup>s</sup> over every whole number n. Each term is an arrow, and ζ adds arrows that turn at different speeds.',
     todo: 'Drag the height t.',
     payoff: 'At t = 0 nothing has turned, and the total is π<sup>2</sup>/6 ≈ 1.6449. Euler showed the same total is a product with one factor for each prime.',
-    fig: 'ζ(2) = 1 + 1/4 + 1/9 + ⋯ = π<sup>2</sup>/6' },
+    mount(stage, ui) {
+      // The real part stays at 2. On the critical line this sum does not settle, so it is not drawn there.
+      const box = el('<label class="slide" style="text-transform:none">t = 0<input type="range" min="0" max="40" step="0.05" value="0" aria-label="t, the height of s">40</label>');
+      const input = box.querySelector('input'), read = el('<p class="readout"></p>');
+      const fig = plot(stage, 'clamp(230px, 56vh, 460px)', (ctx, w, h) => {
+        const t = +input.value, unit = Math.min((w - 40) / 2, (h - 36) / 1.5), ox = (w - 1.75 * unit) / 2, oy = h / 2, N = 300;
+        line(ctx, 8, oy + 0.5, w - 8, oy + 0.5, C.hair); line(ctx, ox + 0.5, 8, ox + 0.5, h - 8, C.hair);
+        ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText('0', ox - 8, oy + 14); ctx.fillText('1', ox + unit, oy + 14); line(ctx, ox + unit + 0.5, oy - 3, ox + unit + 0.5, oy + 4, C.strong);
+        ctx.textAlign = 'left'; ctx.fillText('s = 2 + it: the real part stays at 2', 12, 18);
+        let re = 0, im = 0;
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ox, oy);
+        for (let n = 1; n < N; n++) { const a = t * Math.log(n); re += Math.cos(a) / (n * n); im -= Math.sin(a) / (n * n); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length 1/n², turned by −t ln n
+        ctx.stroke(); ctx.lineWidth = 1;
+        ctx.fillStyle = C.ink;
+        for (let n = 1, x = 0, y = 0; n <= 8; n++) { const a = t * Math.log(n); x += Math.cos(a) / (n * n); y -= Math.sin(a) / (n * n); ctx.fillRect(ox + x * unit - 2.5, oy - y * unit - 2.5, 5, 5); }   // where the first eight arrows end
+        // What is left of the sum after N terms: N^(1-s) / (s - 1) + N^(-s) / 2. With it, this is zeta(2 + it) to about 1e-7.
+        const a = t * Math.log(N), d = 1 + t * t;
+        re += (Math.cos(a) - t * Math.sin(a)) / (N * d) + Math.cos(a) / (2 * N * N); im += (-Math.sin(a) - t * Math.cos(a)) / (N * d) - Math.sin(a) / (2 * N * N);
+        ctx.strokeStyle = C.ink; ctx.strokeRect(Math.round(ox + re * unit) - 6.5, Math.round(oy - im * unit) - 6.5, 13, 13);
+        ctx.textAlign = 'left'; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 8);
+        read.textContent = `s = 2 + ${t.toFixed(2)}i: the arrows add up to ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i`;
+      });
+      input.addEventListener('input', () => { fig.paint(); ui.done(); });
+      stage.append(box, read);
+    } },
 
   { id: 'landscape', learn: 'landscape', world: true, title: 'A landscape with wells',
     idea: 'Draw the size of ζ(s) as the height of land. A zero is a point where the land touches the floor.',
@@ -244,9 +317,9 @@ const STEPS = [
     } },
 
   { id: 'suppose', learn: 'strip', world: true, lab: true, title: 'Suppose one zero were off the line',
-    idea: 'Completed with its gamma factor, ζ’s land is a mirror image of itself across the line. So a zero off the line needs a twin.',
+    idea: 'Completed with its gamma factor, ζ’s land mirrors itself across the line. So a nontrivial zero off the line needs a twin.',
     todo: 'Drag the red zero off the line.',
-    payoff: 'A zero left of the line forces one to its right. So it is enough to show that no zero lies to the right.',
+    payoff: 'A nontrivial zero left of the line forces one to its right. So it is enough to show that no zero lies to the right.',
     legend: [['red', 'open', HYPOTHETICAL]],
     more: `<details><summary>What the land, the walls and the stripes are</summary>
       The land here is the size of ξ(s) = ½ s(s − 1) π<sup>−s/2</sup> Γ(s/2) ζ(s), divided at each height by its size on the line. It has the same nontrivial zeros as ζ.
@@ -280,10 +353,10 @@ const STEPS = [
     } },
 
   { id: 'band', learn: 'y2026-shape', world: true, lab: true, title: 'The primes would show it',
-    idea: 'If every zero is on the line, a centred count of prime powers, divided by √x, stays inside the gold band.',
+    idea: 'If every nontrivial zero is on the line, a weighted, centred count of prime powers, over √x, stays in the gold band.',
     todo: 'Add the hypothetical zero’s wave.',
-    payoff: 'Its wave grows faster than √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
-    legend: [['gold', 'band', 'the band, if every zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
+    payoff: 'Its wave outgrows √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
+    legend: [['gold', 'band', 'the band, if every nontrivial zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
     more: FULL,
     mount(stage, ui) {
       const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
@@ -349,7 +422,7 @@ const STEPS = [
     idea: 'A nonzero whole number divisible by many primes is at least their product.',
     todo: 'Toggle primes into the number.',
     payoff: 'As the guides describe the announced proof: arithmetic caps the upward swings; an off-line zero would break the cap; so no zero lies to the right of the line, and by the mirror no nontrivial zero lies to the left.',
-    more: `<details><summary>Where groups come in</summary>One step of the argument averages over the characters of a finite abelian group. <a href="./learn.html#characters">The long version teaches them in six steps.</a></details>
+    more: `<details><summary>Where groups come in</summary>As the guides describe it, one step of the argument averages over the characters of a finite abelian group. <a href="./learn.html#characters">The long version teaches them in six steps.</a></details>
       <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>` + FULL,
     mount(stage, ui) {
       // Both pictures are schematic, as on proof.html: seven of these primes fit under the bound and the eighth does not.
