@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zeta World: the Riemann hypothesis in 3D</title>
-<meta name="description" content="A 3D landscape of the Riemann zeta function. See the zeros that the Riemann hypothesis is about.">
-<meta property="og:title" content="Zeta World: the Riemann hypothesis in 3D">
-<meta property="og:description" content="A 3D landscape of the Riemann zeta function. See the zeros that the Riemann hypothesis is about.">
+<title>Zeta World: the Riemann zeta function, explained and visualized</title>
+<meta name="description" content="An explainer of the Riemann zeta function in 3D, and a visual walk through the announced proof of the Riemann hypothesis.">
+<meta property="og:title" content="Zeta World: the Riemann zeta function, explained and visualized">
+<meta property="og:description" content="An explainer of the Riemann zeta function in 3D, and a visual walk through the announced proof of the Riemann hypothesis.">
 <meta property="og:type" content="website">
 <!-- Link previews need absolute URLs. Everything else on this site must stay relative (./x): it is served under /zeta-world/. -->
 <meta property="og:url" content="https://alex-lop.github.io/zeta-world/">
@@ -22,7 +22,7 @@
 </script>
 <style>
   html, body { height: 100%; margin: 0; background: #05060f; color: #ebe9f5; font: 16px/1.5 system-ui, sans-serif; }
-  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; border: 0; }
   main {
     position: fixed; left: 0; bottom: 0; box-sizing: border-box; width: min(34rem, 100%); padding: 1.25rem 1.5rem;
     background: rgb(5 6 15 / .85); border-top-right-radius: .75rem; pointer-events: none;
@@ -31,44 +31,40 @@
   p, details { margin: .5rem 0 0; }
   .tag { color: #f5c542; }
   .small { font-size: .85rem; color: #b9b6cc; }
-  #count { position: fixed; top: 0; right: 0; margin: 1rem 1.5rem; color: #f5c542; font-size: 1.5rem; font-variant-numeric: tabular-nums; pointer-events: none; }
   a, summary { color: #8fd3ff; pointer-events: auto; }
   summary { cursor: pointer; }
-  @media (max-width: 30rem) { h1 { font-size: 2rem; } main { font-size: .9rem; padding: 1rem; border-radius: 0; } #proof-status { display: none; } #count { font-size: 1rem; margin: .5rem .75rem; } }   /* phones: the status would leave no room for the scene */
+  .ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-top: .8rem; }
+  .ways a { display: flex; flex-direction: column; gap: .15rem; padding: .55rem .65rem; border-radius: .5rem; text-decoration: none;
+    color: #ebe9f5; background: rgb(255 255 255 / .05); border: 1px solid rgb(143 211 255 / .35); }
+  .ways a:hover, .ways a:focus-visible { border-color: #f5c542; background: rgb(245 197 66 / .08); }
+  .ways b { color: #f5c542; font-size: 1rem; }
+  .ways span { font-size: .78rem; line-height: 1.35; color: #b9b6cc; }
+  @media (max-width: 30rem) { h1 { font-size: 2rem; } main { font-size: .9rem; padding: 1rem; border-radius: 0; } #proof-status { display: none; } .ways { grid-template-columns: minmax(0, 1fr); gap: .35rem; } .ways a { flex-direction: row; align-items: baseline; gap: .5rem; padding: .4rem .6rem; } }   /* phones: the status would leave no room for the scene */
   @media (max-height: 30rem) and (orientation: landscape) { .long { display: none; } }
 </style>
 </head>
 <body>
-<canvas id="world" role="img" aria-label="3D terrain showing the size of the Riemann zeta function. One hundred pins mark its first nontrivial zeros, all on the gold line where the real part is one half."></canvas>
-<!-- The roll-call counter. It sits outside the text panel so it stays readable on a shared screen. -->
-<p id="count"></p>
+<!-- The explorer's live zeta landscape, in its background mode: no panels, a slow orbit. -->
+<iframe id="world" src="./landscape.html?bg=1" title="3D landscape of the Riemann zeta function over the critical strip: height is the size of ζ(s), color its phase. Green dots mark nontrivial zeros, all on the white line where the real part is one half."></iframe>
 <main>
   <h1>Zeta World</h1>
-  <p class="tag">The Riemann hypothesis, as a place you can look at.</p>
-  <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each pin stands on a zero, where the land drops to height zero. These are the first 100 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
-  <p class="small"><a href="./learn.html">New to this? Climb from the primes to the proof in 28 short steps →</a></p>
+  <p class="tag">The Riemann zeta function, explained, and the announced proof of the Riemann hypothesis, visualized.</p>
+  <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each green dot is a zero, where the land drops to height zero. The Riemann hypothesis says that all of them, infinitely many, sit on the white line.</p>
+  <nav class="ways" aria-label="Three ways in">
+    <a href="./learn.html"><b>Learn</b><span>From the primes to the proof in 28 short steps</span></a>
+    <a href="./landscape.html"><b>Explore</b><span>ζ(s) and ξ(s), L(s,χ), and the zeros building the primes</span></a>
+    <a href="./proof.html"><b>The proof</b><span>The announced proof's strategy, in four pictures</span></a>
+  </nav>
   <!-- The one place this page says anything about proof. Keep it dated and attributed. -->
   <p class="long small" id="proof-status">Status, 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement of the Lean and Mathlib communities</a>. Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. This page shows what the statement says. It proves nothing.</p>
   <!-- The script replaces this once the scene is running, so it also covers no JavaScript and a blocked CDN. -->
-  <p class="small" id="status">Loading the 3D view. It needs JavaScript and WebGL.</p>
+  <p class="small" id="status">Drag to orbit, scroll or pinch to zoom. The 3D view needs WebGL.</p>
   <details class="small">
     <summary>How to read it</summary>
-    Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237. Color is the phase of ζ(s): cyan where it is positive, red where it is negative. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The mound at the south end is the pole at s = 1, where ζ is infinite.
+    The ground is the complex plane s = σ + it, for σ from −1 to 2 and t from 10 to 50. Height is log(1 + |ζ(s)|), so zeros touch the ground. Color is the phase (angle) of ζ(s): going once around a zero passes through every color. Faint bands mark each doubling of |ζ|. The white line is σ = ½, the middle of the critical strip (σ from 0 to 1, between the gray lines), which holds every nontrivial zero. Open the explorer to move along t, switch to ξ(s), or probe the critical line.
   </details>
-  <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
   <p class="small">An early build for Sundai Hack 150. <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
 </main>
 
-<script type="module">
-// The scene is a module so the guide can load the same world. Bump ?v= when its exports change: Pages caches for ten minutes.
-import { startWorld } from './guide/scene.js?v=1';
-
-const panel = document.querySelector('main'), status = document.getElementById('status');
-try {
-  const world = startWorld(document.getElementById('world'), { panel, count: document.getElementById('count') });
-  panel.querySelector('details').addEventListener('toggle', world.resize);   // the panel's height just changed
-  status.textContent = 'Drag to orbit, scroll or pinch to zoom.';
-} catch (e) { status.textContent = 'This browser could not start WebGL, so the 3D view is off.'; throw e; }
-</script>
 </body>
 </html>

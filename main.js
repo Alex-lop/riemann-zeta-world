@@ -50,6 +50,24 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(0, 0.5, 0);
 
+// Background mode (landscape.html?bg=1, used behind the front page): no panels or labels, a slow orbit.
+const BG = new URLSearchParams(location.search).has('bg');
+if (BG) {
+  document.documentElement.classList.add('bg');
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.35;
+  camera.position.set(17, 9, 15);
+}
+// In background mode, shift the picture clear of the front page's text panel: right of it on wide
+// screens, above it on narrow ones (where the panel sits along the bottom).
+function applyBgOffset() {
+  if (!BG) return;
+  const W = innerWidth, H = innerHeight;
+  if (W > 760) camera.setViewOffset(W, H, -W * 0.17, 0, W, H);
+  else camera.setViewOffset(W, H, 0, H * 0.24, W, H);
+}
+applyBgOffset();
+
 // ---- The terrain: zeta is evaluated per vertex on the GPU ----------------------
 const vertexShader = /* glsl */ `
   uniform float uW[${MAX_TERMS}];
@@ -260,8 +278,8 @@ function lineAlongT(sigma, color, opacity, y = 0.01) {
   return new THREE.Line(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
 }
 
-const zeroGeom = new THREE.SphereGeometry(0.09, 16, 12);
-const zeroMat = new THREE.MeshBasicMaterial({ color: 0x7dffb2 });
+const zeroGeom = new THREE.SphereGeometry(BG ? 0.2 : 0.09, 16, 12);
+const zeroMat = new THREE.MeshBasicMaterial({ color: 0x7dffb2, depthTest: !BG }); // background mode: never hidden by ridges
 const trivialMat = new THREE.MeshBasicMaterial({ color: 0x9aa1b2 });
 
 // ---- The L(s, chi) tab state -------------------------------------------------------
@@ -283,6 +301,12 @@ function rebuildOverlay() {
 
   for (let t = Math.ceil(tStart / 5) * 5; t <= tStart + WINDOW; t += 5) {
     overlay.add(label(`t = ${t}`, '', new THREE.Vector3(xOf(SIGMA_MIN) - 0.9, 0, zOf(t))));
+  }
+
+  // background mode: the critical line drawn along the surface, so it stays visible from any angle
+  if (BG && curve.length) {
+    const pts = curve.map((p) => new THREE.Vector3(xOf(0.5), yOf(Math.hypot(p.re, p.im)) + 0.04, zOf(p.t)));
+    overlay.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff })));
   }
 
   const dir = mode === 'dirichlet';
@@ -617,6 +641,7 @@ addEventListener('keydown', (e) => {
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+  applyBgOffset();
   renderer.setSize(innerWidth, innerHeight);
   labelRenderer.setSize(innerWidth, innerHeight);
 });
