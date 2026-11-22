@@ -45,7 +45,7 @@ function lnAbsGamma(x, y) {
 }
 console.assert(Math.abs(lnAbsGamma(0.5, 0) - 0.5 * Math.log(Math.PI)) < 1e-7 && Math.abs(lnAbsGamma(1, 1) - 0.5 * Math.log(Math.PI / Math.sinh(Math.PI))) < 1e-7, 'gamma self-check failed');
 
-// Starts the world on a canvas and returns { camera, controls, zeros, resize, run, tick, probe, pick, light }, plus
+// Starts the world on a canvas and returns { camera, controls, zeros, resize, run, tick, probe, pick, light, roll, burst, plane }, plus
 // { mirror, ghost, project, holding, onGhost } for the second half of the guide. Throws where WebGL is unavailable.
 // panel: the text panel a portrait layout frames the scene above. Call resize() when its height changes.
 // count: the element the roll call writes to. quiet: a function that says whether motion is paused.
@@ -112,37 +112,62 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     for (let i = 0, v = j * W; i < W; i++, v++) nearest[v] = Math.hypot(pos.getX(v), dt);
   }
   terrain.setAttribute('aZero', new THREE.BufferAttribute(nearest, 1));
-  const look = new THREE.ShaderMaterial({
-    vertexColors: true, side: THREE.DoubleSide, transparent: true, forceSinglePass: true,
-    uniforms: { uTime: flow, uFog: { value: new THREE.Vector2(FOG0, FOG1) }, uFront: { value: 1e9 }, uGold: { value: new THREE.Color(GOLD) }, uInk: { value: new THREE.Color(INK) }, uGround: { value: new THREE.Color(GROUND) }, uDim: { value: new THREE.Color(DIM) } },
+  const fogSpan = { value: new THREE.Vector2(FOG0, FOG1) };
+  // surface({}) is the strip's material. surface({ WIDE: 1 }, ...) is the whole plane's (below): its heights and colours are
+  // mixed between two lands in the vertex shader, it fades in on request, and it thins away toward its borders.
+  const surface = (defines = {}, more = {}) => new THREE.ShaderMaterial({
+    defines, vertexColors: !defines.WIDE, side: THREE.DoubleSide, transparent: true, forceSinglePass: true,
+    uniforms: { ...more, uTime: flow, uFog: fogSpan, uFront: { value: 1e9 }, uGold: { value: new THREE.Color(GOLD) }, uInk: { value: new THREE.Color(INK) }, uGround: { value: new THREE.Color(GROUND) }, uDim: { value: new THREE.Color(DIM) } },
     vertexShader: `
       attribute float aZero; varying vec3 vColor, vPos; varying float vZero, vDepth;
+      #ifdef WIDE
+        attribute float aY1, aShade0, aShade1; uniform float uMix; uniform vec3 uWell, uHigh;
+      #endif
       void main() {
-        vColor = color; vPos = position; vZero = aZero;
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vPos = position; vZero = aZero;
+        #ifdef WIDE
+          vPos.y = mix(position.y, aY1, uMix);
+          vColor = mix(uWell, uHigh, sqrt(max(vPos.y, 0.0) / ${RISE.toFixed(1)})) * mix(aShade0, aShade1, uMix);
+        #else
+          vColor = color;
+        #endif
+        vec4 mv = modelViewMatrix * vec4(vPos, 1.0);
         vDepth = -mv.z; gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
       uniform float uTime, uFront; uniform vec2 uFog; uniform vec3 uGold, uInk, uGround, uDim;
       varying vec3 vColor, vPos; varying float vZero, vDepth;
+      #ifdef WIDE
+        uniform float uShow; uniform vec4 uBox;
+      #endif
       void main() {
         vec3 col = vColor;
         float fog = smoothstep(uFog.x, uFog.y, vDepth);
         float g = vPos.y * 8.0;
         col += vec3(0.1, 0.14, 0.3) * (1.0 - smoothstep(0.0, 1.3, abs(fract(g - 0.5) - 0.5) / max(fwidth(g), 1e-5))) * (0.35 + 0.65 * vPos.y);
-        col += vec3(0.16, 0.2, 0.42) * smoothstep(${(WIDTH * (SIG1 - SIG0) / 2 - 0.09).toFixed(3)}, ${(WIDTH * (SIG1 - SIG0) / 2).toFixed(3)}, abs(vPos.x));   // a lit rim on the land's two long edges
+        #ifndef WIDE
+          col += vec3(0.16, 0.2, 0.42) * smoothstep(${(WIDTH * (SIG1 - SIG0) / 2 - 0.09).toFixed(3)}, ${(WIDTH * (SIG1 - SIG0) / 2).toFixed(3)}, abs(vPos.x));   // a lit rim on the strip's two long edges
+        #endif
         col += uInk * 0.16 * pow(0.5 + 0.5 * sin(vZero * 6.5 - uTime * 1.5), 8.0) * exp(-vZero * 0.9) * step(uFront - 1.5, vPos.z);
         float d = abs(vPos.x), aa = fwidth(vPos.x) + 1e-5;
         float lane = 1.0 - smoothstep(0.17 - aa, 0.17 + aa, d), core = 1.0 - smoothstep(0.045 - aa, 0.045 + aa, d);
         float run = fract(vPos.z * 0.2 + uTime * 0.5), pulse = smoothstep(0.0, 0.14, run) * pow(1.0 - run, 5.0) * 1.6;   // one every 5 along the line, 2.5 a second northward
         col = mix(col, uDim, 0.8 * (1.0 - smoothstep(0.02 - aa, 0.02 + aa, abs(d - ${(WIDTH / 2).toFixed(1)}))));
+        float az = fwidth(vPos.z) + 1e-5, axis = max(0.03, 0.7 * az);          // the real number line, never thinner than a pixel
+        col = mix(col, uDim, 0.85 * (1.0 - smoothstep(axis - az, axis + az, abs(vPos.z - ${zOf(0).toFixed(2)}))));
         col = mix(col, uGround * 0.45, lane * 0.85);
         col += uGold * (exp(-d * d * 9.0) * (0.1 + 0.5 * pulse) + 0.3 * lane * smoothstep(0.1, 0.15, d));
         col = mix(col, mix(uGold, vec3(1.0, 0.95, 0.8), 0.25 + 0.75 * pulse), core);
-        gl_FragColor = vec4(col, max(1.0 - fog, 0.9 * core * (1.0 - smoothstep(uFog.y, uFog.y * 3.0, vDepth))));
+        float alpha = max(1.0 - fog, 0.9 * core * (1.0 - smoothstep(uFog.y, uFog.y * 3.0, vDepth)));
+        #ifdef WIDE
+          alpha *= uShow * smoothstep(0.0, 7.0, min(min(vPos.x - uBox.x, uBox.y - vPos.x), min(vPos.z - uBox.z, uBox.w - vPos.z)));
+          if (alpha < 0.02) discard;
+        #endif
+        gl_FragColor = vec4(col, alpha);
         #include <colorspace_fragment>
       }`,
   });
+  const look = surface();
   scene.add(new THREE.Mesh(terrain, look)).children.at(-1).renderOrder = -1;   // first of what is see-through, so the sky is behind it and the rest in front
 
   // Pin heads sit above everything (the land never exceeds RISE) so no ridge hides them; the stalk's foot is the zero.
@@ -331,6 +356,67 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     if (hadSpot !== !!spot) paint(); else if (cut) paint(Math.min(cut[0], was[0]), Math.max(cut[1], was[1]));
   };
 
+  // ---- the whole plane: the country the strip is a lane of ---------------------
+  // A second, wider land around the strip's south end, Re(s) from WS0 to WS1 and Im(s) from -WT to WT, shown on request: plane(on).
+  // It has what the strip leaves out: the real number line, the trivial zeros at -2, -4, -6 and -8, and the mirror images of the
+  // first nontrivial zeros below that line. Left of the line zeta comes from the functional equation, zeta(s) = chi(s) zeta(1 - s)
+  // with chi(s) = 2^s pi^(s-1) sin(pi s / 2) Gamma(1 - s), and below the real line from |zeta(conj s)| = |zeta(s)|. So zetaGrid is
+  // asked for one quarter of it only: right of the line and above the real line. Like the strip it is two lands, zeta's and the
+  // completed function's (mirror(), above), and it follows the strip's morph between them. The completed land is its own mirror
+  // image left to right as well as top to bottom, and has no trivial zeros: the gamma factor's poles cancel them.
+  const WS0 = -9.5, WS1 = 4.5, WT = 48, WD = 1 / 16, WDT = 1 / 8, TRIVIAL = [-2, -4, -6, -8];
+  let wide = null, show = 0, showTo = 0;
+  function buildWide() {
+    const ns = (WS1 - WS0) / WD, nt = 2 * WT / WDT, qs = (0.5 - WS0) / WD, q = zetaGrid(0.5, 1 - WS0, qs, 0, WT, WT / WDT);
+    const at = (sg, t) => Math.round(Math.abs(t) / WDT) * (qs + 1) + Math.round(Math.abs(sg - 0.5) / WD);   // the quarter's vertex for s, or for its mirror image
+    const lnChi = (sg, t) => sg * Math.LN2 + (sg - 1) * Math.log(Math.PI) + 0.5 * Math.log(Math.sin(Math.PI * sg / 2) ** 2 + Math.sinh(Math.PI * t / 2) ** 2) + lnAbsGamma(1 - sg, t);
+    const zeta = (sg, t) => {
+      const k = at(sg, t), m = Math.hypot(q.re[k], q.im[k]) * (sg < 0.5 ? Math.exp(lnChi(sg, Math.abs(t))) : 1);
+      return Number.isNaN(m) ? 0.5 : m;                                       // at s = 0 the formula is 0 times infinity, and zeta(0) = -1/2
+    };
+    const xi = (sg, t) => {                                                   // the completed function over its size on the line, as in bakeMirror
+      const k = at(sg, t), m = Math.hypot(q.re[k], q.im[k]), s1 = 0.5 + Math.abs(sg - 0.5), on = lnF(0.5, Math.abs(t));
+      return isFinite(m) ? m * Math.exp(lnF(s1, Math.abs(t)) - on) : Math.exp(-s1 / 2 * Math.log(Math.PI) + lnAbsGamma(s1 / 2 + 1, 0) - on);
+    };
+    // Self-check: zeta(-1) = -1/12, the trivial zeros are zeros, and left of the line the functional equation agrees with zetaGrid.
+    const direct = zetaGrid(0.25, 0.25, 1, 20, 20, 1);
+    console.assert(Math.abs(zeta(-1, 0) - 1 / 12) < 1e-6 && TRIVIAL.every(n => zeta(n, 0) < 1e-9) && Math.abs(zeta(0.25, 20) - Math.hypot(direct.re[0], direct.im[0])) < 1e-4
+      && Math.abs(xi(-3, 7) - xi(4, -7)) < 1e-12, 'whole-plane self-check failed');
+
+    const geo = new THREE.PlaneGeometry(WIDTH * (WS1 - WS0), LEN * 2 * WT, ns, nt).rotateX(-Math.PI / 2).translate(xOf((WS0 + WS1) / 2), 0, zOf(0));
+    const P = geo.attributes.position, n = P.count, y0 = new Float32Array(n), y1 = new Float32Array(n), ring = new Float32Array(n);
+    for (let j = 0, v = 0; j <= nt; j++) for (let i = 0; i <= ns; i++, v++) { y0[v] = squash(zeta(WS0 + WD * i, WT - WDT * j)); y1[v] = squash(xi(WS0 + WD * i, WT - WDT * j)); }
+    const shadeOf = y => {
+      for (let v = 0; v < n; v++) P.setY(v, y[v]);
+      geo.computeVertexNormals();
+      const N = geo.attributes.normal;
+      return Float32Array.from(y, (_, v) => SHADE0 + (1 - SHADE0) * Math.max(0, N.getX(v) * SUN[0] + N.getY(v) * SUN[1] + N.getZ(v) * SUN[2]));
+    };
+    const shade1 = shadeOf(y1), shade0 = shadeOf(y0);                         // zeta's last, so the mesh is left holding zeta's heights
+    const near = ZEROS.filter(g => g < WT + 6).flatMap(g => [zOf(g), zOf(-g)]);   // rings spread from the nontrivial zeros, above and below
+    for (let v = 0; v < n; v++) { let d = 1e9; for (const z of near) d = Math.min(d, Math.abs(P.getZ(v) - z)); ring[v] = Math.hypot(P.getX(v), d); }
+    for (const [name, array] of [['aY1', y1], ['aShade0', shade0], ['aShade1', shade1], ['aZero', ring]]) geo.setAttribute(name, new THREE.BufferAttribute(array, 1));
+    const material = surface({ WIDE: 1 }, { uShow: { value: 0 }, uMix: { value: 0 }, uWell: { value: well }, uHigh: { value: high }, uBox: { value: new THREE.Vector4(xOf(WS0), xOf(WS1), zOf(WT), zOf(-WT)) } });
+    material.uniforms.uFront.value = -1e9;                                    // its rings are always on
+    material.polygonOffset = true; material.polygonOffsetFactor = 1; material.polygonOffsetUnits = 4;   // where the strip lies on it, the strip wins
+    const mesh = new THREE.Mesh(geo, material); mesh.renderOrder = -1.5;
+
+    // A lit pin with a star on each zero the strip does not have, and a few words. The trivial zeros are zeta's alone.
+    const trivial = new THREE.Group(), marks = new THREE.Group().add(trivial);
+    const stand = (to, x, z, text) => {
+      const m = new THREE.Group().add(new THREE.Mesh(pin, glow), new THREE.Mesh(head, glow), new THREE.Sprite(star));
+      m.children[2].position.y = PIN; m.children[2].scale.setScalar(2.2); m.position.set(x, 0, z); to.add(m);
+      if (text) to.add(word(text, 1.5)).children.at(-1).position.set(x, PIN + 1.3, z);
+    };
+    for (const k of TRIVIAL) stand(trivial, xOf(k), zOf(0), String(k).replace('-', '−'));
+    for (const g of ZEROS) if (g < WT - 5) stand(marks, 0, zOf(-g));
+    marks.add(word('the real number line', 1.3, '#9aa0aa')).children.at(-1).position.set(xOf(3), 1.4, zOf(0));
+    const group = new THREE.Group().add(mesh, marks); group.visible = false; scene.add(group);
+    return { group, marks, trivial, material };
+  }
+  // plane(true) shows the whole plane, building it the first time, and plane(false) puts it away.
+  world.plane = on => { if (on) wide ??= buildWide(); showTo = on ? 1 : 0; };
+
   // Where a point of the s-plane, y above the floor, is on screen, in CSS pixels.
   const p3 = new THREE.Vector3();
   world.project = (sigma, t, y = 0) => { p3.set(xOf(sigma), y, zOf(t)).project(camera); return [(p3.x + 1) / 2 * innerWidth, (1 - p3.y) / 2 * innerHeight]; };
@@ -416,7 +502,12 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     h.position.set(0, lift, zOf(t)); h.userData.born = markers[k].userData.kick = flow.value; h.visible = true;
   };
 
-  const start = performance.now();
+  let start = performance.now();
+  // roll() calls the roll again from the south end: step 4 and the open world do, each time they are opened.
+  world.roll = () => {
+    world.light(); start = performance.now(); lit = passed = 0; look.uniforms.uFront.value = 1e9;
+    for (const [stalk, knob, halo] of markers.map(m => m.children)) { stalk.material = knob.material = dim; halo.material = unlit; }
+  };
   let lift = PIN, last = start;                      // lift: how tall the pins are now, PIN, or RAIL while the survey is up
   const frame = now => {
     if (!quiet()) flow.value += Math.min(now - last, 100) / 1000;             // a tab that was away does not jump ahead
@@ -431,12 +522,17 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
       land.mix = quiet() || Math.abs(land.to - land.mix) < 0.003 ? land.to : land.mix + (land.to - land.mix) * 0.06;
       paint();
     }
+    if (wide) {                                                               // the whole plane fades in and out, and follows the strip's morph
+      if (show !== showTo) show = quiet() || Math.abs(showTo - show) < 0.004 ? showTo : show + (showTo - show) * 0.07;
+      wide.material.uniforms.uShow.value = show; wide.material.uniforms.uMix.value = land.mix;
+      wide.group.visible = show > 0; wide.marks.visible = show > 0.5; wide.trivial.visible = land.mix < 0.5;
+    }
     east.children[0].quaternion.copy(camera.quaternion); west.children[0].quaternion.copy(camera.quaternion);   // the open squares face the viewer
     world.tick?.(now);                                                        // a page's own camera moves go here, before update() re-aims the camera
     controls.update();
     const k = Math.max(camera.position.y / FOG_H, 1);                         // fog thins as the camera climbs: low down the road vanishes into it,
     scene.fog.near = FOG0 * k; scene.fog.far = FOG1 * k;                      // from high up the whole road is clear
-    look.uniforms.uFog.value.set(scene.fog.near, scene.fog.far);
+    fogSpan.value.set(scene.fog.near, scene.fog.far);
     markers.forEach((m, i) => m.children[2].scale.setScalar(1.25 + 0.2 * Math.sin(flow.value * 2.3 + i * 1.7) + 2.2 * Math.exp(-4 * (flow.value - (m.userData.kick ?? -9)))));   // the stars twinkle, and flare when passed
     for (const h of hoops) if (h.visible) {
       const u = (flow.value - h.userData.born) / 1.2;
