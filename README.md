@@ -30,5 +30,6 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), the completed function ξ(s), Hardy's Z(t), and a zero finder.
 - `main.js`: the terrain (ζ or ξ computed per vertex in a shader, switched by tabs), critical-line probe, and the critical-line curve.
+- `primes.js`, `primesView.js`: ψ(x), the explicit formula, and the Primes tab chart (the zeros rebuilding the prime staircase).
 
 See [docs/riemann_graph_v1.md](docs/riemann_graph_v1.md) for how it works, with the math.

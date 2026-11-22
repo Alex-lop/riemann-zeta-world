@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { zeta, xiScaled, termsFor, borweinWeights, criticalZeros } from './zeta.js';
+import { createPrimesView } from './primesView.js';
 
 // ---- Layout: how math units map to world units --------------------------------
 const SIGMA_MIN = -1, SIGMA_MAX = 2; // real part of s shown
@@ -14,7 +15,8 @@ const H = 1.6;                        // world units per unit of log(1 + |zeta|)
 const LOG_CAP = 3.0;                  // clip the pole at s = 1
 
 let tStart = 10;
-let mode = location.hash === '#xi' ? 'xi' : 'zeta'; // which function the terrain shows
+const MODES = ['zeta', 'xi', 'primes'];
+let mode = MODES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'zeta'; // the open tab
 const tCenter = () => tStart + WINDOW / 2;
 const xOf = (sigma) => (sigma - 0.5) * SX;
 const zOf = (t) => -(t - tCenter()) * SZ;
@@ -360,13 +362,29 @@ function drawGraph(tNow, current) {
   ctx.beginPath(); ctx.arc(px(tNow), py(current), 9, 0, 2 * Math.PI); ctx.fill();
 }
 
-// ---- Tabs: zeta or xi -------------------------------------------------------------
+// ---- Tabs: zeta, xi or primes ------------------------------------------------------
+const primesView = createPrimesView({
+  canvas: document.getElementById('primesView'),
+  nInput: document.getElementById('nZeros'),
+  nVal: document.getElementById('nZerosVal'),
+  playBtn: document.getElementById('play'),
+  xMaxInput: document.getElementById('xMax'),
+  errInput: document.getElementById('errView'),
+  readout: document.getElementById('primesReadout'),
+});
+
 function setMode(m) {
   mode = m;
-  uniforms.uMode.value = m === 'xi' ? 1 : 0;
   for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
-  for (const el of document.querySelectorAll('[data-for]')) el.hidden = el.dataset.for !== m;
-  history.replaceState(null, '', m === 'xi' ? '#xi' : location.pathname + location.search);
+  // data-for lists the tabs (space-separated) an element belongs to
+  for (const el of document.querySelectorAll('[data-for]')) el.hidden = !el.dataset.for.split(' ').includes(m);
+  history.replaceState(null, '', m === 'zeta' ? location.pathname + location.search : `#${m}`);
+  if (m === 'primes') {
+    primesView.show();
+    return;
+  }
+  primesView.hide();
+  uniforms.uMode.value = m === 'xi' ? 1 : 0;
   setWindow(tStart);
 }
 for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => setMode(b.dataset.mode));
@@ -374,6 +392,7 @@ for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', (
 tStartInput.addEventListener('input', () => setWindow(Number(tStartInput.value)));
 probeInput.addEventListener('input', updateProbe);
 addEventListener('keydown', (e) => {
+  if (mode === 'primes') return;
   if (e.key === 'w' || e.key === 'W') setWindow(tStart + 0.5);
   if (e.key === 's' || e.key === 'S') setWindow(tStart - 0.5);
 });
@@ -386,6 +405,7 @@ addEventListener('resize', () => {
 
 setMode(mode);
 renderer.setAnimationLoop(() => {
+  if (mode === 'primes') return; // the 3D scene is hidden
   controls.update();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);

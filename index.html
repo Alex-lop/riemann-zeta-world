@@ -44,6 +44,14 @@
     input[type=range] { width: 100%; }
     #readout { margin-top: 10px; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
     #readout .zero { color: #7dffb2; }
+    #primesView { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    .btn { margin-top: 10px; width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08); color: var(--text); font: 600 12.5px system-ui, sans-serif; cursor: pointer; }
+    .btn:hover { background: rgba(255, 255, 255, 0.14); }
+    select { margin-left: 4px; background: #1a1e28; color: var(--text); border: 1px solid var(--border);
+      border-radius: 5px; padding: 2px 4px; font: inherit; }
+    label.check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .mono { margin: 10px 0; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 4.5em; }
     #curvePanel { right: 16px; bottom: 16px; width: 300px; }
     #curvePanel h2 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
     #curvePanel p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
@@ -53,6 +61,9 @@
     .label.crit { color: #fff; }
     .label.zero { color: #7dffb2; }
     .hint { color: var(--muted); font-size: 11.5px; margin-top: 10px; }
+    @media (max-width: 760px) {
+      #controls:has(.tab[data-mode="primes"][aria-selected="true"]) { max-height: calc(45vh - 24px); }
+    }
     @media (max-width: 700px) {
       #curvePanel { width: 180px; }
       #curvePanel p { display: none; }
@@ -60,13 +71,15 @@
   </style>
 </head>
 <body>
-  <div id="scene"></div>
+  <div id="scene" data-for="zeta xi"></div>
+  <canvas id="primesView" data-for="primes" hidden></canvas>
 
   <div id="controls" class="panel">
     <h1>Zeta World</h1>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="zeta" aria-selected="true">ζ(s) &nbsp;zeta</button>
       <button class="tab" role="tab" data-mode="xi" aria-selected="false">ξ(s) &nbsp;xi</button>
+      <button class="tab" role="tab" data-mode="primes" aria-selected="false">Primes</button>
     </div>
 
     <p data-for="zeta">Ground: s = σ + it. Height: log(1 + |ζ(s)|). Color: the phase (angle) of ζ(s).
@@ -100,17 +113,60 @@
         In fact ξ̃(½ + it) = −Z(t), Hardy's function.</p>
     </details>
 
-    <label>Window starts at t = <b id="tStartVal"></b>
+    <p data-for="primes" hidden>The zeros rebuild the primes. The white staircase is the exact prime count ψ(x).
+      The gold curve is Riemann's explicit formula using only the first N zeros. Add zeros and watch it lock onto the steps.</p>
+
+    <div data-for="primes" hidden>
+      <label>Zeros used: N = <b id="nZerosVal">10</b>
+        <input id="nZeros" type="range" min="0" max="200" step="1" value="10" />
+      </label>
+      <button id="play" class="btn">▶ Add zeros one by one</button>
+      <label>x from 1.5 to
+        <select id="xMax">
+          <option value="30">30</option>
+          <option value="100" selected>100</option>
+          <option value="300">300</option>
+          <option value="1000">1000</option>
+        </select>
+      </label>
+      <label class="check"><input id="errView" type="checkbox" /> Show the error ψ(x) − x</label>
+      <div id="primesReadout" class="mono"></div>
+
+      <details open>
+        <summary>How the zeros build the primes</summary>
+        <p><b>Counting primes.</b> ψ(x) adds log p for every prime p ≤ x, and again for p², p³, …
+          It carries the same information as the plain count π(x) but has a cleaner formula.
+          It jumps at every prime (the green ticks).</p>
+        <span class="math">ψ(x) = x − Σ<sub>ρ</sub> x<sup>ρ</sup>/ρ − log 2π − ½ log(1 − x<sup>−2</sup>)</span>
+        <ul>
+          <li><b>x</b> comes from the pole of ζ at s = 1, the spike in the ζ tab. It is the overall trend.</li>
+          <li><b>Each zero</b> ρ = ½ + iγ, together with its conjugate, adds a wave
+            −2·Re(x<sup>ρ</sup>/ρ). It oscillates like cos(γ log x) and has size about 2√x/γ.
+            The strip below the chart shows the newest one.</li>
+          <li><b>log 2π</b> comes from the value of ζ′/ζ at 0, and the last term
+            from the trivial zeros −2, −4, ….</li>
+        </ul>
+        <p>With no zeros the formula is a smooth curve. Each zero adds a higher-frequency wave, and
+          together they carve out the steps, much as a Fourier series builds a square wave
+          (including the small overshoot at each step).</p>
+        <p><b>Why the Riemann Hypothesis matters.</b> A zero with real part β contributes a wave of size
+          about x<sup>β</sup>. On the critical line β = ½, so every wave grows like √x. Turn on the error view:
+          ψ(x) − x stays on the scale of √x. A single zero off the line would make the error grow faster,
+          and the primes would be less evenly spread.</p>
+      </details>
+    </div>
+
+    <label data-for="zeta xi">Window starts at t = <b id="tStartVal"></b>
       <input id="tStart" type="range" min="0" max="70" step="0.1" value="10" />
     </label>
-    <label>Probe on the critical line, t = <b id="probeVal"></b>
+    <label data-for="zeta xi">Probe on the critical line, t = <b id="probeVal"></b>
       <input id="probe" type="range" min="0" max="1" step="0.0005" value="0.105" />
     </label>
-    <div id="readout"></div>
-    <div class="hint">Drag to orbit · scroll to zoom · W/S to move along t</div>
+    <div id="readout" data-for="zeta xi"></div>
+    <div class="hint" data-for="zeta xi">Drag to orbit · scroll to zoom · W/S to move along t</div>
   </div>
 
-  <div id="curvePanel" class="panel">
+  <div id="curvePanel" class="panel" data-for="zeta xi">
     <h2 data-for="zeta">ζ(½ + it) in the output plane</h2>
     <h2 data-for="xi" hidden>ξ̃(½ + it) against t</h2>
     <canvas id="curve" width="560" height="560"></canvas>

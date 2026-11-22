@@ -261,6 +261,45 @@ The output-plane panel becomes a graph of $`\tilde\xi(\tfrac12 + it)`$ against $
 
 ---
 
+## 6. The Primes tab ([`primes.js`](../primes.js), [`primesView.js`](../primesView.js))
+
+This tab hides the 3D scene and draws a 2D chart. It compares Chebyshev's function
+
+```math
+\psi(x) = \sum_{p^k \le x} \log p
+```
+
+with Riemann's explicit formula (von Mangoldt's form), truncated to the first $`N`$ zeros:
+
+```math
+\psi(x) = x - \sum_{\rho} \frac{x^{\rho}}{\rho} - \log 2\pi - \tfrac12 \log\!\left(1 - x^{-2}\right).
+```
+
+Pairing each zero $`\rho = \tfrac12 + i\gamma`$ with its conjugate gives a real wave (`zeroWave`):
+
+```math
+-\left(\frac{x^{\rho}}{\rho} + \frac{x^{\bar\rho}}{\bar\rho}\right)
+= -\frac{2\sqrt{x}\,\bigl(\tfrac12\cos(\gamma\ln x) + \gamma\sin(\gamma\ln x)\bigr)}{\tfrac14 + \gamma^2}.
+```
+
+- **Exact side:** `primePowerJumps` sieves up to 1000 and records each prime power with its jump $`\log p`$. `psiExact` looks up $`\psi(x)`$ by binary search.
+- **Zeros:** the first 200 zeros come from `criticalZeros(400)`. They are computed the first time the tab opens, which takes about 0.2 s. The 100th and 200th match the published values 236.5242296658 and 396.3818542226.
+- **Chart:** it shows the exact staircase, the formula with $`N`$ zeros, and the smooth main term. Below it, a strip shows the wave added by zero $`N`$. The error view plots $`\psi(x) - x`$ with $`\pm\sqrt x`$ for scale. That is a scale, not a bound: on $`[2, 1000]`$ the largest value of $`|\psi(x) - x|/\sqrt x`$ is 1.33, at $`x = 3`$.
+- **Controls:** a slider for $`N`$ (0–200), a play button that adds zeros over time, the range $`x \le 30, 100, 300, 1000`$, and a hover readout.
+
+The truncated sum converges only conditionally. Near each step it overshoots and rings, like a Fourier series at a jump. That ringing is real behavior of the formula, not a rendering bug.
+
+**Checks:**
+
+| $`x`$ | exact $`\psi(x)`$ | 10 zeros | 50 zeros | 200 zeros |
+| --- | --- | --- | --- | --- |
+| 10.5 | 7.832 | 7.702 | 7.975 | 7.847 |
+| 30.5 | 28.476 | 29.248 | 28.304 | 28.629 |
+| 100.5 | 94.045 | 95.776 | 94.905 | 93.910 |
+| 500.5 | 501.652 | 501.127 | 502.040 | 500.463 |
+
+---
+
 ## Known limits
 
 - **Height.** The view stops at $`t = 110`$ because of the shader's precision and its 128-term limit. Going higher would need either the Riemann–Siegel formula in the shader, or computing on the CPU and uploading the result as a texture.
