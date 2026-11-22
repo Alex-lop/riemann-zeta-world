@@ -181,9 +181,8 @@ function ride(stage, ui, each, pace = 11) {
       // The readout: where you are, zeta's value there (the arrow on the dial), and the zero you are on or coming to.
       const [re, im] = w.probe(T).map(v => Math.abs(v) < 0.005 ? 0 : v), on = w.zeros.findIndex(g => Math.abs(g - T) < 0.004), next = w.zeros[passed];   // so a zero reads 0.00 + 0.00i, never −0.00
       const text = `${passed} of 100 zeros passed<small>s = ½ + ${T.toFixed(2)}i<br>ζ(s) ≈ ${re.toFixed(2).replace('-', '−')} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(2)}i<br>`
-        + (on >= 0 ? `on zero ${on + 1}: size 0.00` : `size ${Math.hypot(re, im).toFixed(2)}` + (next ? ` · zero ${passed + 1} in ${(next - T).toFixed(2)}` : '')) + '</small>';
+        + (on >= 0 ? `on zero ${on + 1}: size 0.00` : `size ${Math.hypot(re, im).toFixed(2)}` + (next ? ` · zero ${passed + 1} in ${(next - T).toFixed(2)}` : '')) + (each(T, passed) || '') + '</small>';   // a step may add a line of its own
       if (text !== said) $('passed').innerHTML = said = text;
-      each(T, passed);
     };
     stop = () => {
       w.tick = null; w.probe(); w.light(); w.controls.enableZoom = true; w.controls.removeEventListener('start', free); canvas.style.cursor = '';
@@ -457,10 +456,13 @@ const STEPS = [
     todo: 'Ride north again.',
     payoff: 'No prime was given to the sum. The small bumps at 4, 8 and 9 are prime powers. Zeros and primes encode each other.',
     legend: [['blue', '', 'the sum of the waves, over the numbers 1.5 to 50 (log scale)']],
+    more: `<details><summary>How the score is counted</summary>
+      Take the whole numbers from 2 to 50 and rank them by how high the sum is at each. The score is how many of the 15 highest are primes.
+      There are 15 primes up to 50, so 15 of 15 means the sum has picked out every one of them, and nothing else.</details>`,
     mount(stage, ui) {
       // The axis starts at 1.5: at x = 1, ln x is 0 and the sum is infinite. It is spaced evenly in ln x, so every spike is as wide as the next.
-      const X0 = 1.5, X1 = 50, SPAN = Math.log(X1 / X0), PRIMES = Array.from({ length: X1 - 1 }, (_, k) => k + 2).filter(isPrime);
-      let T = 0, named = false;                              // named: far enough north that every prime up to 50 has its spike
+      const X0 = 1.5, X1 = 50, SPAN = Math.log(X1 / X0), WHOLE = Array.from({ length: X1 - 1 }, (_, k) => k + 2), PRIMES = WHOLE.filter(isPrime);
+      let T = 0, named = false, score = '';                  // named: far enough north that every prime up to 50 has its spike
       const fig = plot(stage, 'clamp(104px, 22vh, 190px)', (ctx, w, h) => {
         const px = x => 8 + (w - 16) * Math.log(x / X0) / SPAN, base = h - 22, unit = (base - 20) / 1.4, zero = base - 0.3 * unit, py = v => zero - v * unit;   // room for dips below zero
         line(ctx, 0, zero + 0.5, w, zero + 0.5, C.hair);
@@ -476,11 +478,16 @@ const STEPS = [
         ctx.stroke();
         // The names come from a sieve, separately from the sum, and only once the spikes are standing.
         if (named) { ctx.fillStyle = C.blue; let last = -99; for (const p of PRIMES) { const x = px(p); if (x - last >= 15) { ctx.fillText(p, x, py(spikes(p, T, ZEROS)) - 5); last = x; } } }
-        ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(`${ZEROS.filter(g => g < T).length} waves added`, w - 8, 14);
+        // The score: of the whole numbers up to 50, the ones where the sum is highest, as many as there are primes. How many of them are primes?
+        const waves = ZEROS.filter(g => g < T).length, high = new Map(WHOLE.map(n => [n, spikes(n, T, ZEROS)]));
+        const hits = [...WHOLE].sort((a, b) => high.get(b) - high.get(a)).slice(0, PRIMES.length).filter(isPrime).length, all = hits === PRIMES.length;
+        score = waves ? `<br><span class="blue">of the ${PRIMES.length} tallest, ${hits} are primes</span>` : '';
+        ctx.fillStyle = waves && all ? C.blue : C.muted; ctx.textAlign = 'right';
+        ctx.fillText(`${waves} waves added` + (!waves ? '' : w < 420 ? ` · ${hits}/${PRIMES.length} primes` : ` · of the ${PRIMES.length} tallest, ${hits} are primes`), w - 8, 14);
       });
       return ride(stage, ui, t => {
-        if (Math.abs(t - T) < 0.02) return;
-        T = t; named ||= T >= 150; fig.paint();
+        if (Math.abs(t - T) >= 0.02) { T = t; named ||= T >= 150; fig.paint(); }
+        return score;
       });
     } },
 
