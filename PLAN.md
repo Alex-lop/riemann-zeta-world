@@ -12,7 +12,7 @@ Zeta landscapes and "zeros build the primes" sliders have been made many times, 
 - **What it shows:** the land from Re(s) = -0.5 to 1.5 for heights 0 to 237, coloured by phase, the gold line Re(s) = 1/2 with pins on the first 100 zeros, a roll-call counter, and the dated status line.
 - **What it lacks:** anything about primes, the walls and slabs, and a guided path.
 - **Build steps 1 and 2 are done and on `main`** (22 Nov, mid-afternoon). The work left starts at step 0, the card, and step 3, the primes panel.
-- **A second page is in an open pull request** (PR #2, from a teammate): `landscape.html`, a free explorer. See "Two pages" below.
+- **A second page is live:** `landscape.html`, a teammate's free explorer (PR #2, merged 22 Nov at 2:10 PM). See "Two pages" below.
 
 How the README's five steps map onto this plan:
 
@@ -30,7 +30,7 @@ One change to the README's wording: step 2 says "computed in a shader". This pla
 
 ## Two pages
 
-PR #2 was open and unmerged when this was written. It adds `landscape.html` with `main.js` and `zeta.js`.
+PR #2 merged on 22 Nov at 2:10 PM, after this section was written. It added `landscape.html` with `main.js` and `zeta.js`. The teammate has since opened PR #6, with more explorer tabs and a `proof.html`.
 
 | | `index.html` (on `main`) | `landscape.html` (PR #2) |
 |---|---|---|
@@ -42,7 +42,7 @@ PR #2 was open and unmerged when this was written. It adds `landscape.html` with
 Recommended split, for you and your teammate to confirm:
 
 - **`index.html` is the story.** It is what gets demoed: the road, the primes panel, the walls and the tour. Build steps 1 to 6 below are about this page.
-- **`landscape.html` is the explorer.** The tour's last stop links to it for anyone who wants to roam, and the story can point at its ξ tab when it says the zeros mirror across the road. That link is a 404 on the live site until PR #2 is on `main`, and no build step below merges it. The PR also adds one line to `index.html` (a link to the explorer) and merged cleanly onto `main` when checked at 1 PM.
+- **`landscape.html` is the explorer.** The tour's last stop links to it for anyone who wants to roam, and the story can point at its ξ tab when it says the zeros mirror across the road. That link works now that PR #2 is on `main`. The PR also adds one line to `index.html` (a link to the explorer) and merged cleanly onto `main` when checked at 1 PM.
 - **Why the story page still needs its own long terrain.** The primes panel needs all 100 zeros, which means a road to height 237. The explorer stops at 110. With only the zeros below height 100, 11 of the 15 primes up to 50 get a spike. It takes the zeros up to about 150 to get all 15.
 - **Already built in the explorer, so off this plan's list:** the symmetric height (its ξ tab), zeros found live by root-finding, and half of the "Thread the needle" idea (its probe and curve panel show zeta along Re(s) = 1/2).
 - **Shared later, not today.** The explorer has no sentence about proof and finds its own zeros, so nothing in it has to change tonight. If it shows the status later, move `STATUS` into a `status.js` that both pages import.

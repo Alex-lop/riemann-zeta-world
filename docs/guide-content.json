@@ -1,0 +1,1492 @@
+{
+ "about": "Checked text for the Zeta World learning path, and sourced research on the 2026 results. Written and checked on 22 Nov 2026. Each stage was written by one agent and checked by a second; 'changes' is what the checker fixed and 'unresolved' is what it could not verify. Research facts carry a 'basis': primary, third-party-exposition, press or unconfirmed.",
+ "stages": [
+  {
+   "key": "numbers",
+   "title": "Numbers",
+   "blurb": "Whole numbers, primes, and the question of how primes are spread out.",
+   "steps": [
+    {
+     "id": "primes",
+     "title": "Primes are the atoms",
+     "idea": "Every whole number above 1 breaks into primes, and it does so in exactly one way.",
+     "body": [
+      "A whole number above 1 is called <strong>prime</strong> when the only whole numbers that divide it evenly are 1 and itself. The first few primes are 2, 3, 5, 7, 11 and 13. The number 6 is not prime, because 6 = 2 × 3.",
+      "Any whole number above 1 that is not prime can be split into two smaller factors. Each of those is either prime or can be split again. The splitting has to stop, because the pieces keep getting smaller. What remains is a list of primes that multiply back to the original number.",
+      "The <strong>fundamental theorem of arithmetic</strong> says more: every whole number above 1 is a product of primes in exactly one way, apart from the order in which the primes are written. A prime counts as a product with a single factor. Whatever route the splitting takes, the same primes come out, each the same number of times. This is also why 1 is not counted as a prime: extra factors of 1 would spoil the uniqueness."
+     ],
+     "example": "360 = 36 × 10 = (2 × 2 × 3 × 3) × (2 × 5) = 2<sup>3</sup> × 3<sup>2</sup> × 5. Starting another way, 360 = 8 × 45 = (2 × 2 × 2) × (3 × 3 × 5), gives the same primes: three 2s, two 3s and one 5.",
+     "try_it": "What are the prime factors of 84? — 84 = 2 × 2 × 3 × 7."
+    },
+    {
+     "id": "endless",
+     "title": "The primes never run out",
+     "idea": "Multiply any finite list of primes and add 1: the result has a prime factor that is not on the list.",
+     "body": [
+      "A finite list of primes, however long, is never complete. Euclid proved this in his <em>Elements</em>, and the argument fits in a few lines.",
+      "Take any finite list of primes. Multiply them all together and add 1. Call the result N. Dividing N by any prime on the list leaves a remainder of 1, because the product divides evenly and the extra 1 is left over. So no prime on the list divides N.",
+      "But N is a whole number above 1, so by the previous step it is a product of primes. Each of those primes divides N, so none of them is on the list. The list was missing at least one prime.",
+      "Note what the argument does not say. N itself need not be prime. It only has a prime factor that is new. Since this works for every finite list, there are infinitely many primes."
+     ],
+     "example": "2 × 3 × 5 × 7 + 1 = 211, which is prime. But 2 × 3 × 5 × 7 × 11 × 13 + 1 = 30031 = 59 × 509, which is not prime. Its factors 59 and 509 are primes that were missing from the list.",
+     "try_it": "Start with the list 2, 3. Which new prime does the argument produce? — 2 × 3 + 1 = 7.",
+     "sources": [
+      {
+       "label": "Euclid's theorem (Elements, Book IX, Proposition 20), Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/Euclid%27s_theorem"
+      }
+     ]
+    },
+    {
+     "id": "irregular",
+     "title": "Primes look random up close",
+     "idea": "Primes get rarer as numbers grow, but unevenly, and no simple formula is known that gives the next one.",
+     "body": [
+      "There are 25 primes below 100. No simple formula is known that takes one prime and returns the next. The next prime is found by testing the numbers that follow, one after another.",
+      "Primes become rarer further along. The first hundred numbers contain 25 primes, the stretch from 101 to 200 contains 21, and the stretch from 901 to 1000 contains only 14.",
+      "The thinning is uneven, though. Some primes sit just two apart, such as 11 and 13, or 101 and 103. Pairs like these are called <strong>twin primes</strong>. Elsewhere there are longer stretches with no primes at all: after 113 the next prime is 127, a gap of 14. Small gaps and large gaps are mixed together with no visible pattern.",
+      "So the primes are fixed, exact numbers with nothing random about them, yet a short stretch of them looks as if it were scattered by chance. The next step moves back to see whether order appears at a larger scale."
+     ],
+     "example": "The primes between 100 and 130 are 101, 103, 107, 109, 113 and 127. The gaps between neighbors are 2, 4, 2, 4 and then 14. Two pairs of twin primes are followed by thirteen numbers in a row with no prime.",
+     "try_it": "What is the next prime after 89? — 97, since 91 = 7 × 13, 93 = 3 × 31 and 95 = 5 × 19."
+    },
+    {
+     "id": "counting",
+     "title": "Counting primes",
+     "idea": "The number of primes up to x is roughly x / ln x; the central question is how far a sharpened estimate misses.",
+     "body": [
+      "Write π(x) for the number of primes up to x. Here π is only a name for this count, not the circle number π ≈ 3.14159. The graph of π(x) is a staircase: flat between primes, with one step up at each prime.",
+      "Around 1792 or 1793, as a teenager, Gauss studied tables of primes and guessed that near a large number x about one number in ln x is prime. That puts π(x) near x / ln x. Here ln x is the <strong>natural logarithm</strong>: the power to which e ≈ 2.718 must be raised to give x. It grows by about 2.3 each time x gains a digit.",
+      "Up to 1,000: 168 primes, estimate 145. Up to 1,000,000: 78,498 primes, estimate 72,382. Up to 1,000,000,000: 50,847,534 primes, estimate 48,254,942.",
+      "The estimate misses by 23, then 6,116, then about 2.6 million. As a share of the true count the miss shrinks: 14%, 8%, 5%. A sharper form of Gauss's guess misses by only 10, 130 and 1,701, and the rest of this path asks how large its error is."
+     ],
+     "example": "For x = 100: ln 100 ≈ 4.605, so x / ln x ≈ 100 / 4.605 ≈ 21.7. The true count is π(100) = 25. The estimate is low by about 3.",
+     "formula": "π(x) ≈ x / ln x",
+     "try_it": "What is π(10)? — 4, because the primes up to 10 are 2, 3, 5 and 7.",
+     "sources": [
+      {
+       "label": "Prime number theorem, history section (Gauss's recollection of 1792 or 1793), Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/Prime_number_theorem"
+      }
+     ]
+    },
+    {
+     "id": "clock",
+     "title": "Clock arithmetic",
+     "idea": "Arithmetic can be done with remainders alone, and remainders sort the primes into classes.",
+     "body": [
+      "On a 12-hour clock, 5 hours after 9 o'clock is 2 o'clock. The clock keeps only the remainder of 14 after dividing by 12. Arithmetic that keeps only remainders is called <strong>modular arithmetic</strong>. The remainder of a after dividing by n is written a mod n, so 14 mod 12 = 2.",
+      "The last digit of a whole number is that number mod 10. The useful fact is that remainders can be taken early: to find a sum or a product mod n, it is enough to know each of the numbers mod n. The last digit of 17 × 28 depends only on 7 × 8 = 56, so it is 6.",
+      "Remainders also sort the primes. Dividing by 4 leaves 0, 1, 2 or 3. A number that leaves 0 or 2 is even, and the only even prime is 2. So every prime except 2 leaves 1 or 3. For example 5, 13 and 17 leave 1, while 3, 7 and 11 leave 3. This sorting of primes by remainder returns in the algebra stage."
+     ],
+     "example": "7 × 8 = 56, and 56 mod 10 = 6. With larger numbers that end in the same digits: 17 × 28 = 476, which also ends in 6. Mod 4, the prime 13 leaves 1 (13 = 12 + 1) and the prime 11 leaves 3 (11 = 8 + 3).",
+     "try_it": "What is 29 mod 4? — 1, since 29 = 28 + 1."
+    }
+   ],
+   "changes": [
+    "counting, body last paragraph: replaced \"The rest of this path is about one question: how large that error is\" with a sentence pointing at a sharper form of Gauss's guess (misses of 10, 130 and 1,701, which are the logarithmic-integral errors at 10^3, 10^6, 10^9, recomputed with mpmath). Reason: the error of x / ln x itself is known (about x / (ln x)^2) and is not what the Riemann hypothesis concerns; the hypothesis is about the error of the sharper estimate. The sharper estimate is deliberately not named, so no later term is used early.",
+    "counting, idea: reworded the second half to \"the central question is how far a sharpened estimate misses\" (23 words) for the same reason.",
+    "counting, body paragraph 1: \"the circle number 3.14159\" changed to \"the circle number π ≈ 3.14159\", since 3.14159 is a truncation and not the number itself; sentence shortened at the same time.",
+    "counting, body: three small trims to stay within the 180-word limit after the fix above (\"Drawn as a graph, π(x) is\" to \"The graph of π(x) is\"; \"the number e ≈ 2.718\" to \"e ≈ 2.718\"; \"For x = 1,000:\" to \"Up to 1,000:\" in the three table lines). No facts changed. Body is now 180 whitespace-separated tokens, 177 words not counting bare symbols.",
+    "primes: removed the \"formula\" field (360 = 2^3 × 3^2 × 5). It repeated the end of the example word for word and the step is about unique factorization, not about that formula, so it broke the \"only when the step is about that formula\" rule.",
+    "No other changes. Recomputed and confirmed with python (sympy, mpmath): 360 and 84 factorizations; 211 prime; 30031 = 59 × 509; 25, 21 and 14 primes in 1-100, 101-200, 901-1000; primes 101 to 127 and the gaps 2, 4, 2, 4, 14; thirteen prime-free numbers 114 to 126; next prime after 89 is 97 with 91, 93, 95 factored as stated; π(10^3), π(10^6), π(10^9) and the rounded x / ln x values 145, 72,382, 48,254,942; misses 23, 6,116, 2,592,592 and shares 13.8%, 7.8%, 5.1%; ln 10 ≈ 2.303; 100 / ln 100 ≈ 21.7; π(10) = 4; 14 mod 12, 17 × 28 = 476, 29 mod 4, and the mod 4 classes of 5, 13, 17, 3, 7, 11.",
+    "Both source URLs were opened (HTTP 200) and contain the cited facts: Euclid's Elements Book IX Proposition 20; Gauss considering the question at age 15 or 16 in 1792 or 1793 by his own 1849 recollection."
+   ],
+   "unresolved": [
+    "counting now ends by pointing at an unnamed \"sharper form of Gauss's guess\" (the logarithmic integral). I could not see the text of the later stages, so whoever checks Stage 3 (waves, statement) should confirm that the error discussed there is the error of that sharper estimate and not of x / ln x, and that the sharper estimate is defined there before it is used by name.",
+    "counting: the 1792 or 1793 date for Gauss rests solely on his own recollection in an 1849 letter, as the source label says. The body states it without that qualifier; left as written because the label carries it and adding it would lengthen the step.",
+    "irregular: \"No simple formula is known\" depends on the word \"simple\" (exact but impractical prime formulas exist). Left as written since it is true with that qualifier.",
+    "irregular: \"25 primes\" in the first hundred numbers is stated in both paragraph 1 and paragraph 2. Correct but repeated; left as written under the smallest-change rule."
+   ]
+  },
+  {
+   "key": "zeta",
+   "title": "The zeta function",
+   "blurb": "One function that knows every prime.",
+   "steps": [
+    {
+     "id": "sums",
+     "title": "Endless sums can settle",
+     "idea": "Some endless sums settle on a finite total; ζ(s) is the total of 1/n<sup>s</sup> over all positive whole numbers n, for s above 1.",
+     "body": [
+      "An endless sum can have a finite total. Start with 1, add 1/2, then 1/4, each term half the one before. The running total goes 1, 1.5, 1.75, 1.875. It gets as close to 2 as you like and never passes it. The sum is said to <em>converge</em> to 2.",
+      "Shrinking terms are not enough. The sum 1 + 1/2 + 1/3 + 1/4 + ⋯ grows without bound, though slowly: it takes 12,367 terms to pass 10. Such a sum is said to <em>diverge</em>.",
+      "The sum 1 + 1/4 + 1/9 + 1/16 + ⋯ uses the squares, and it converges. Finding its exact total was known as the Basel problem. Leonhard Euler solved it in 1734: the total is π<sup>2</sup>/6, about 1.645.",
+      "The last two sums share a pattern. Pick a number s and add 1/n<sup>s</sup> for n = 1, 2, 3, and so on. For every s greater than 1 this sum converges, and its total is written ζ(s), the <em>zeta function</em>. So ζ(2) = π<sup>2</sup>/6, while at s = 1 the sum diverges."
+     ],
+     "formula": "ζ(s) = 1 + 1/2<sup>s</sup> + 1/3<sup>s</sup> + 1/4<sup>s</sup> + ⋯   (s > 1)",
+     "example": "For s = 2, the first 10 terms add to 1.5498 and the first 1,000 terms add to 1.6439. The full total is π<sup>2</sup>/6 = 1.6449.",
+     "try_it": "In 1 + 1/2 + 1/3 + ⋯, the terms 1/3 + 1/4 add to more than 1/2. Do 1/5 + 1/6 + 1/7 + 1/8 also? — Yes: each of the four terms is at least 1/8, and three of them are larger.",
+     "sources": [
+      {
+       "label": "Basel problem: posed 1650, solved by Euler in 1734, total π²/6",
+       "url": "https://en.wikipedia.org/wiki/Basel_problem"
+      }
+     ]
+    },
+    {
+     "id": "euler-product",
+     "title": "A sum that is a product",
+     "idea": "Euler showed that ζ(s), a sum over all positive whole numbers, equals a product with one factor for each prime.",
+     "body": [
+      "In 1737 Euler found a second way to write ζ(s): as a product with one factor for each prime p. The factor is 1/(1 − p<sup>−s</sup>), where p<sup>−s</sup> means 1/p<sup>s</sup>.",
+      "The reason starts with a fact about sums. Whenever x is between −1 and 1, the sum 1 + x + x<sup>2</sup> + x<sup>3</sup> + ⋯ equals 1/(1 − x). This is called a <em>geometric series</em>; with x = 1/2 it is the sum to 2 from the last step. So the factor for the prime 2 is 1 + 1/2<sup>s</sup> + 1/4<sup>s</sup> + 1/8<sup>s</sup> + ⋯, and likewise for 3, 5, 7 and every other prime.",
+      "Now multiply the factors together. Each term of the result takes one term from each factor, and their product is 1/n<sup>s</sup> for some whole number n. Every positive whole number is a product of primes in exactly one way, so every n turns up exactly once. For s greater than 1 this can be made rigorous, and the result is the sum that defines ζ(s).",
+      "This is the bridge. One side adds over all positive whole numbers; the other multiplies over the primes alone."
+     ],
+     "formula": "ζ(s) = ∏<sub>p prime</sub> 1 / (1 − p<sup>−s</sup>)   (s > 1)",
+     "example": "For s = 2 the factors for 2, 3, 5, 7 are 4/3, 9/8, 25/24, 49/48. Their product is 1.5951. Using every prime below 30 gives 1.6331. All primes together give π<sup>2</sup>/6 = 1.6449.",
+     "try_it": "Which choices from the factors produce the term 1/12<sup>s</sup>? — 1/4<sup>s</sup> from the factor for 2, 1/3<sup>s</sup> from the factor for 3, and 1 from every other factor.",
+     "sources": [
+      {
+       "label": "Euler Archive, paper E72 (Variae observationes circa series infinitas): written 1737, printed 1744",
+       "url": "https://scholarlycommons.pacific.edu/euler-works/72/"
+      },
+      {
+       "label": "Riemann zeta function: Euler's product formula, 1737",
+       "url": "https://en.wikipedia.org/wiki/Riemann_zeta_function"
+      }
+     ]
+    },
+    {
+     "id": "complex",
+     "title": "Numbers with two parts",
+     "idea": "With a complex number s = σ + it, each term n<sup>−s</sup> is an arrow, and ζ adds arrows that turn at different speeds.",
+     "body": [
+      "A <em>complex number</em> has two parts: s = σ + it. Here σ and t are ordinary numbers, and i is a new number whose square is −1. The number σ is called the real part of s and t the imaginary part. Each complex number is a point in a plane: σ steps across, t steps up.",
+      "A complex number is also an arrow from the point 0 to its own point, with a length and an angle. Adding complex numbers places their arrows tip to tail.",
+      "When s is complex, the term n<sup>−s</sup> is an arrow of length n<sup>−σ</sup>, turned through an angle of −t ln n radians, where ln n is the natural logarithm of n. So σ sets the lengths and t sets the directions.",
+      "ζ(s) adds these arrows tip to tail. As t grows, the arrow for n turns at the steady rate ln n, so larger n spin faster and the arrow for 1 stays still. The lengths add up to ζ(σ), so the chain of arrows still converges whenever σ is greater than 1."
+     ],
+     "formula": "n<sup>−s</sup> = arrow of length n<sup>−σ</sup> at angle −t ln n",
+     "example": "Take s = 1 + i and n = 2. The length is 2<sup>−1</sup> = 0.5. The angle is −ln 2 = −0.693 radians, about 39.7° clockwise. The arrow ends at the point 0.385 − 0.319i.",
+     "try_it": "At t = 0, which way do all the arrows point? — Along the positive real direction; nothing has turned, so the total is the ordinary ζ(σ).",
+     "in_the_world": "Each point of the terrain's floor is one complex number s. The color there shows the angle of the arrow ζ(s)."
+    },
+    {
+     "id": "continuation",
+     "title": "Past the edge of the sum",
+     "idea": "The sum only works for real part above 1, but ζ has exactly one analytic extension to the whole plane except s = 1.",
+     "body": [
+      "The sum for ζ(s) converges only when the real part of s is above 1. The function itself reaches much further.",
+      "A smaller case shows how. The sum 1 + x + x<sup>2</sup> + ⋯ converges only for x between −1 and 1, yet 1/(1 − x) makes sense for every x except 1 and agrees with the sum wherever the sum converges. In 1859 Bernhard Riemann showed that ζ extends the same way. Among <em>analytic</em> functions, those with a slope in the complex sense at every point, exactly one is defined on the whole plane except s = 1 and agrees with the sum. It is called the <em>analytic continuation</em> of ζ.",
+      "One concrete route: the alternating sum 1 − 2<sup>−s</sup> + 3<sup>−s</sup> − 4<sup>−s</sup> + ⋯ converges for real part above 0 and equals (1 − 2<sup>1−s</sup>) ζ(s). Dividing gives ζ(s) wherever that factor is not zero.",
+      "At s = 1 the factor is zero while the alternating sum is ln 2, so ζ grows without bound. Near s = 1, ζ(s) is close to 1/(s − 1). Such a point is called a <em>pole</em>."
+     ],
+     "formula": "1 − 2<sup>−s</sup> + 3<sup>−s</sup> − 4<sup>−s</sup> + ⋯ = (1 − 2<sup>1−s</sup>) ζ(s)",
+     "example": "At s = 1/2 the alternating sum 1 − 1/√2 + 1/√3 − ⋯ equals 0.6049, and the factor 1 − √2 equals −0.4142. Dividing gives ζ(1/2) = −1.4604, although the original sum diverges there.",
+     "try_it": "What does 1/(1 − x) give at x = 3? — −1/2, even though 1 + 3 + 9 + ⋯ grows without bound.",
+     "in_the_world": "The mound at the south end marks the pole at s = 1. The true height there has no top; the scene squashes heights so that it fits.",
+     "sources": [
+      {
+       "label": "Riemann's 1859 paper, On the Number of Primes Less Than a Given Magnitude",
+       "url": "https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude"
+      },
+      {
+       "label": "Riemann zeta function: analytic continuation, simple pole at s = 1",
+       "url": "https://en.wikipedia.org/wiki/Riemann_zeta_function"
+      },
+      {
+       "label": "Dirichlet eta function: the alternating sum and its relation to ζ",
+       "url": "https://en.wikipedia.org/wiki/Dirichlet_eta_function"
+      }
+     ]
+    },
+    {
+     "id": "landscape",
+     "title": "A landscape with wells",
+     "idea": "Draw the size of ζ(s) as the height of land; a zero is a point where the land touches the floor.",
+     "body": [
+      "At each point s, the value ζ(s) is an arrow. Its length is called the <em>size</em> of ζ(s), written |ζ(s)|. Treat the plane as a floor and raise the land above each point s to the height |ζ(s)|. The result is a landscape. The pole at s = 1 is a peak with no top.",
+      "A <em>zero</em> of ζ is a point s where ζ(s) = 0. There the land touches the floor, at the bottom of a well.",
+      "Some zeros are easy to find. ζ is zero at −2, −4, −6 and every other negative even number. These follow directly from a formula in Riemann's 1859 paper and are fully understood. They are called the <em>trivial zeros</em>.",
+      "ζ has infinitely many other zeros, and none of them lies on the real number line. The first one above that line is near 1/2 + 14.1347i. These are the <em>nontrivial zeros</em>. Where they lie is the subject of everything that follows."
+     ],
+     "example": "ζ(−2) = 0 and ζ(−4) = 0, while ζ(−1) = −1/12, so the land there has height 1/12. At s = 1/2 + 14.134725i the height is below 0.000001; a nontrivial zero sits right beside that point.",
+     "try_it": "Can the land ever dip below the floor? — No: the height is a length, and a length is never negative.",
+     "in_the_world": "Each white pin stands on a nontrivial zero, where the terrain drops all the way to the floor.",
+     "sources": [
+      {
+       "label": "Riemann zeta function: trivial zeros and the first nontrivial zeros",
+       "url": "https://en.wikipedia.org/wiki/Riemann_zeta_function"
+      },
+      {
+       "label": "Riemann's 1859 paper, which contains the functional equation of ζ",
+       "url": "https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude"
+      }
+     ]
+    }
+   ],
+   "changes": [
+    "complex / example: arrow endpoint corrected from 0.385 − 0.320i to 0.385 − 0.319i (2^−(1+i) = 0.38462 − 0.31948i, recomputed with mpmath).",
+    "complex / in_the_world: 'colour' changed to 'color' (American spelling rule).",
+    "complex / body paragraph 3: merged two sentences ('When s is complex, the term n^−s is an arrow ... of −t ln n radians ...') to bring the body from 191 to 181 whitespace-separated tokens (179 not counting bare symbols); no content removed.",
+    "sums / try_it: answer extended with 'and three of them are larger' because 'each term is at least 1/8' only shows the sum is at least 1/2, not more than 1/2 as the question asks.",
+    "sums / idea: 'all whole numbers' changed to 'all positive whole numbers', since whole numbers in US usage include 0 and 1/0^s is undefined.",
+    "euler-product / idea and last paragraph: 'all whole numbers' changed to 'all positive whole numbers' for the same reason.",
+    "euler-product / body paragraph 3: 'Every whole number is a product of primes in exactly one way' changed to 'Every positive whole number ...' (false for 0 as written).",
+    "euler-product / body paragraph 3: 'takes one prime power from each factor' changed to 'takes one term from each factor', because the terms are 1 and reciprocals 1/p^(ks), not prime powers.",
+    "euler-product / sources: replaced the entry labeled 'published by the St Petersburg Academy in 1737' with the Euler Archive record for paper E72, which gives written 1737 and printed 1744 (Commentarii vol. 9). The body's 'In 1737 Euler found' is unchanged and consistent with this.",
+    "continuation / idea: 'ζ extends in exactly one way' changed to 'ζ has exactly one analytic extension', since uniqueness is false without the analytic condition (24 words).",
+    "landscape / body paragraph 4: 'The first is near 1/2 + 14.1347i' changed to 'The first one above that line is near ...', because zeros come in mirror pairs above and below the real line and 'first' had no stated ordering.",
+    "landscape / sources: added the page for Riemann's 1859 paper, since the step cites that date and paper; page opened and confirmed to list the functional equation."
+   ],
+   "unresolved": [
+    "Stages 1 and 3 to 5 were not supplied, so I could not confirm that 'whole number', 'prime' and 'natural logarithm' (ln) are defined before this stage. 'Natural logarithm' is used in the 'complex' step without a definition here.",
+    "'Radians' is used in the 'complex' step without a definition; the worked example gives the same angle in degrees, and there was no room to define it within the word limit.",
+    "Word limit depends on the counting convention: 'euler-product' is 191 and 'continuation' is 187 whitespace-separated tokens, but 178 and 172 when bare symbols (+, −, =, ⋯) are not counted as words. I left correct text in place rather than cut it. Paragraph 2 of 'continuation' is 92 tokens, which is long for a 'short paragraph'.",
+    "'complex' in_the_world mentions the color of ζ(s) on the terrain, which lies in the region where the sum does not converge; ζ there is only explained in the next step ('continuation'). Left as is, since no defined term is used early.",
+    "Euler's 1734 solution of the Basel problem and his 1737 product argument were not rigorous by modern standards; the text says 'solved' and 'found', which matches the cited sources, so I left it.",
+    "I could not check the in_the_world claims against the actual 3D scene (rules forbid touching the project directory and browser tools); they match the scene description given in the task."
+   ]
+  },
+  {
+   "key": "hypothesis",
+   "title": "The hypothesis",
+   "blurb": "Where the zeros are, and what that says about primes.",
+   "steps": [
+    {
+     "id": "strip",
+     "title": "The strip and the mirror",
+     "idea": "Every nontrivial zero of ζ lies in a strip of width 1, and these zeros mirror across the line through its middle.",
+     "body": [
+      "ζ is zero at the negative even numbers −2, −4, −6 and so on. These are called the trivial zeros. All its other zeros are called nontrivial zeros.",
+      "Every nontrivial zero lies in the <strong>critical strip</strong>, the band of complex numbers whose real part is strictly between 0 and 1. Where the real part is above 1, ζ equals a product over the primes that cannot be zero. In 1896 Jacques Hadamard and Charles-Jean de la Vallée Poussin independently proved that no zero has real part exactly 1.",
+      "The <strong>functional equation</strong> is an identity that ties ζ(s) to ζ(1 − s). Zeros also match above and below the real number line. Together these facts make the nontrivial zeros symmetric about the <strong>critical line</strong>, the vertical line where the real part is 1/2. If β + iγ is a nontrivial zero, so is (1 − β) + iγ. This mirror also rules out nontrivial zeros with real part 0 or less. A nontrivial zero off the line always has a partner with the same imaginary part on the other side."
+     ],
+     "example": "Suppose there were a zero at 0.7 + 20i. Then there would also be one at 0.3 + 20i, because 1 − 0.7 = 0.3. The first actual zero, 0.5 + 14.134725i, is its own mirror image, because 1 − 0.5 = 0.5.",
+     "try_it": "A nontrivial zero with real part 0.9 would force a partner with which real part? — 0.1, with the same imaginary part.",
+     "in_the_world": "The terrain covers the critical strip. The gold line is the mirror, and each white pin on it is its own partner.",
+     "sources": [
+      {
+       "label": "Hadamard and de la Vallée Poussin, 1896: no zeros on the line Re(s) = 1 (Wikipedia, Riemann hypothesis)",
+       "url": "https://en.wikipedia.org/wiki/Riemann_hypothesis"
+      },
+      {
+       "label": "Hadamard and de la Vallée Poussin, 1896 papers (Wikipedia, Prime number theorem)",
+       "url": "https://en.wikipedia.org/wiki/Prime_number_theorem"
+      }
+     ]
+    },
+    {
+     "id": "waves",
+     "title": "Each zero is a wave",
+     "idea": "An exact formula rebuilds the staircase of primes from a smooth ramp minus one wave for each pair of nontrivial zeros.",
+     "body": [
+      "In 1859 Bernhard Riemann sketched an exact formula, the <strong>explicit formula</strong>, that builds the count of primes out of the zeros of ζ. Hans von Mangoldt gave the first full proof in 1895.",
+      "The cleanest version uses a weighted count ψ(x). Each prime p up to x adds the natural logarithm ln p, and so does each power of p up to x, such as 4, 8 or 9. Plotted against x, ψ is a staircase. The formula says that, between its jumps, the staircase equals the straight ramp x, minus one term for each nontrivial zero ρ, minus two small corrections.",
+      "Nontrivial zeros come in pairs β ± iγ, and each pair of terms adds up to a wave. Its size at x is 2x<sup>β</sup> divided by the distance from ρ to 0, and it completes one swing each time ln x grows by 2π/γ. So the real part β sets the wave's size, and the imaginary part γ sets its frequency. The ramp, minus the corrections, minus the waves in order of increasing γ, rebuilds the staircase."
+     ],
+     "formula": "ψ(x) = x − ∑<sub>ρ</sub> x<sup>ρ</sup>/ρ − ln(2π) − ½ ln(1 − x<sup>−2</sup>), for x above 1",
+     "example": "The first zero is 0.5 + 14.134725i, at distance 14.1436 from 0. Its wave has size 2√x / 14.1436, about 1.41 at x = 100. It repeats each time ln x grows by 2π / 14.134725 ≈ 0.4445, which means each time x is multiplied by about 1.56.",
+     "try_it": "At x = 10,000, which wave would be larger: one from a zero with real part 1/2, or one with the same imaginary part and real part 3/4? — The second: 10,000<sup>3/4</sup> = 1,000 against √10,000 = 100.",
+     "in_the_world": "Each white pin is one wave. How far along the gold line a pin stands is the frequency γ of its wave.",
+     "sources": [
+      {
+       "label": "Riemann's 1859 explicit formula, first proved in full by von Mangoldt in 1895 (Wikipedia, Explicit formulae for L-functions)",
+       "url": "https://en.wikipedia.org/wiki/Explicit_formulae_for_L-functions"
+      }
+     ]
+    },
+    {
+     "id": "statement",
+     "title": "The Riemann hypothesis",
+     "idea": "The Riemann hypothesis says every nontrivial zero has real part exactly 1/2, which keeps every wave growing as slowly as the mirror allows.",
+     "body": [
+      "In the same 1859 paper, Riemann wrote that very probably all the nontrivial zeros lie on the critical line. That statement is the <strong>Riemann hypothesis</strong>: every nontrivial zero of ζ has real part exactly 1/2.",
+      "A nontrivial zero with real part β gives a wave whose size grows like x<sup>β</sup>. By the mirror, a zero with β below 1/2 has a partner with real part above 1/2. So some wave always grows at least as fast as √x. The hypothesis says none grows faster.",
+      "An equivalent form does not mention zeros. Let π(x) be the number of primes up to x. The logarithmic integral Li(x), the area under the curve 1/ln t from 2 to x, estimates it. Helge von Koch proved in 1901 that the hypothesis implies the error |π(x) − Li(x)| is at most a fixed multiple of √x ln x for x ≥ 2. The bound also implies the hypothesis. No bound with a power of x below 1/2 can hold. In that sense the hypothesis says the primes are spread as evenly as they can be."
+     ],
+     "formula": "|π(x) − Li(x)| ≤ C · √x · ln x, for x ≥ 2",
+     "example": "At x = 1,000,000 there are 78,498 primes and Li(x) ≈ 78,627, an error of about 129. Here √x ln x ≈ 13,816. Schoenfeld's 1976 form of the bound, valid under the hypothesis for x ≥ 2657, is √x ln x / (8π) ≈ 550. The error is well inside it.",
+     "try_it": "What is √x when x is one million? — 1,000, which is small beside the 78,498 primes below one million.",
+     "in_the_world": "The hypothesis says that every pin that could ever be placed, however far along, stands exactly on the gold line.",
+     "sources": [
+      {
+       "label": "Formulated in Riemann's 1859 paper (Clay Mathematics Institute)",
+       "url": "https://www.claymath.org/millennium/riemann-hypothesis/"
+      },
+      {
+       "label": "Riemann's 1859 remark, von Koch 1901 and Schoenfeld 1976 error bounds (Wikipedia, Riemann hypothesis)",
+       "url": "https://en.wikipedia.org/wiki/Riemann_hypothesis"
+      }
+     ]
+    },
+    {
+     "id": "evidence",
+     "title": "A century and a half of evidence",
+     "idea": "Before 2026, proofs put over two fifths of the nontrivial zeros on the line and computers checked trillions, which is still not a proof.",
+     "body": [
+      "Before 2026, proofs covered only some of the zeros. G. H. Hardy proved in 1914 that infinitely many zeros lie on the critical line. Atle Selberg proved in 1942 that a positive proportion of the nontrivial zeros do. Norman Levinson raised this to more than one third in 1974, and Brian Conrey to more than two fifths in 1989.",
+      "In 2021 David Platt and Timothy Trudgian published a rigorous verification that every nontrivial zero with imaginary part between 0 and 3 × 10<sup>12</sup> has real part 1/2.",
+      "A check of that size is not a proof, because a pattern in number theory can hold over an enormous range and then fail. The count π(x) is below Li(x) for every x from 8 up to 10<sup>19</sup>, yet J. E. Littlewood proved in 1914 that the order reverses infinitely often. The Mertens conjecture said that a certain running total of +1s and −1s over the whole numbers up to x stays within √x of zero. It held in every case computed, and Andrew Odlyzko and Herman te Riele disproved it in 1985."
+     ],
+     "example": "At x = 1,000 there are 168 primes and Li(x) is about 177, so the count is below the estimate. That order holds for every x from 8 up to 10<sup>19</sup>. The first reversal is proved to occur somewhere below 1.4 × 10<sup>316</sup>.",
+     "try_it": "Hardy proved infinitely many zeros lie on the line. Does that rule out a zero off the line? — No. Infinitely many on the line leaves room for others elsewhere.",
+     "in_the_world": "The white pins mark the first nontrivial zeros above the real line. Computation places each of them on the gold line.",
+     "sources": [
+      {
+       "label": "Hardy 1914, Selberg 1942, Levinson 1974, Conrey 1989 (Wikipedia, Riemann hypothesis)",
+       "url": "https://en.wikipedia.org/wiki/Riemann_hypothesis"
+      },
+      {
+       "label": "Platt and Trudgian, The Riemann hypothesis is true up to 3·10^12 (arXiv:2004.09765)",
+       "url": "https://arxiv.org/abs/2004.09765"
+      },
+      {
+       "label": "Littlewood 1914, the 10^19 check and the 1.4 × 10^316 bound (Wikipedia, Skewes's number)",
+       "url": "https://en.wikipedia.org/wiki/Skewes%27s_number"
+      },
+      {
+       "label": "Mertens conjecture, disproved by Odlyzko and te Riele in 1985 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Mertens_conjecture"
+      }
+     ]
+    },
+    {
+     "id": "stakes",
+     "title": "Why so much rests on it",
+     "idea": "The hypothesis sits on the two most famous problem lists in mathematics, and hundreds of theorems are proved only by assuming it.",
+     "body": [
+      "In 1900 David Hilbert published a list of 23 problems for the coming century. The Riemann hypothesis is part of the eighth. In 2000 the Clay Mathematics Institute named it one of seven Millennium Prize Problems, each carrying a prize of one million dollars.",
+      "The reason is how much is built on it. Hundreds of published theorems open by assuming that the Riemann hypothesis is true. Each one is a chain of reasoning that hangs from that single assumption. A proof of the hypothesis proves all of them at once.",
+      "One example concerns the gaps between primes. Harald Cramér proved that if the hypothesis holds, the gap from a prime p to the next prime is at most a fixed multiple of √p ln p. In 2019 Emanuel Carneiro, Micah Milinovich and Kannan Soundararajan gave an explicit version: under the hypothesis, the gap is at most (22/25) √p ln p for every prime p above 3. Without the hypothesis, the best proved bound is a fixed multiple of p<sup>0.525</sup>, which is larger once p is large enough."
+     ],
+     "formula": "(next prime after p) − p ≤ (22/25) · √p · ln p",
+     "example": "The largest gap between primes below one million follows p = 492,113: the next prime is 492,227, a gap of 114. For this p, (22/25) √p ln p ≈ 8,091. The real gap is far inside the bound the hypothesis gives.",
+     "try_it": "For a prime p near 10,000, how large is √p? — About 100, so the bound (22/25) √p ln p is about 810.",
+     "sources": [
+      {
+       "label": "Hilbert's eighth problem, posed in 1900 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Hilbert%27s_eighth_problem"
+      },
+      {
+       "label": "Hilbert's 23 problems, published in 1900 (Wikipedia, Hilbert's problems)",
+       "url": "https://en.wikipedia.org/wiki/Hilbert%27s_problems"
+      },
+      {
+       "label": "Millennium Prize Problems: seven problems, one million dollars each (Clay Mathematics Institute)",
+       "url": "https://www.claymath.org/millennium-problems/"
+      },
+      {
+       "label": "Millennium Prize Problems announced in 2000 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Millennium_Prize_Problems"
+      },
+      {
+       "label": "Hundreds of theorems assume the hypothesis (M. Watkins, University of Exeter)",
+       "url": "https://empslocal.ex.ac.uk/people/staff/mrwatkin/zeta/riemannhyp.htm"
+      },
+      {
+       "label": "Cramér's conditional gap bound (Wikipedia, Prime gap)",
+       "url": "https://en.wikipedia.org/wiki/Prime_gap"
+      },
+      {
+       "label": "Carneiro, Milinovich and Soundararajan, Fourier optimization and prime gaps, 2019: the constant 22/25 (arXiv:1708.04122)",
+       "url": "https://arxiv.org/abs/1708.04122"
+      },
+      {
+       "label": "Unconditional bound p^0.525 of Baker, Harman and Pintz (Wikipedia, Cramér's conjecture)",
+       "url": "https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_conjecture"
+      }
+     ]
+    }
+   ],
+   "changes": [
+    "All steps: replaced 'height' of a zero with 'imaginary part' (strip body and try_it, waves body and try_it, evidence body and in_the_world). Stage 2 already uses 'height' for the height of the land, where every zero has height 0, and never defines it as the imaginary part.",
+    "strip idea: 'the zeros mirror' -> 'these zeros mirror', because the trivial zeros do not mirror.",
+    "strip body, paragraph 1: shortened (zeros were already defined in Stage 2) to make room for the fixes below within 180 words.",
+    "strip body: added 'Zeros also match above and below the real number line. Together these facts make...'. The functional equation alone sends a zero to 1 minus itself; the mirror across the critical line also needs the conjugate symmetry.",
+    "strip body: 'rules out the edge at real part 0 and everything to its left' -> 'rules out nontrivial zeros with real part 0 or less'. As written it was false for the trivial zeros.",
+    "strip body and try_it: 'A zero off the line always has a partner' -> 'A nontrivial zero ...'. False for -2, -4, -6 as written.",
+    "strip in_the_world: 'The terrain is the critical strip' -> 'The terrain covers the critical strip'. The current page says the land runs from Re(s) = -0.5 to 1.5, so it is wider than the strip.",
+    "waves idea: 'one wave for each nontrivial zero' -> 'one wave for each pair of nontrivial zeros', to match the body (one term per zero, one wave per pair).",
+    "waves body: 'Zeros come in pairs β ± iγ' -> 'Nontrivial zeros come in pairs', since trivial zeros do not.",
+    "waves body, last sentence: now subtracts the two corrections as well as the waves. The ramp minus the waves alone does not give the staircase.",
+    "waves body: small trims ('adds the natural logarithm ln p', 'sets the wave's size') to stay within 180 words.",
+    "waves formula: added 'for x above 1'. The formula is not valid (and the last term is undefined) for x at or below 1.",
+    "waves try_it: 'which wave is larger' -> 'which wave would be larger', since a zero with real part 3/4 is hypothetical.",
+    "statement idea and body paragraph 2: 'a wave of size about x^β' and 'every wave has size about √x' -> 'grows like'. The size is 2x^β divided by the distance of the zero from 0, so 'about √x' is false for high zeros; the growth rate is the true statement. Also 'A zero' -> 'A nontrivial zero'.",
+    "statement body paragraph 1: 'all of these zeros' -> 'all the nontrivial zeros' (the referent was unclear at the start of a new step).",
+    "statement body paragraph 3: Li(x) was named but never defined anywhere in the path. Added 'the area under the curve 1/ln t from 2 to x'. This is the convention that matches the stage's own numbers (78,627 at one million, 177 at 1,000, 'from 8').",
+    "statement body and formula: added 'for x ≥ 2'. The bound fails near x = 1, where √x ln x goes to 0.",
+    "statement body: 'and the converse also holds' -> 'The bound also implies the hypothesis.' Plain words, and it no longer reads as part of what von Koch proved in 1901.",
+    "statement in_the_world: 'every white pin, however far along the valley' -> 'every pin that could ever be placed, however far along'. The pins in the scene are a finite set already known to be on the line; the hypothesis is about all nontrivial zeros. Also dropped 'valley', which the scene does not have along the line.",
+    "statement sources: second label now also names Riemann's 1859 remark, which that page quotes.",
+    "evidence idea: 'the zeros' -> 'the nontrivial zeros'; 'computers checked trillions more' -> 'computers checked trillions'. 'More' wrongly suggested the computed zeros come on top of the two fifths.",
+    "evidence body: 'every zero with height between 0 and 3 × 10^12' -> 'every nontrivial zero with imaginary part between ...'.",
+    "evidence body: Mertens conjecture 'stays smaller than √x' -> 'stays within √x of zero'. The conjecture bounds the absolute value; the total is usually negative, so 'smaller than √x' said nothing. Two small trims ('still', 'prime') keep the body at 180 words.",
+    "evidence example: 'for every x up to 10^19' -> 'for every x from 8 up to 10^19'. The order fails for small x (for example π(7) = 4 while Li(7) ≈ 3.71).",
+    "evidence in_the_world: 'the lowest zeros' -> 'the first nontrivial zeros above the real line' (avoids the height wording and the trivial zeros).",
+    "stakes body: Hilbert 'presented' -> 'published' a list of 23 problems. He presented ten of them in the 1900 Paris lecture; the full list of 23 was published. Added the Hilbert's problems page as source.",
+    "stakes body: 'Hundreds of theorems have statements that begin by assuming' -> 'Hundreds of published theorems open by assuming'. The original followed the source's wording too closely.",
+    "stakes body: 'Whatever settles the hypothesis settles all of them at once' -> 'A proof of the hypothesis proves all of them at once.' A disproof would not settle them.",
+    "stakes body, formula, example, try_it and sources: replaced the Dudek (4/π) gap bound with the Carneiro-Milinovich-Soundararajan bound (22/25) √p ln p for every prime p above 3. Dudek's theorem (checked in his paper) is a prime in the interval from x − (4/π)√x ln x to x, which gives the gap in terms of the next prime, not p; the 2019 paper states the gap bound in terms of p exactly as written. Recomputed: 8,091 for p = 492,113 and about 810 near 10,000.",
+    "stakes body: 'which grows faster as p increases' -> 'which is larger once p is large enough'. At everyday sizes p^0.525 is the smaller number (973 against 8,091 at p = 492,113); it only overtakes for very large p."
+   ],
+   "unresolved": [
+    "The 2026 events themselves are outside this stage and I did not check them beyond noting that the Wikipedia Riemann hypothesis page fetched today describes a formal proof posted on 20 November 2026 and says it is not yet fully understood by mathematicians. The stage's 'Before 2026' wording is consistent with that page (the pre-2026 record was above two fifths), and nothing in this stage calls the hypothesis proved or unproved.",
+    "evidence: 'π(x) is below Li(x) for every x from 8 up to 10^19' with Li measured from 2. The cited result (Büthe, arXiv:1511.02032) is for the integral from 0, which is larger by about 1.045, and holds from x = 2. For the from-2 version I checked every x from 8 to 1,100,000 directly and derived the rest (margin at least 19.8 from one million to 10^19) by partial summation from Büthe's bound; that derivation is mine, not a quoted source.",
+    "statement example: Schoenfeld's bound √x ln x / (8π) for x ≥ 2657 is stated for the integral from 0, which differs from Li as defined here by about 1.045. The example's comparison at one million (error about 129 against 550) holds under either convention; I left the sentence as it was.",
+    "stakes: 'Hundreds of theorems' rests on one informal source (the Watkins page, which opened and says this). 'The two most famous problem lists' in the idea line is a judgment, not a checkable fact; left as written.",
+    "stakes: 'the best proved bound is a fixed multiple of p^0.525' is taken from the Wikipedia pages cited (Baker, Harman and Pintz, 2001); I did not search for anything newer than those pages report.",
+    "The Clay page cited in 'statement' currently labels the problem 'Unsolved', and the Wikipedia Millennium Prize page says 'solution claimed; prize pending'. Not a problem for this stage, but Stage 5 should not say the prize has been awarded.",
+    "Later stages should be checked for 'height' used to mean the imaginary part of a zero; I removed it from this stage only.",
+    "strip in_the_world relies on the current page text (land from Re(s) = −0.5 to 1.5). If the terrain is later cropped to the strip exactly, 'covers' is still true.",
+    "Word counts were measured by splitting on spaces, which counts symbols such as −, = and × as words; strip, waves, statement and evidence sit at 179 to 180 by that measure, so any further addition needs a matching cut."
+   ]
+  },
+  {
+   "key": "algebra",
+   "title": "The algebra",
+   "blurb": "Groups, characters and finite fields: the same question in other worlds.",
+   "steps": [
+    {
+     "id": "groups",
+     "title": "What a group is",
+     "idea": "A group is a set with one way of combining elements that is associative, has an identity, and can always be undone.",
+     "body": [
+      "A group is a set together with one way of combining any two of its elements into an element of the same set. Three rules must hold.",
+      "First, grouping does not matter: combining a with b and then with c gives the same result as combining a with the result of b and c. This is called being <em>associative</em>. Second, one element changes nothing when combined with any other; it is called the <em>identity</em>. Third, every element has an <em>inverse</em>, a partner that combines with it to give the identity. So every step can be undone.",
+      "The integers (whole numbers, positive, negative and zero) form a group under addition: the identity is 0 and the inverse of 5 is −5. The hours of a 12-hour clock form a group under addition. The four rotations of a square by 0, 90, 180 and 270 degrees form a group, where combining means doing one rotation after the other.",
+      "A clock with four hours and the rotations of a square follow the same pattern. Group theory studies the pattern, not the objects."
+     ],
+     "example": "On a 12-hour clock, 9 + 5 = 14, which reads as 2. The identity is 12, since adding 12 hours changes nothing. The inverse of 9 is 3, because 9 + 3 = 12.",
+     "try_it": "Which rotation of a square undoes a 90-degree turn? — A 270-degree turn in the same direction, since 90 + 270 = 360, a full turn."
+    },
+    {
+     "id": "units",
+     "title": "Multiplying on a clock",
+     "idea": "Mod n, the numbers sharing no factor larger than 1 with n can be divided by, and they form a group under multiplication.",
+     "body": [
+      "On a clock with n hours, multiplication works too: multiply, then keep the remainder after dividing by n. Division is harder. Dividing by a means finding a number that multiplies with a to give 1, and such a number may not exist.",
+      "It exists exactly when a and n share no factor larger than 1. Mod 10, the number 2 has no such partner, because every multiple of 2 ends in an even digit. The remainders that do have partners are called <em>units</em>.",
+      "The units mod n form a group under multiplication. The identity is 1, and the product of two units is again a unit. Mod 10 the units are 1, 3, 7 and 9. The number of units mod n is written φ(n), so φ(10) = 4.",
+      "The last digit of a number is its remainder mod 10. A number ending in 0, 2, 4, 6 or 8 is divisible by 2, and one ending in 0 or 5 is divisible by 5. So every prime other than 2 and 5 ends in 1, 3, 7 or 9."
+     ],
+     "example": "Mod 10: 3 × 7 = 21, which leaves 1, so 7 is the inverse of 3. Also 9 × 9 = 81 leaves 1, so 9 is its own inverse. Dividing by 3 mod 10 is the same as multiplying by 7.",
+     "try_it": "What is φ(12)? — 4, because the units mod 12 are 1, 5, 7 and 11."
+    },
+    {
+     "id": "characters",
+     "title": "Characters: pure tones of a group",
+     "idea": "A character gives each group element a complex number of size 1, respecting the group; combined, characters can isolate a single unit mod n.",
+     "body": [
+      "A character of a group is a rule, written χ, that gives each element a complex number of size 1. The rule must respect the group: χ(ab) = χ(a)χ(b) for all elements a and b. Combining in the group matches multiplying the numbers.",
+      "Take the units mod 4, which are 1 and 3. One character sends both to 1; it is called the <em>trivial</em> character. The other has χ(1) = 1 and χ(3) = −1. A character of the units mod n is extended to all whole numbers by using the remainder mod n, and by giving 0 to every number that shares a factor larger than 1 with n. So here χ is 0 on even numbers.",
+      "A finite group whose operation gives the same result in either order, like the units mod n, has exactly as many characters as elements. A sum of characters with suitable weights is 1 at a single unit and 0 elsewhere. Any rule that assigns numbers to the elements can be built from characters, as a sound is built from pure tones."
+     ],
+     "formula": "χ(ab) = χ(a) χ(b)",
+     "example": "Mod 4, add the trivial character and χ, then halve. For 13: (1 + 1)/2 = 1. For 7: (1 − 1)/2 = 0. For 6: (0 + 0)/2 = 0. The result is 1 exactly for numbers that leave remainder 1 mod 4.",
+     "try_it": "With the mod 4 character above, what is χ(15)? — It is −1, because 15 leaves remainder 3 mod 4."
+    },
+    {
+     "id": "l-functions",
+     "title": "A zeta function for each character",
+     "idea": "Each character gives its own zeta-like function, with its own zeros; the generalized Riemann hypothesis puts their nontrivial zeros on the same line.",
+     "body": [
+      "In 1837 Peter Gustav Lejeune Dirichlet built a function like ζ from each character χ of the units mod m. In the sum for ζ, he placed χ(n) on top of the n-th term. The result is written L(s, χ) and called an L-function. Because χ(ab) = χ(a)χ(b), the sum is also a product over the primes, as it was for ζ.",
+      "For every character other than the trivial one, Dirichlet proved that L(1, χ) is not zero. From this he showed that for each unit a mod m, infinitely many primes leave remainder a. With m = 10: infinitely many primes end in each of the digits 1, 3, 7 and 9.",
+      "Each L-function extends past the edge of its sum, as ζ does, and has the same strip and its own zeros. The character that sends every whole number to 1 gives ζ itself, the simplest case.",
+      "The generalized Riemann hypothesis is the statement that, for every one of these L-functions, all zeros with real part strictly between 0 and 1 have real part 1/2."
+     ],
+     "formula": "L(s, χ) = ∑ χ(n)/n<sup>s</sup> = ∏ 1/(1 − χ(p)/p<sup>s</sup>), for real part of s greater than 1",
+     "example": "For the mod 4 character with χ(3) = −1, the sum at s = 1 is 1 − 1/3 + 1/5 − 1/7 + …, which settles to π/4 ≈ 0.7854. The first four terms give about 0.7238. Since π/4 is not zero, infinitely many primes leave remainder 1 mod 4, and infinitely many leave 3.",
+     "in_the_world": "The terrain shows ζ, the L-function of the simplest character. Every other L-function has its own landscape over the same strip, with its own zeros.",
+     "sources": [
+      {
+       "label": "Dirichlet's theorem on arithmetic progressions, proved in 1837 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Dirichlet%27s_theorem_on_arithmetic_progressions"
+      },
+      {
+       "label": "Dirichlet L-functions, introduced in 1837 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Dirichlet_L-function"
+      }
+     ]
+    },
+    {
+     "id": "fields",
+     "title": "Number systems with finitely many numbers",
+     "idea": "The remainders mod a prime form a finite field, and polynomials over it have their own primes, which can be counted by an exact formula.",
+     "body": [
+      "A <em>field</em> is a number system in which you can add, subtract, multiply, and divide by anything except zero, with the usual rules of arithmetic. Fractions form a field. The integers do not, because 1 divided by 2 is not an integer.",
+      "For a prime p, every remainder mod p except 0 is a unit. So the remainders mod p form a field with exactly p numbers, a <em>finite field</em>, written F<sub>p</sub>. The smallest is F<sub>2</sub> = {0, 1}, where 1 + 1 = 0.",
+      "Polynomials with coefficients in F<sub>p</sub> behave like whole numbers. A non-constant polynomial that is not a product of two polynomials of lower degree is called <em>irreducible</em>, and irreducibles play the role of primes. Every non-constant polynomial factors into irreducibles in one way only, apart from order and constant multiples.",
+      "Irreducibles can be counted. The number of irreducible polynomials of degree n with leading coefficient 1 is close to p<sup>n</sup>/n, and an exact formula shows the gap is less than 2√(p<sup>n</sup>)/n. This is a prime number theorem for polynomials, with an exact error term."
+     ],
+     "example": "Over F<sub>2</sub>: (x + 1)<sup>2</sup> = x<sup>2</sup> + 2x + 1 = x<sup>2</sup> + 1, since 2 = 0. So x<sup>2</sup> + 1 factors. But x<sup>2</sup> + x + 1 equals 1 at both x = 0 and x = 1, so neither x nor x + 1 divides it, and it is irreducible.",
+     "try_it": "Over F<sub>2</sub>, is x<sup>2</sup> + x irreducible? — No, because x<sup>2</sup> + x = x(x + 1)."
+    },
+    {
+     "id": "finite-field-rh",
+     "title": "A world where it is a theorem",
+     "idea": "For curves over finite fields the analogous hypothesis is a theorem, proved by a geometric method that does not carry over directly to the integers.",
+     "body": [
+      "A curve is the set of solutions of a polynomial equation in two unknowns, such as y<sup>2</sup> = x<sup>3</sup> + x + 1. Over a finite field the solutions can be counted, in that field and in the larger finite fields containing it. The counts are packed into a zeta function for the curve.",
+      "The analogous hypothesis says all its zeros have real part 1/2, and it is a theorem. Helmut Hasse proved it in 1933 for elliptic curves, smooth curves given by cubic equations like the one above. André Weil proved it in the 1940s for every smooth curve, completed by its points at infinity. Pierre Deligne's proof of the higher-dimensional version appeared in 1974.",
+      "The proofs are geometry. The zeros are given by the eigenvalues of one operator, called Frobenius, on a finite-dimensional space attached to the curve. An operator transforms a space; its eigenvalues are its stretch factors along the directions it preserves.",
+      "The integers do not come from a curve over a finite field, so this method does not carry over to ζ directly."
+     ],
+     "formula": "N = p + 1 − a, with |a| ≤ 2√p, where N counts the points of an elliptic curve over F<sub>p</sub>",
+     "example": "Over F<sub>5</sub>, the elliptic curve y<sup>2</sup> = x<sup>3</sup> + x + 1 has 8 solutions plus one point at infinity, 9 points in all. So a = 5 + 1 − 9 = −3, and |a| = 3 is below 2√5 ≈ 4.47. Hasse's theorem gives this bound for every elliptic curve over every F<sub>p</sub>.",
+     "sources": [
+      {
+       "label": "Hasse's theorem on elliptic curves: proved 1933, published 1936 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Hasse%27s_theorem_on_elliptic_curves"
+      },
+      {
+       "label": "Weil conjectures: Weil's proof for curves, Deligne 1974 (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Weil_conjectures"
+      },
+      {
+       "label": "Riemann hypothesis, function field analogues: Hasse for genus 1, Weil 1948 in general (Wikipedia)",
+       "url": "https://en.wikipedia.org/wiki/Riemann_hypothesis"
+      }
+     ]
+    }
+   ],
+   "changes": [
+    "groups, body: was 185 words (limit 180). Reworded the first sentence to 'combining any two of its elements into an element of the same set' (also removes 'a third thing', which is wrong when the result equals one of the two inputs, and introduces 'element' before it is used) and dropped ', although the objects differ'. Now 179 words.",
+    "units, idea: 'sharing no factor with n' is false as written (1 is always a shared factor); now 'sharing no factor larger than 1 with n', matching the body. 23 words.",
+    "units, body: was 181 words; 'does not always exist' became 'may not exist'. Now 180 words.",
+    "characters, body: 'Adding and subtracting characters picks out a single remainder class' is only true for moduli like 4 where every character value is 1 or −1; in general complex weights are needed (mod 5 has characters with value i), and only unit remainders can be picked out. Replaced with 'A sum of characters with suitable weights is 1 at a single unit and 0 elsewhere.' Body is 179 words.",
+    "characters, idea: was 26 words (limit 25) and used 'remainder class', which this stage never defines. Now ends '...respecting the group; combined, characters can isolate a single unit mod n.' 24 words.",
+    "l-functions, idea: 'puts those zeros on the same line' is false for the trivial zeros; now 'puts their nontrivial zeros on the same line'.",
+    "l-functions, body: 'L(1, χ) is not zero for every character other than the trivial one' can be read as 'not zero for all'; reordered to 'For every character other than the trivial one, Dirichlet proved that L(1, χ) is not zero.'",
+    "l-functions, body and in_the_world: 'its own strip' suggested a different strip per L-function; every Dirichlet L-function has the same critical strip. Now 'has the same strip and its own zeros' and 'its own landscape over the same strip, with its own zeros' (25 words).",
+    "fields, idea: 'counted with an exact error' does not say anything true (the count itself is exact); now 'counted by an exact formula'. 25 words.",
+    "fields, body: the term 'finite field' was used in the idea and in the next step but never defined in a body; added 'a <em>finite field</em>' where F<sub>p</sub> is introduced. 178 words.",
+    "finite-field-rh, body: was 198 words (limit 180). Removed the sentence on the zeta function being a ratio of two polynomials in p<sup>−s</sup> (true, but the least needed and it used an unexplained variable) and shortened 'a family of smooth curves' to 'smooth curves'. Now 178 words.",
+    "finite-field-rh, body: 'Pierre Deligne proved the higher-dimensional version in 1974' changed to 'Pierre Deligne's proof of the higher-dimensional version appeared in 1974': the proof was completed in 1973 and published in 1974.",
+    "finite-field-rh, body and idea: removed 'no such space or operator is known' and 'the gap any proof for ζ has to cross'. The second is an unproved claim about all possible proofs, and the first is a claim about the current state of knowledge that the 20 November 2026 Lean-only proof may have overtaken (its strategy has not yet been extracted). Replaced with a statement that is true regardless: the integers do not come from a curve over a finite field, so the method does not carry over to ζ directly.",
+    "finite-field-rh, formula: the bound |a| ≤ 2√p holds for elliptic curves, not for curves in general, and the formula stood without that condition; now 'N = p + 1 − a, with |a| ≤ 2√p, where N counts the points of an elliptic curve over F<sub>p</sub>'.",
+    "Verified without change: every worked example and try_it answer recomputed in Python (12-hour clock sums, units mod 10 and mod 12, the mod 4 character sum on all n below 1000, the partial sum 0.7238 and π/4, the F<sub>2</sub> factorizations, 8 solutions plus one point at infinity on y² = x³ + x + 1 over F<sub>5</sub>, and the bound on the number of irreducibles checked exactly for seven primes and degrees up to 59). All five cited Wikipedia pages were opened and support the dates given (1837, 1933/1936, Weil 1948, Deligne 1974)."
+   ],
+   "unresolved": [
+    "I could not see stages 1 to 3, so I could not confirm that 'mod', 'remainder', 'complex number', 'size', 'settles', 'strip', 'nontrivial zeros' and 'prime number theorem' are defined there before this stage uses them.",
+    "finite-field-rh still uses 'smooth' and 'points at infinity' without defining them; there was no room inside the 180-word limit to add definitions without cutting other content. Both are used correctly.",
+    "finite-field-rh, last paragraph: I could not determine whether the 20 November 2026 Lean proof constructs a space and operator of the Frobenius kind, because public commentary says its strategy has not yet been extracted. The paragraph now avoids the question; stage 5 should be checked so the two stages do not contradict each other.",
+    "l-functions: Dirichlet's 1837 memoir gave the complete argument for prime modulus, with the general modulus resting on his class number formula published shortly after. The cited pages date the theorem and the L-functions to 1837 and the step only dates the construction of the functions to 1837, so I left it.",
+    "The sources were opened through Wikipedia's raw-text view of the same five article URLs listed, not the rendered pages."
+   ]
+  },
+  {
+   "key": "proof",
+   "title": "2026",
+   "blurb": "What was released, what was checked, and what is still needed.",
+   "steps": [
+    {
+     "id": "y2026-october",
+     "title": "October: a strip of fixed width",
+     "idea": "In October 2026, a machine-written paper stated that no zero of zeta has real part above 7/8, which would narrow where nontrivial zeros can lie.",
+     "body": [
+      "The classical regions proved free of zeros are slivers along the right edge of the critical strip, narrowing toward zero width as the height grows.",
+      "On 6 October 2026 OpenAI published a collection of mathematical manuscripts that its README says were produced by an unnamed internal AI model. One paper, dated 30 September, states that zeta and every Dirichlet L-function (from <em>A zeta function for each character</em>) have no zeros with real part above 7/8. A shorter paper, dated 5 October, states the weaker bound 11/12.",
+      "By <em>The strip and the mirror</em>, the first statement would confine every nontrivial zero of zeta to real parts from 1/8 to 7/8. The repository's notes say the 7/8 bound has been formalized in Lean, a language in which a proof is spelled out in enough detail for a program to check each step.",
+      "The README calls the manuscripts raw research data, not polished papers. Quanta reported on 19 October that experts who studied the shorter paper largely agree its result is correct. The Riemann hypothesis asks for 1/2 in place of 7/8."
+     ],
+     "example": "The critical strip has width 1. Removing real parts above 7/8 and, by the mirror, below 1/8 leaves a band of width 7/8 − 1/8 = 3/4. The 11/12 paper would leave 11/12 − 1/12 = 5/6. The Riemann hypothesis asks for width 0: a single line.",
+     "try_it": "A zero with real part 0.9 would have a mirror partner with which real part? — 0.1, and the 7/8 statement excludes both.",
+     "in_the_world": "The terrain covers the critical strip. The 7/8 paper would mean no pin can stand in its outer eighth on either side.",
+     "sources": [
+      {
+       "label": "OpenAI announcement, dated 6 October 2026",
+       "url": "https://openai.com/index/sharing-ai-progress-in-mathematics/"
+      },
+      {
+       "label": "Repository README: how the manuscripts were produced and how to read them",
+       "url": "https://raw.githubusercontent.com/openai/math/HEAD/README.md"
+      },
+      {
+       "label": "The 7/8 paper, dated 30 September 2026 (199 pages)",
+       "url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-September-30-2026/paper.pdf"
+      },
+      {
+       "label": "The 11/12 paper, dated 5 October 2026 (49 pages)",
+       "url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf"
+      },
+      {
+       "label": "Scope of the Lean formalization of the 7/8 bound",
+       "url": "https://raw.githubusercontent.com/openai/math/HEAD/lean/docs/003.md"
+      },
+      {
+       "label": "Quanta Magazine, 19 October 2026: how experts read the result",
+       "url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019"
+      }
+     ]
+    },
+    {
+     "id": "y2026-release",
+     "title": "20 November: 17 million lines of Lean",
+     "idea": "On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.",
+     "body": [
+      "On 20 November 2026 the mathematician Levent Alpöge posted a four-page note and a Lean archive in 14 parts. He writes that he believes he has found a proof of the Riemann hypothesis, working with Claude, the AI model made by Anthropic, and that the arguments are formalized without assumptions.",
+      "No paper came with it. Michael Rubinstein's page at the University of Waterloo counts 175,187 Lean files and about 17 million lines. The note says he chose to present only Lean, because a machine-written document would be huge and unreadable.",
+      "The note says the method extends to the Generalized Riemann Hypothesis. The MIT verification page lists five checked theorems and says that here this means Dirichlet L-functions, from <em>A zeta function for each character</em>. The theorems say that each of their zeros inside the critical strip has real part 1/2.",
+      "The note says he guided the direction and that Claude outpaced him near the end. It says he is presenting the argument before mastering the mathematics around it, and that he intends to write it up properly."
+     ],
+     "example": "175,187 files holding about 17 million lines comes to about 97 lines per file. Printed at 50 lines to a page, the code would fill about 340,000 pages. The MIT page gives the size of the proof exported for checking as about 61.6 GB.",
+     "in_the_world": "Every white pin stands on the gold line. The released Lean theorem says the same of every nontrivial zero, at every height.",
+     "sources": [
+      {
+       "label": "The author's four-page note, announced 20 November 2026",
+       "url": "https://alpo.ge/remark.pdf"
+      },
+      {
+       "label": "Joint statement of the Lean and Mathlib communities, 21 November 2026",
+       "url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/"
+      },
+      {
+       "label": "Michael Rubinstein's page: file and line counts, links to checks",
+       "url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/"
+      },
+      {
+       "label": "Andrew Sutherland's verification page at MIT: the five theorems and their scope",
+       "url": "https://math.mit.edu/~drew/grh/"
+      }
+     ]
+    },
+    {
+     "id": "y2026-checks",
+     "title": "What the computer checked",
+     "idea": "Four separate checks support that the code proves the right statement and that the checking programs were not fooled; none supplies a human explanation.",
+     "body": [
+      "In Lean, a small program called the <em>kernel</em> accepts or rejects each proof. <em>Mathlib</em> is the public library of mathematics written in Lean and reviewed by people. <em>Axioms</em> are the starting assumptions.",
+      "A 12 November 2026 post on the Xena Project blog set four questions for any proof said to be checked in Lean. The joint statement of the Lean and Mathlib communities, dated 21 November, says all four are satisfied.",
+      "<strong>Right statement:</strong> the target is Mathlib's own definition, shown in the formula. This says nothing about the proof. <strong>It builds:</strong> dozens of people reported compiling the code without errors. Alone, that would not catch a redefined symbol or an added axiom. <strong>It proves that statement:</strong> two independent tools matched the proved theorem against a file that imports only Mathlib, and the MIT page finds only Lean's three standard axioms. <strong>The kernel was not fooled:</strong> several independently written checkers accepted the full proof.",
+      "The MIT page adds a caveat: a pass relies on those checkers and on Mathlib's definitions meaning what is intended. No check supplies a human explanation."
+     ],
+     "formula": "ζ(s) = 0,  s ≠ −2, −4, −6, …,  s ≠ 1  ⟹  Re(s) = 1/2",
+     "example": "One cross-check on the MIT page avoids Mathlib's zeta. Joined to a separate formalization of a criterion of Robin, the code yields a whole-number statement: for every n above 5040, the divisors of n sum to less than e<sup>γ</sup>·n·ln ln n, where γ ≈ 0.5772 is Euler's constant. At n = 10,080: 39,312 against about 39,878.",
+     "in_the_world": "The mound at the south end, at s = 1, is the pole. Mathlib gives ζ a placeholder value there, so the statement sets s = 1 aside.",
+     "sources": [
+      {
+       "label": "Xena Project blog, 12 November 2026: four questions for a proof checked in Lean",
+       "url": "https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/"
+      },
+      {
+       "label": "Joint statement of the Lean and Mathlib communities, 21 November 2026",
+       "url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/"
+      },
+      {
+       "label": "Verification page at MIT: each check, its result, the caveat, the divisor-sum cross-check",
+       "url": "https://math.mit.edu/~drew/grh/"
+      },
+      {
+       "label": "Mathlib source file with the definition of RiemannHypothesis",
+       "url": "https://raw.githubusercontent.com/leanprover-community/mathlib4/master/Mathlib/NumberTheory/LSeries/RiemannZeta.lean"
+      }
+     ]
+    },
+    {
+     "id": "y2026-size",
+     "title": "Divisibility forces size",
+     "idea": "A nonzero whole number divisible by many prime powers must be large, so its size caps the primes that divide it.",
+     "body": [
+      "By <em>Primes are the atoms</em>, a whole number above 1 factors into primes in one way. So a positive whole number divisible by 8, by 9 and by 7 is divisible by 8·9·7 = 504, and is at least 504.",
+      "If a nonzero whole number is divisible by several primes, and its size is known, the product of those primes is at most that size. Two facts about one number give an upper bound on primes.",
+      "A draft guide to the 2026 argument, posted by Rubinstein, opens with a classical case that it credits to Chebyshev and Erdős. Let C(2n, n) be the number of ways to choose n things from 2n. It is a whole number, every prime above n and up to 2n divides it, and it is at most 4<sup>n</sup>. So the product of those primes is at most 4<sup>n</sup>.",
+      "That draft says the classical method stalls on rounding. In the product 1·2·…·n, the prime p appears n/p + n/p<sup>2</sup> + … times with each term rounded down, and the rounding hides the fine detail."
+     ],
+     "example": "For n = 10: C(20, 10) = 184,756 = 4·11·13·17·19. The primes above 10 and up to 20 are 11, 13, 17 and 19, with product 46,189. And 46,189 ≤ 184,756 ≤ 4<sup>10</sup> = 1,048,576.",
+     "try_it": "A positive whole number is divisible by 4, by 9 and by 25. What is the smallest it can be? — 900, the product 4·9·25.",
+     "sources": [
+      {
+       "label": "Rubinstein's working draft, sections I.0 and I.2: Chebyshev's method and where it stalls",
+       "url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf"
+      }
+     ]
+    },
+    {
+     "id": "y2026-shape",
+     "title": "The shape of the argument",
+     "idea": "As two guides describe it: turn zeros into a prime count, bound it from above by divisibility against size, and balance errors at √x.",
+     "body": [
+      "Rubinstein's draft and a shorter guide by Bartosz Naskręcki, both written with AI help, give the same outline, followed here. Neither claims to be a proof.",
+      "Both define G(x), a weighted count of prime powers up to x (compare <em>Counting primes</em>) minus its expected size. By <em>Each zero is a wave</em>, a zero with real part β adds a wave growing like x<sup>β</sup>. The draft proves that an upper bound alone, G(x) ≤ x<sup>θ</sup> on long ranges of x arbitrarily far out, excludes zeros with real part above θ. The target: every θ above 1/2. <em>The strip and the mirror</em> covers the left.",
+      "The bound comes as in <em>Divisibility forces size</em>, with one number replaced by a chain of m <em>theta lifts</em>, tables of numbers from automorphic forms, a theory outside this path. The author's note calls the argument a descendant of Stepanov's proof in the setting of <em>A world where it is a theorem</em>.",
+      "The lifts see only some primes. The characters of <em>Characters: pure tones of a group</em> average the result back to G, plus terms proved small."
+     ],
+     "example": "Rubinstein's draft gives the two main errors as x/m and m. Take x = 10,000. With m = 10 lifts the total is 1,000 + 10 = 1,010. With m = 1,000 it is 10 + 1,000 = 1,010. With m = 100 = √x it is 100 + 100 = 200, the smallest. That square root is the 1/2.",
+     "try_it": "For x = 1,000,000, which chain length m makes x/m equal to m? — m = 1,000, the square root of x.",
+     "in_the_world": "The argument aims to show that no well lies to the right of the gold line; the mirror symmetry then clears the left side.",
+     "sources": [
+      {
+       "label": "Rubinstein's working draft, 21 November 2026 (164 pages, zeta only): Part I gives the outline",
+       "url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf"
+      },
+      {
+       "label": "Naskręcki's guide (11 pages, all Dirichlet characters)",
+       "url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf"
+      },
+      {
+       "label": "The riemann-rev site: what it is and is not",
+       "url": "https://nasqret.github.io/riemann-rev/"
+      },
+      {
+       "label": "The author's note: the Stepanov remark and the chain of length √X",
+       "url": "https://alpo.ge/remark.pdf"
+      }
+     ]
+    },
+    {
+     "id": "y2026-needed",
+     "title": "What is still needed",
+     "idea": "Still to come: the author's written proof, review by independent experts, a human account of the central inequality, and the end of two long checks.",
+     "body": [
+      "<strong>A paper.</strong> The author's note says he intends to write the argument properly and expects it to be much simplified. Naskręcki's riemann-rev project recorded on 20 November that no human-readable write-up existed and the argument was not refereed, meaning judged by independent experts.",
+      "<strong>Understanding.</strong> Rubinstein's draft derives the hypothesis from one central inequality, called (M), plus two estimates it proves from published theorems. It takes (M) without proof from the Lean code, where, it says, almost all of the code goes. Naskręcki's guide likewise reads the chain of lifts from the Lean source without re-deriving it. A full proof of (M) is not yet written out in either guide.",
+      "<strong>Checks.</strong> As of 22 November, 16:20 UTC, the MIT page's summary names two unfinished runs: Lean's own kernel on the full exported proof, and an end-to-end comparison tool. It notes that Lean's kernel has already accepted every module separately.",
+      "<strong>Scope.</strong> The MIT page says L-functions beyond Dirichlet's are not among the checked statements. The Clay Mathematics Institute's prize rules require publication in a qualifying outlet, a two-year wait and general acceptance."
+     ],
+     "example": "The draft tested the divisibility rule on the simplest object of its kind. At order 120 the full rule would have 3<sup>45</sup> divide a certain number, since 120·3/8 = 45. The draft computed only 3<sup>14</sup>. It concludes that the proof must use a different, particular object, and quotes that step without reproving it.",
+     "sources": [
+      {
+       "label": "The author's note: his plans to write the argument properly",
+       "url": "https://alpo.ge/remark.pdf"
+      },
+      {
+       "label": "The riemann-rev site: status line, not yet refereed",
+       "url": "https://nasqret.github.io/riemann-rev/"
+      },
+      {
+       "label": "The riemann-rev README, record of 20 November 2026: no human-readable write-up yet",
+       "url": "https://raw.githubusercontent.com/nasqret/riemann-rev/main/README.md"
+      },
+      {
+       "label": "Rubinstein's working draft: what is proved there and what is quoted",
+       "url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf"
+      },
+      {
+       "label": "Naskręcki's guide, page 10: what is machine-checked and what is read from the source",
+       "url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf"
+      },
+      {
+       "label": "Verification page at MIT, updated 22 November 2026 16:20 UTC: checks still running, scope",
+       "url": "https://math.mit.edu/~drew/grh/"
+      },
+      {
+       "label": "Clay Mathematics Institute: Millennium Prize rules",
+       "url": "https://www.claymath.org/millennium-problems/rules/"
+      }
+     ]
+    },
+    {
+     "id": "y2026-read",
+     "title": "Where to read more",
+     "idea": "The key sources are public: the author's note, the joint statement, the verification record, and two guides to the argument.",
+     "body": [
+      "Start with the <strong>author's note</strong>: four pages, with the announcement and a rough timeline that he warns is partly paraphrased from an AI summary.",
+      "For the checking, the <strong>joint statement</strong> of the Lean and Mathlib communities gives the four criteria in a few paragraphs. The <strong>MIT verification page</strong> is the detailed record: each check, its result, and what is still running. The <strong>Xena Project post</strong> explains what a check in Lean can and cannot show.",
+      "For the mathematics, <strong>Rubinstein's draft</strong> is written for readers with a first course in analytic number theory, and says a reader can stop after its Part I. <strong>Naskręcki's guide</strong> covers all Dirichlet characters in 11 pages, and its site keeps a record of who has checked what.",
+      "For October, the <strong>11/12 paper</strong> is the shorter of the two, and <strong>Quanta's report</strong> describes how experts read it. Several of these pages say they are still being revised, so check their dates."
+     ],
+     "example": "A reading order by length: the joint statement (a few paragraphs), the author's note (4 pages), Naskręcki's guide (11 pages), the 11/12 paper (49 pages), Rubinstein's draft (164 pages). The four documents with page counts total 4 + 11 + 49 + 164 = 228 pages.",
+     "sources": [
+      {
+       "label": "Author's note (4 pages): the announcement and a 20-item timeline",
+       "url": "https://alpo.ge/remark.pdf"
+      },
+      {
+       "label": "Joint statement of the Lean and Mathlib communities: the four criteria",
+       "url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/"
+      },
+      {
+       "label": "MIT verification page: every check, with logs and status",
+       "url": "https://math.mit.edu/~drew/grh/"
+      },
+      {
+       "label": "Xena Project post: what a Lean check does and does not show",
+       "url": "https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/"
+      },
+      {
+       "label": "Rubinstein's draft (164 pages): the argument for zeta, with what is proved and what is quoted",
+       "url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf"
+      },
+      {
+       "label": "Naskręcki's guide (11 pages): the architecture for all Dirichlet characters",
+       "url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf"
+      },
+      {
+       "label": "riemann-rev site: map of the proof and record of checks",
+       "url": "https://nasqret.github.io/riemann-rev/"
+      },
+      {
+       "label": "The 11/12 paper (49 pages): the shorter October result",
+       "url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf"
+      },
+      {
+       "label": "Quanta Magazine, 19 October 2026: the October result explained",
+       "url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019"
+      }
+     ]
+    }
+   ],
+   "changes": [
+    "y2026-october idea: 'which would narrow the critical strip' -> 'which would narrow where nontrivial zeros can lie'. The critical strip is a fixed set (real part between 0 and 1); what the 7/8 statement narrows is the band that can hold nontrivial zeros. Still 25 words.",
+    "y2026-october in_the_world: 'The 7/8 paper says no pin can stand in the outer eighth on either side' -> 'would mean no pin can stand in its outer eighth on either side'. The paper states only the right-hand side (real part above 7/8); the left follows from the mirror. 'its' ties the eighth to the strip, because the page's terrain runs from real part -0.5 to 1.5, wider than the strip.",
+    "y2026-checks body: 'dozens of people compiled the code' -> 'dozens of people reported compiling the code'. The joint statement says dozens of people reported correct compilation; worded as a report.",
+    "y2026-checks example: 'log log n (natural logarithms), with γ ≈ 0.5772' -> 'ln ln n, where γ ≈ 0.5772 is Euler's constant'. Earlier stages write the natural logarithm as ln, and use γ for the imaginary part of a zero, so the constant has to be named. Recomputed: σ(10,080) = 39,312 and e^γ·10,080·ln ln 10,080 ≈ 39,877.5.",
+    "y2026-size body: 'If a nonzero number is divisible by a whole set of primes' -> 'If a nonzero whole number is divisible by several primes'. Divisibility is a statement about whole numbers; also removes the clash between 'whole number' and 'whole set'. Two words shorter.",
+    "y2026-shape body, paragraph 1: added ', followed here' after 'give the same outline', so that paragraphs 3 and 4 (the chain of theta lifts, the character averaging) are attributed to the two guides and not stated in the page's own voice.",
+    "y2026-shape body, paragraph 3: 'a theory this path does not cover' -> 'a theory outside this path', to pay for the two added words and stay at 180.",
+    "y2026-needed body, paragraph 1: 'Naskręcki's riemann-rev site records that no human-readable write-up exists and that the argument has not been refereed' -> 'Naskręcki's riemann-rev project recorded on 20 November that no human-readable write-up existed and the argument was not refereed'. The cited site page says only 'not yet refereed'; the sentence about the human-readable mathematics is in the project README, and both carry a record time of 20 November 23:51 UTC, before the two guides appeared.",
+    "y2026-needed sources: added the riemann-rev README (https://raw.githubusercontent.com/nasqret/riemann-rev/main/README.md), which is where the 'human-readable mathematics has not been written up' statement is; fetched and read.",
+    "y2026-needed body, paragraph 2: 'It takes (M) unproved from the Lean code' -> 'It takes (M) without proof from the Lean code'. 'Unproved' reads as a flat claim about (M); the draft says (M) is not proved in the draft and is taken from the Lean development.",
+    "y2026-needed body, paragraph 2: 'How the lifts are built, and why (M) holds, is not yet written out in either guide' -> 'A full proof of (M) is not yet written out in either guide'. Both guides do describe how the lifts are built and where (M) comes from (draft section I.7, guide section 4), and the draft writes up parts of the proof; what neither has is the full proof.",
+    "y2026-needed body, paragraph 3: 'the MIT page lists two unfinished runs' -> 'the MIT page's summary names two unfinished runs'. The page's tables show a third running row (the comparison tool on the combined divisor-sum export); its summary names the two on the main proof.",
+    "y2026-needed body, paragraph 4: 'two years and general acceptance' -> 'a two-year wait and general acceptance'. The Clay rule is that at least two years must have passed since publication.",
+    "No change to y2026-release and y2026-read: every sentence checked against the re-fetched note, Rubinstein page, MIT page, joint statement, Xena post, draft, guide and Quanta report.",
+    "All worked examples and try_it answers recomputed with python and found correct: 7/8-1/8 = 3/4, 11/12-1/12 = 5/6; 17,000,000/175,187 ≈ 97.04 and 17,000,000/50 = 340,000; 61,570,595,788 bytes ≈ 61.6 GB; C(20,10) = 184,756 = 4·11·13·17·19, 11·13·17·19 = 46,189, 4^10 = 1,048,576; lcm(4,9,25) = 900; 8·9·7 = 504; x/m + m at x = 10,000 for m = 10, 100, 1,000 gives 1,010, 200, 1,010; 120·3/8 = 45; 4+11+49+164 = 228. Word counts after edits: bodies 179, 177, 179, 178, 180, 180, 155; ideas at most 25; examples at most 60; in_the_world at most 25; only em, strong, sup tags used."
+   ],
+   "unresolved": [
+    "All 16 cited URLs (plus the riemann-rev README) were re-fetched at about 19:15 UTC on 22 November 2026 and returned HTTP 200. The MIT page still shows 'last updated 2026-11-22 16:20 UTC' with the two runs unfinished; that page says it will be updated, so the 'Checks' paragraph of y2026-needed and the idea line's 'two long checks' will go stale when the runs finish.",
+    "The joint statement of 21 November lists Lean's official kernel among the checkers that checked the exported proof, while the MIT page of 22 November says the Lean-kernel replay of the full export has no verdict yet (the kernel has accepted every module separately). The stage follows the MIT page; I did not resolve the difference.",
+    "y2026-shape says the two guides 'give the same outline'. Neither document says this of the other. It is my reading after checking that both contain the same statistic G, a localized Landau criterion, a chain of about √x theta lifts compared by a slope inequality, and character averaging. Left as written.",
+    "The 20 November date of the author's note is not printed in the note itself; it comes from Rubinstein's page, the MIT page, the joint statement and the riemann-rev README, which agree.",
+    "y2026-october: 'formalized in Lean' is attributed to the repository's own notes (lean/docs/003.md). I did not compile that formalization, and the Xena post of 12 November says the checks it describes had not been systematically run on the October release. The step makes no independent-verification claim, so I left it.",
+    "y2026-needed example: the figure 14 for the exponent of 3 is the draft's own computation, and the draft says the identification behind it rests on an identity observed numerically and not proved. I confirmed the draft's text (section I.4.1) and the arithmetic 120·3/8 = 45, not the computation.",
+    "y2026-needed, Clay rules: the fetched page gives the three conditions (qualifying outlet, at least two years since publication, general acceptance) but not the definition of a qualifying outlet. No Clay statement about this proof was looked for in this pass.",
+    "y2026-release, 'The theorems say that each of their zeros inside the critical strip has real part 1/2': true of the five theorems taken together (theorems 4 and 5 state it for Dirichlet L-functions, 1 and 2 for zeta, 3 is the no-zeros-right-of-the-line form). Left as written.",
+    "'Compiled', 'imports' and 'README' are used without definition in y2026-checks and y2026-october. I judged them ordinary words and left them, since defining them would add length.",
+    "in_the_world lines were checked against [local scratch path removed] only for the terrain's range (real part -0.5 to 1.5, so it covers the critical strip). I did not run the page to confirm pins, gold line and pole spike as rendered."
+   ]
+  }
+ ],
+ "research": [
+  {
+   "key": "argument",
+   "summary": "Two third-party expositions exist: Michael Rubinstein's 164-page working draft (21 Nov 2026, zeta case only) and Bartosz Naskręcki's 11-page guide (all Dirichlet characters). Both were written with AI assistance under a named mathematician, and neither claims to be a proof or a referee report.\n\nWhat they state, in nine steps:\n1. Reduce to \"no zeros with Re s > 1/2\"; the functional equation reflects the rest (guide §1).\n2. Trade zeros for a prime statistic G(x) = Σ Λ(n)(x/n − 1) − x log x + (1+γ)x, a ramp-smoothed, centred count of prime powers whose Mellin transform has poles exactly at the zeros (draft §I.1 p.4; guide §2).\n3. Localized Landau lemma: an upper bound G(x) ≤ x^(1/2+ε) on windows [Y, Y^(3/2)], for arbitrarily large Y, already forbids zeros right of the line (draft §I.1 p.5, Part II §1 p.26; guide §3).\n4. Get upper bounds as Chebyshev and Stepanov did: a nonzero integer divisible by p^e has log-size at least Σ e·log p. Factorials stall because of floor functions (draft §I.2 p.5-6).\n5. Use a better \"integer\": derivatives of theta functions attached to CM elliptic curves. At primes inert in Q(√−d), an order-a derivative is divisible to exponent about a/p + a/p³ + …; subtracting a weight w turns each term into w·(x/p^h − 1)+, the ramp itself (draft §I.3-I.4 p.6-12).\n6. Size must match divisibility through the term linear in a. So one number becomes a chain of m theta lifts between definite unitary groups over a CM field E in a 2-power cyclotomic tower. Bost's slope inequality compares divisibility with norm; sizes come from Chowla–Selberg, the Siegel mass formula and Weyl's dimension formula. The result is the main inequality (M) (draft §I.5 p.13-14, §I.7 p.16-18, Part II §4 p.30-32; the guide §4 calls the outcome TopG).\n7. Two defects are paid for separately: denominators, bounded through Galois cohomology and Iwasawa theory (Ferrero–Washington, \"weakened Vandiver\"); and rank, through a relative-trace-formula second moment (draft §I.7 p.17-18; guide §6-7).\n8. Character averaging: prime powers sit in a 2×n table of residue classes. Averaging over translates leaves G plus three quadratic twists, removed by choosing auxiliary primes q, d (Estimates B and C) (draft §I.6 p.14-16; guide §5).\n9. Balance the errors x/m and m at m ≈ √x; that is where 1/2 comes from (draft §I.8 p.18-19).\n\nClassical tools used: Mellin transform and explicit formula, Landau positivity, Dirichlet characters and orthogonality, primes in progressions, zero-free regions, zero-density and mean-square estimates, Behrend sets, theta correspondence, Iwasawa theory.\n\nWhat is not proved: (M) itself. The draft proves \"(M) + B + C ⇒ RH\" and proves B and C from cited theorems; everything inside (M) is quoted from the Lean development, partly conditionally. The guide reads its §4-7 from the Lean source without re-deriving them.\n\nMy inferences, not statements of the sources:\n- The draft's (M) and the guide's TopG inequality are the same result in two normalisations.\n- Mollifiers, sieves and function-field input are not used; Stepanov is only the model.\n- Web search found no further named-mathematician exposition; the search index returned nothing about the 20 November announcement, so this is weak evidence. Sutherland's MIT page is verification only.\n\nDownloaded texts are in [local scratch path removed]",
+   "facts": [
+    {
+     "claim": "Rubinstein's page says Alpöge announced on 20 November 2026 a proof, found with Claude, of RH and of GRH for Dirichlet L-functions, released as Lean code: 175,187 files, about 17 million lines.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Rubinstein's page describes the linked PDF as a 164-page working draft (21 Nov 2026) for the zeta function, written with Claude, Codex and Gemini. It deduces RH from one inequality between weighted prime sums, called (M), plus two estimates on Dirichlet characters; the two estimates are proved from the literature and (M) is not proved there.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The draft's title page lists three AI systems as authors 'at the behest of' Rubinstein. Its abstract says the analytic step shows a one-sided bound for a smoothed prime-power sum on intervals [Y, Y^(3/2)], with Y arbitrarily large, excludes zeros right of the critical line (p.1).",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Draft §I.0 (p.3-4) gives a five-step plan: zeros to primes; why Chebyshev's method stalls; a divisible object with no floor functions; size known through the linear term; clean up and balance. Logical skeleton: (M), B, C ⇒ Estimate A ⇒ G(x) ≤ x^(1/2+ε) on long intervals ⇒ RH.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The statistic (draft §I.1, p.4): S(x) = Σ_{n≤x} Λ(n)(x/n − 1), G(x) = S(x) − x log x + (1+γ)x. Its Mellin transform is −ζ'/ζ(s)/(s(s−1)) minus pole-cancelling terms, giving the explicit formula G(x) = log 2π − Σ_ρ x^ρ/(ρ(ρ−1)) + O(x^−2). Under RH, |G(x) − log 2π| ≤ 0.0462·√x.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "One-sided criterion on intervals (draft §I.1 p.5; proof in Part II §1, p.26-27): if for 0<θ<1 there are arbitrarily large Y with G(x) ≤ x^θ on all of [Y, Y^(3/2)], then ζ has no zero with Re s > θ. Landau's theorem on Mellin transforms of one-signed functions is replaced by an estimate of high derivatives of the transform, which see one interval at a time.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Bridge inequality (draft §I.2, eq. I.6, p.5): if Δ is a nonzero integer and p^(e_p) divides Δ, then Σ e_p log p ≤ log|Δ|. It always bounds primes from above. For n! the floor functions in Legendre's formula hide all information about ψ(n) − n, which is why Chebyshev's method gives constants only. Wishes (W1)-(W3) list what a better object must satisfy (p.6).",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Model example (draft §I.3, p.6-7): Taylor coefficients A_n of the lemniscate sine (curve y² = 1 − x⁴, CM by Z[i]) are divisible by inert primes p ≡ 3 mod 4 to exponent about n·p/(p²−1) = n(1/p + 1/p³ + …), with no forced divisibility at split primes. Explained by height-two formal groups (Deuring, Honda, Lubin–Tate). Three defects remain: (D1) rounding, (D2) only inert primes, (D3) size off by a factor 2.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Repairs (draft §I.4, p.7-12). (D3): differentiate theta series of Hermitian lattices over a CM field and measure size by a Gaussian (Fock) norm with ||z^a||² = a!, so both sides are a·log a + O(a). (D1): take order a ≈ x·b and weight w ≈ b = exp(x^ε); the identity (a/p^h − w)+ = w(x/p^h − 1)+ reproduces the ramp and makes rounding negligible. (D2): the coefficient 1 − χ_d(r) selects odd powers of inert primes, so the sum is 'ζ minus L(s,χ_d)'.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The field (draft §I.4.4, eq. I.23, p.12): E = Q(ζ_N + ζ_N^−1, √−q, √−d) with N = 4n, n a large power of 2, and q, d auxiliary primes. The Frobenius of a prime power depends only on its class mod N up to sign and on χ_q, so the 2n places form a table with 2 rows and n columns, and each prime power lands in one cell.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Statement of (M) (draft §I.5 p.13-14; exact form Part II §4.2-4.3, p.31-32). P = Σ over prime powers p^h (p ≠ 2, q) of (1 − χ_d(p^h))·log p·(a/p^h − w_cell)+ is the divisibility side. M = a(log a − 1 − γ + L'/L(1,χ_d) − ⟨log w⟩) is its expected value. (M) says (1/n)·Σ over translates u ∈ H, labels t ∈ T and lifts j = 1..m of (P − M) ≤ E, with E/B ≤ x^(Cε)(x/m + xm/k + m + k/n²) and B = |T|·m·b·δ/2.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Parameters in (M) (draft §I.5, p.13-14): primes q ≡ 3 mod 8, d ≡ 7 mod 16, q | d+1, with log q about Y^(ε/5) and log d about Y^(ε/5)(log Y)²; n a power of 2 near x^(2+8ε); b = exp(x^ε); m = x^(1/2+O(ε)); k = x^(9/2+O(ε)); distinguished columns T2 of density δ ≥ x^−ε. The congruences make χ_d(2) = χ_d(q) = 1, so 2 and q drop out.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "From (M) to G (draft §I.6, p.14-16; Part II §5). Averaging over translates removes the residue class mod N and leaves R_{q,d}(x) = G(x) + G_{χq}(x) − G_{χd}(x) − G_{χqχd}(x). Estimate A: R_{q,d}(x) ≤ x^(1/2+C'ε). Estimate B: there exist q, d with |G_χ(x)| ≤ x^(1/2+ε) for the three quadratic twists on [Y, Y^(3/2)]. Estimate C: all 4n table characters satisfy |G_χ(y)| ≤ y·exp(−κ x^(ε/8)) for y ≥ (1/3)exp(x^(ε/3)).",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The draft argues Estimate B is not circular (§I.6, p.16): q and d are astronomically larger than x. A zero-density estimate near Re s = 1 handles the tail of L'/L(1,χ), and mean-square estimates over the modulus show most pairs (q,d) give a sum as small as a random one; only one good pair is needed. Tools cited in §I.11 (p.22-23): Landau–Page zero-free region, Thorner–Zaman, Montgomery's zero-density estimate; no large sieve.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Where (M) comes from (draft §I.7, p.16-18). A theta lift between definite unitary groups is a finite matrix whose entries are derivatives of theta series of pairs of lattices. For an injective map T of lattices with image in p^e·M, e·log p ≤ log||T|| + μ_max(M) − μ(L) (slope inequality, eq. I.32). Three things must be shown: divisibility, size with exact linear term, and control of denominators and rank. Composing m lifts adds exponents, the analogue of vanishing to order m in Stepanov's proof.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Period identity (draft §I.7, eq. I.33, p.17): log Ω = γ + log(2π/√d) − L'/L(1,χ_d), the Kronecker limit / Lerch / Chowla–Selberg formula. This is how γ and L'/L(1,χ_d) enter the main term M; the draft says the two sides producing the same linear term is the reason the method can work at all. The remaining linear terms come from the Siegel mass formula and the Weyl dimension formula.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Denominators and rank (draft §I.7, p.17-18). Denominators are measured by Galois cohomology groups of E (generalised class groups); a bound by √b for the log of the product of their orders, over all primes ℓ and twists up to x^400, is proved in Lean using automorphic forms and Galois representations. Rank: many maps are used, and a trace-formula second moment shows their images are spread evenly so the mean slope is controlled.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Why one half (draft §I.8, p.18-19): after normalisation the errors are x/m (made once, shared over m lifts), m (accumulated over m steps), xm/k and k/n². Balancing x/m with m gives m ≈ √x. If the second cost were m², the balance at m = x^(1/3) would give only a zero-free region Re s > 2/3.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Draft §I.9 (p.19-21) maps the announcement's twenty steps to the paper. Step 3 (identity qN = M^k + R, a quadric, a sixfold cover of GL5) was not found in the Lean development. The announced divisibility exponent could not be confirmed on the simplest model: for the theta function of Z[i] the computed exponent of 3 at n = 120 is 14, against 45 (§I.4.1, p.9).",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Dirichlet L-functions (draft §I.10, p.21-22, described from the Lean statements and not worked out): for a primitive ψ of order o, G is replaced by G(y) + (1/(3o+1))·Σ_{j=1}^{o−1} Re G_{ψ_j}(y), whose coefficients are all positive, so zeros of ζ and of each L(s,ψ_j) cannot cancel. A possible real zero is handled by a separate branch of the lemma. E is enlarged so ψ becomes one of its characters.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Draft §I.11 (p.22-24) names what it calls new: iterated theta lifts as a source of multiplicity, the comparison of divisibility with size through slopes of lattices carried to the term linear in the order, and the resulting one-sided bound for G(x). Background sources cited: Weil, Howe, Kudla (seesaw), Rallis (inner product formula), Gan–Gross–Prasad, Siegel, Weyl, Stuhler/Grayson/Bost (slopes), Jacquet (relative trace formula), Ferrero–Washington, Behrend, Stepanov.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Status table (draft §I.12 p.25 and start of Part III p.54-55): proved in the draft are the interval criterion, (M)+B+C ⇒ A ⇒ bound for G, Estimates B and C from cited theorems, the sets T2 and T, and the error budget. For (M): size is partly proved in an abstract setting with four conditional passages; inert-prime divisibility is conditional on hypothesis (B); the passage to lattices is conditional on two Lean statements; size follows from eleven quoted inputs; rank from three quoted statements; the Galois cohomology bound is quoted; construction of maps and weights and the assembly of (M) are not begun.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The draft reports (p.55) computing the set of declarations the Lean theorem riemannHypothesis depends on (1,478,198) and finding that several statements cited in its Part II are in the archive but not in that set, being parallel or earlier formulations. This includes the inequality from which the E/B bound in (M) is quoted (Part II §4.3, p.32).",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The draft says its intended reader knows a first course in analytic number theory: the prime number theorem, Dirichlet characters and Mellin transforms (p.2). A reader can stop after Part I and know how the proof goes.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The riemann-rev site describes itself as a map of an announced proof and a record of who has checked what; not a proof, not a referee report, not an endorsement, and not an official companion. It offers an atlas of 14 components and 107 declarations, an 11-page guide, two 'deformalization' notes, a 17-chapter book and a blueprint.",
+     "source_url": "https://nasqret.github.io/riemann-rev/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide overview (p.1): one hard estimate and two classical transformations. Arithmetic geometry bounds a smoothed prime sum from above by a square root on sparse long intervals; a localized Landau theorem turns that into a zero-free half-plane; functional equations carry it to the critical line. It tabulates the Stepanov analogy: vanishing to order m ↔ divisibility of an m-fold theta lift; counting degrees ↔ Bost's slope inequality; finite extensions of F ↔ layers of a cyclotomic tower; 'upper bounds suffice' ↔ a Landau-type theorem.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide §3 (p.3-4): for a 'positive family' of characters with positive weights, a zero with Re s > θ forces G_F(y) > C·y^θ somewhere in every late window [Y, Y^(1+δ)]. Three ideas: zeros cannot cancel (positive residues, covering Siegel zeros), high derivatives localize, one side suffices. The arithmetic half is Statement (★): G_ψ(x) ≤ x^(1/2+9ε) on [Y, Y^(3/2)] for arbitrarily large Y.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide §4 (p.4-6): host field E = Q(ζ_{2^(e+2)})+ · K_ψ · Q(√−q, √−d) with 2^e ≍ x^(2+8ε); Hermitian spaces X_0..X_m with dim X_j = n0 + j(t+1), n0 ≍ x^(9/2+10ε). The slope inequality yields (1/b)(ASK(a) − MAIN(a)) ≤ x^(O(ε))(x/m + m + √x), where ASK(a) = Σ Λ(n)(1 − χ_{−d}(n))(a/n − w_n)+ and MAIN(a) = a(log a − 1 − γ + L'/L(1,χ_{−d}) − mean log w). The optimum is m ≍ √x. The outcome is one Lean proposition named TopG.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide §5 (p.6-8): Gal(E/Q) ≅ (Z/2)² × A is abelian, so ASK − MAIN is a finite Fourier sum over its characters. Averaging over a subgroup kills unwanted characters by orthogonality; a set T of 'tops' gives the wanted powers of ψ positive coefficients 1 and 1/(3o+1); the remaining 3o twisted characters are removed by choosing q, d via a mean-square bound. A 'thick' set T2 free of short linear relations comes from Behrend's sphere construction. The ε-bookkeeping sums to the 9 of (★).",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide §6 (p.8-9): the loss of divisibility at each lift is governed by groups Ш¹_ℓ(E,h) of locally trivial Galois cohomology classes with coefficients Q_ℓ/Z_ℓ(−h). Statement VWinAt ψ 401 bounds Σ_ℓ log ℓ · Σ_{1≤h<x^401} len Ш¹_ℓ(E,h) ≤ exp(x^ε/2) for all x in a window [Y, Y²]. It rests on Ferrero–Washington (finite generation of the Iwasawa module), the observation that each 'centre' accounts for at most one exceptional twist, and an elementary interval lemma.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide §7 (p.9-10): both branches start from Galois representations attached to regular algebraic polarized cuspidal automorphic representations of GL_n over CM fields (results known from Harris–Taylor, Shin, Chenevier–Harris, Caraiani), which the archive formalises itself. The final assembly has seven groups of hypotheses, including local theta correspondences, a covolume bound, local Langlands parameters and the cohomological window.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Guide p.10 status: the implication (★) for ψ = 1 ⇒ Mathlib's RiemannHypothesis is checked by the Lean kernel and by NanoDA (61,697 declarations); TopG and VWinAt ⇒ Theorem is checked by the Lean kernel; §§4-7 are read from the Lean source and the announcement, not re-derived.",
+     "source_url": "https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The riemann-rev README says the human-readable mathematics has not been written up and the argument has not been refereed. The guide was audited symbol by symbol against the Lean source, but the atlas, blueprint and book were not and use an older, less concrete description of step 4. The texts were produced with an AI assistant under the repository owner's direction. The Lean archive exports exactly five theorems, the first of Mathlib's type RiemannHypothesis.",
+     "source_url": "https://raw.githubusercontent.com/nasqret/riemann-rev/main/README.md",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Deformalization 1 rewrites one cluster of the archive as ordinary mathematics: lengths of twisted cokernels on a Z_ℓ-module generated by R elements exceed a layer-only quantity by at most Σ v_ℓ(c_i − h) for R 'centres' c_i, so at most R twists h ≤ Z are exceptional, however large Z. The algebra is proved in full; of three arithmetic inputs, two are only sketched.",
+     "source_url": "https://nasqret.github.io/riemann-rev/digests/tower-bound.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Deformalization 2 proves 'local nilpotence' (an input of the first note) in full: every locally constant character of the kernel of the ℓ-adic cyclotomic character is killed by a power of γ − 1. It covers 13 of 144 declarations of one unit; the other 131 are left to notes to come.",
+     "source_url": "https://nasqret.github.io/riemann-rev/digests/local-nilpotence.pdf",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Alpöge's four-page note calls the argument 'a descendant of Stepanov's', with multiplicity supplied by chaining theta lifts and a chain of length √X for a von Mangoldt sum of length X. It says he chose to present only Lean, intends to write the argument properly, expects massive simplification, and expects the Extended Riemann Hypothesis to follow with more time. Its 20-entry timeline is partly a paraphrase of a machine summary which, he says, 'might make zero sense'.",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "The announcement's timeline names the ingredients: Stepanov determinant; divisibility of D^a θ(0)/Ω^a at inert primes of a CM curve; the smoothed von Mangoldt statistic; iterated theta lifts U(X0) → … → U(Xm) between totally definite unitary groups; Chowla–Selberg, Weyl, Siegel mass; an Iwasawa tower; seesaw and Rallis; Bost slope inequality; a relative trace formula; a weakening of Vandiver for classes in H¹; Behrend; 'one would stop at 2/3 a priori'.",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Sutherland's MIT page is a verification record only (compile of all 175,187 modules, axiom audit showing the three standard axioms, kernel replays, independent kernels nanoda and con-leche accepting). It contains no account of the mathematical argument.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The book's introduction states that nothing in it asserts that RH has been proved, and summarises the argument in three layers: analytic engine (machine-checked in isolation), the estimate with θ = 1/2 + 9ε from a chain of about √x theta lifts, and an arithmetic supply (Galois representations, auxiliary primes, Behrend sets, cohomology bounds) that was mostly read at the source rather than replayed piece by piece.",
+     "source_url": "https://nasqret.github.io/riemann-rev/book/intro.html",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Web searches for further expositions by named mathematicians returned nothing about the 20 November 2026 announcement; results concerned an earlier, different result about the proportion of zeros on the critical line. No additional exposition was located beyond those linked from Rubinstein's page.",
+     "source_url": "https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/",
+     "basis": "unconfirmed"
+    }
+   ],
+   "prerequisites": [
+    "Elementary number theory: primes and prime powers, unique factorisation, p-adic valuation of an integer, Legendre's formula for the exponent of p in n!, Chebyshev's bounds via the middle binomial coefficient (draft §I.0, §I.2)",
+    "Congruences and the Chinese remainder theorem; the group of residues mod N, and its quotient by ±1 used as the column group H (draft §I.5, Part II §4.1, §5.1)",
+    "Quadratic residues, the Legendre symbol and quadratic reciprocity (used to show χ_d(2) = χ_d(q) = 1; draft Part II §4.1)",
+    "Group theory: finite abelian groups, subgroups and cosets, characters of a finite abelian group and their orthogonality relations (finite Fourier analysis); this is the engine of the character-averaging step (guide §5)",
+    "Dirichlet characters: primitive versus induced characters, order and conductor, the L-function L(s,χ), Euler products (guide §1-2; draft §I.6, §I.10)",
+    "Complex analysis: analytic continuation, poles and residues, contour shifting, Taylor coefficients and high derivatives near a pole (draft §I.1, Part II §1)",
+    "The zeta function: von Mangoldt function Λ(n), logarithmic derivative ζ'/ζ, trivial and nontrivial zeros, functional equation, the explicit formula linking primes and zeros (draft §I.1; guide §1-2)",
+    "Mellin and Laplace transforms; Landau's theorem that the transform of a function of one sign is singular at the real point of its abscissa of convergence (draft §I.1; guide §3)",
+    "Prime number theorem, PNT in arithmetic progressions, Mertens' theorem, partial summation, Stirling's formula (draft §I.4.2, §I.6, Part II §5)",
+    "For Estimates B and C only: zero-free regions and exceptional (Siegel) zeros, zero-density estimates, mean-square estimates over moduli, primes in progressions to large moduli (draft §I.11(a), Part III §III.1-III.2)",
+    "Algebraic number theory: number fields and rings of integers, quadratic fields Q(√−d), split versus inert primes, cyclotomic fields and their maximal real subfields, Galois groups of abelian extensions, Frobenius elements, the product formula, CM fields (draft §I.3, §I.4.3-I.4.4; guide §4-5)",
+    "Linear algebra and lattices: Euclidean and Hermitian lattices, covolume, determinants and minors, operator norm, Cauchy–Schwarz and Hadamard inequalities, slope of a lattice (draft §I.7, Part II §6)",
+    "Elliptic curves with complex multiplication: lattices in C, Weierstrass functions, periods, the lemniscate, invariant differential; formal groups and their logarithms, height one versus height two (draft §I.3, §I.4.1)",
+    "Theta series of quadratic and Hermitian forms; Gaussian integrals and the Fock/Bargmann inner product with ||z^a||² = a! (draft §I.4.1-I.4.2, §I.7)",
+    "Additive combinatorics (light): Behrend's construction of large sets without three-term arithmetic progressions (guide §5; draft Part III §III.3)",
+    "Stepanov's method for the Riemann hypothesis over finite fields, as the guiding analogy only (draft §I.2, §I.7; guide p.1)",
+    "Needed only to follow the quoted interior of (M), per the expositions: automorphic forms on definite unitary groups, theta correspondence (Weil representation, Howe duality), seesaw identities, Rallis inner product formula, Siegel mass formula, Weyl dimension formula, Chowla–Selberg and Kronecker limit formulas, Bost's slope inequality, relative trace formula (draft §I.11(b))",
+    "Needed only for the denominators branch: Galois cohomology, Tate twists, Poitou–Tate duality, Iwasawa theory of cyclotomic Z_ℓ-extensions, Ferrero–Washington theorem, Vandiver's conjecture as context, Galois representations attached to automorphic forms, local Langlands, p-adic Hodge theory (guide §6-7; draft §III.9)",
+    "My inference, not stated by the sources: Parts I-II of the draft and §1-3 and §5 of the guide are reachable from undergraduate algebra and a first analytic number theory course; the interior of (M) requires graduate-level automorphic and arithmetic-geometric background"
+   ],
+   "not_yet_explained": [
+    "The main inequality (M) itself is not proved in Rubinstein's draft; its proof is taken from the Lean development (abstract p.1; §I.12 p.25; Part III table p.54-55)",
+    "Integrality of the theta kernels in the coordinates of the height-two logarithm (hypothesis (B)) and the valuation statement built on it are assumed, not proved (draft p.1-2, §III.5)",
+    "The claim that the particular theta series used have both full divisibility at inert primes and Gaussian size, called by the draft the deepest local statement in the argument, is quoted (draft §I.4.1, p.9)",
+    "Arithmetic inputs of the size bound are quoted: the inner-product formula for theta lifts and its local factors, lattice covolumes, local index bounds, passage between levels; eleven named inputs in §III.7",
+    "The trace-formula estimates behind the rank or 'general position' step are quoted; only the deduction of the dimension bound from three Lean statements and a finite model are written (draft §III.8)",
+    "The bound for Galois cohomology (the 'weakened Vandiver' input) is quoted; only the step from it to a bound on denominators is proved. The draft says it has not identified a published estimate covering the full small-prime range and has not checked how closely the formal proofs follow published ones (§I.11 p.23-24, §III.9)",
+    "Construction of the maps and their weights, the identification of the abstract objects of §III.4-III.9 with those of the construction, and the assembly of (M) (a mean over a family of maps in Lean) are not begun; §III.6 treats a model case only",
+    "Four passages of the size estimate in §III.4 are conditional (reference mean square, eigenvalues of a lift, row-by-row comparison, pairing at the end of the chain); the theorem on the glued lattice in §III.6 is conditional on two Lean statements; bounds for eleven loss sums are quoted",
+    "The error bound E/B in (M) as written is taken from an archive statement that the final Lean theorem does not depend on in that form; several other Part II citations are likewise parallel or earlier formulations (draft p.32, p.55)",
+    "The draft could not confirm the announcement's stated divisibility exponent on the simplest example (theta function of Z[i]) and concludes the object or normalisation must differ; the identity Θ(z)/T0 = σ(u)²℘(u) used there was observed numerically and not proved (§I.4.1 p.8-9, §I.9 p.20)",
+    "The case of general Dirichlet L-functions is only described from the Lean statements, not worked out, in the draft (§I.10 p.21)",
+    "Announcement steps 4 and 6 and most of step 3 (identity qN = M^k + R, quadric, sixfold cover of GL5) were not found in the Lean development; the draft cannot say the final proof uses the Poincaré bundle construction (§I.9 p.20-21)",
+    "The draft does not address whether a weaker zero-free region (Re s > 2/3) could be proved without the Galois cohomology estimate (§I.8 p.19)",
+    "Naskręcki's guide states its §§4-7 (theta-lift chain and slope inequality, character averaging inputs, Iwasawa bound, automorphic foundation) are read from the Lean source and the announcement, not re-derived (guide p.10)",
+    "The riemann-rev README says no human-readable proof exists yet, the argument has not been refereed, and the atlas, blueprint and book have not been audited against the Lean source and use an older description of step 4",
+    "The deformalization notes cover small clusters only: note 1 leaves two of three arithmetic inputs as sketches; note 2 covers 13 of 144 declarations of its unit",
+    "Neither exposition explains why the formal proof is as long as it is or offers a simplified argument; the author himself writes that a proper write-up remains to be done and that some timeline descriptions may not make sense (announcement p.1-3)",
+    "Not explained anywhere I read: an extension beyond Dirichlet L-functions. The announcement only expects the Extended Riemann Hypothesis 'with more time', and the README says the archive contains no theorem about further L-functions",
+    "Minor discrepancy left unresolved between the two expositions: the draft speaks of twists up to x^400 and windows [Y, Y^(3/2)], the guide of twists h < x^401 and a cohomological window [Y, Y²]; the draft's error terms are x/m + xm/k + m + k/n², the guide's are x/m + m + √x. Reading these as the same statement in different normalisations is my inference",
+    "No independent exposition by another named mathematician was found by web search; the search index returned nothing about the 20 November 2026 announcement, so absence of results is weak evidence"
+   ]
+  },
+  {
+   "key": "release",
+   "summary": "Everything below was fetched on 22 November 2026; it all post-dates my training data, so I report only what the pages say.\n\nWHO / WHAT / WHEN. On Friday 20 November 2026 Levent Alpoge, a number theorist working at Anthropic, posted a short note and a Lean source archive (14 download parts) claiming a proof of the Riemann hypothesis found and formalized together with the AI model Claude. No paper was released, only Lean code.\n\nSIZE. The joint Lean/Mathlib statement calls it 17 million lines. The MIT verification page counts 175,187 Lean modules, a 239 MB compressed archive, and an exported proof of about 61.6 GB containing 1,468,418 declarations. It depends directly only on Mathlib.\n\nTHE STATEMENT. Mathlib's `RiemannHypothesis` says: for every complex number s, if zeta(s) = 0, s is not one of -2, -4, -6, ..., and s is not 1, then the real part of s is 1/2. The \"s is not 1\" clause exists because Mathlib gives zeta a placeholder value at its pole.\n\nFOUR SEPARATE CHECKS (following Buzzard's 12 November post).\n1. Statement is the right one: it is Mathlib's own human-vetted definition. Establishes that the target is RH; says nothing about the proof.\n2. It compiles: dozens of people rebuilt it, including a sandboxed rebuild that reproduced the export byte for byte. Shows Lean accepts it; alone, does not rule out tricks.\n3. The code proves that statement: a trusted file importing only Mathlib states the theorems; two independent comparison tools confirm the proved theorems match, using only the three standard axioms. Rules out redefined symbols or smuggled axioms.\n4. The kernel is not being fooled: the exported proof was accepted by independent checkers (nanoda, con-leche, con-ron, lean4lean, Lean's own kernel module by module). Rules out a bug in one checker; still relies on Mathlib's definitions meaning what is intended.\nNone of this gives human understanding of why the theorem is true.\n\nSTILL RUNNING (as of 22 Nov 16:20 UTC): Lean's own single-threaded kernel replaying the full export, and the end-to-end `lake comparator` run (its statement and axiom stages already passed).\n\nGENERALIZED HYPOTHESIS. Covered only for Dirichlet L-functions (every modulus, every character): five theorems were checked. Dedekind, Hecke and general automorphic L-functions are not among the checked statements. The author says he expects the \"Extended\" hypothesis with more time, i.e. not yet.\n\nWRITTEN PAPER. The author says he deliberately published only Lean, because a machine-generated write-up (he produced over 250,000 pages) would be unreadable. He admits he has not mastered the whole argument, expects large simplifications, and commits to writing and lecturing on it properly. His four-page note has a 20-item timeline (6 October to 16 November) that he warns is partly paraphrased from an AI summary.\n\nREACTIONS. Sutherland (MIT): historic, chance of anything fishy about zero. Maynard (Oxford): suspects it is correct; a milestone once understood. Buckmaster (NYU): will take a long time to digest. Granville (Montreal): the note is garbled and the release was rushed, tied to Anthropic's stock-market debut; the author's note denies that motive.\n\nOPEN. No peer-reviewed paper; no human-readable proof; the Clay prize needs publication in a qualifying refereed outlet, two years, and general acceptance. I found no Clay statement.\n\nOTHER PROOF. The same day Ravi Vakil posted a human-written GRH manuscript by Alessandro Masullo (\"The Music of the Primes\"). About eight hours later Vakil added that several people had reported problems in it; it is unverified.",
+   "facts": [
+    {
+     "claim": "On 20 November 2026 Levent Alpoge released a proof of the Riemann Hypothesis as a Lean library; the joint statement by the Lean and Mathlib communities (endorsed by the Lean FRO and the Mathlib Initiative, dated 21 November 2026 13:55) gives its size as 17 million lines of code and says it depends directly only on Mathlib.",
+     "source_url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The joint statement says the communities have full confidence the proof is correct and certifies both statement and proof, listing four satisfied criteria: (1) the statement is Mathlib's own vetted RiemannHypothesis; (2) dozens of people compiled the library without errors and reproduced the same raw export file; (3) a community-added file importing only Mathlib isolates the statement, and two independent tools (comparator and con-leche --compare) confirm the theorem proved is exactly that statement; (4) the exported proof was checked by Lean's official kernel, con-leche, con-ron and several third-party checkers in different languages.",
+     "source_url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The joint statement says con-leche and con-ron come with a formal proof, relative to set theory, that they cannot accept a false proof, and that the checks ran on an inert export of the proof, out of reach of any malicious code in the sources. It ends by looking forward to work that will explain the new ideas, i.e. it certifies correctness, not understanding.",
+     "source_url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Author's note: he says he believes he has, working with Claude, discovered a proof of the Riemann Hypothesis; that the method extends to the Generalized Riemann Hypothesis; that he expects the Extended Riemann Hypothesis too with more time (so not yet done); and that the arguments were formalized without assumptions. The proof itself is given only as a footnote link to a Lean archive in 14 parts (lean.tar.gz.part01 to part14).",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Author's note on a written paper: he decided to present only Lean because posting a huge unreadable machine-generated document would be inappropriate (he generated one of more than 250,000 pages for his own amusement). He says the argument is extremely long, that he is presenting a complete argument before mastering the mathematics around it, that he expects it to be massively simplified, and that he intends to understand it, speak about it and write it up properly.",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Author's note on how it was found: he says he supplied the direction (combining two ideas from a toy setting, descended from Stepanov's function-field argument) and that Claude outpaced him near the end; the key suggestion he credits to Claude is taking a chain of iterated theta lifts of length about the square root of X for a von Mangoldt sum of length X, each lift playing the role of multiplicity.",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Author's note contains a 20-item rough timeline dated 6 October 2026 to 16 November 2026 (last entry: GRH, 16 November), which he says was compiled by Claude; he warns in a footnote that parts are paraphrased from an AI summary, may make no sense, and that he is not yet expert in some of the material (higher-rank automorphic forms).",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Author's note on timing: he calls the timing horrible, says the result came together late on a Sunday night, that he asked Anthropic's CEO about announcing, that there was a constraint to respect, and that the cynical reading of the timing is false.",
+     "source_url": "https://alpo.ge/remark.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Mathlib source (Mathlib/NumberTheory/LSeries/RiemannZeta.lean, master) defines: def RiemannHypothesis : Prop := forall (s : C) (_ : riemannZeta s = 0) (_ : not exists n : N, s = -2 * (n + 1)) (_ : s != 1), s.re = 1 / 2. In words: every zero of zeta that is not a negative even integer and is not 1 has real part 1/2. The docstring now points to the leanprover-community/riemann-hypothesis repository for a proof term.",
+     "source_url": "https://raw.githubusercontent.com/leanprover-community/mathlib4/master/Mathlib/NumberTheory/LSeries/RiemannZeta.lean",
+     "basis": "primary"
+    },
+    {
+     "claim": "The Mathlib documentation page shows the same definition of RiemannHypothesis and the same pointer to the community repository.",
+     "source_url": "https://leanprover-community.github.io/mathlib4_docs/Mathlib/NumberTheory/LSeries/RiemannZeta.html",
+     "basis": "primary"
+    },
+    {
+     "claim": "MIT verification page (Andrew Sutherland, checks run with Claude Code, last updated 2026-11-22 16:20 UTC): all 175,187 modules compile with zero errors on Lean v4.33.1 / Mathlib v4.33.1; the five headline theorems depend only on the three standard axioms propext, Classical.choice and Quot.sound; no axioms are declared outside Lean core; Mathlib files are byte-identical to the official cache.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Size figures from the verification page: source archive is 239,275,554 bytes (the 14 parts joined); the exported proof unpacks to 61,570,595,788 bytes (7.7 GB compressed) and contains 1,468,418 declarations; checking it needs roughly 50 to 100 GB of RAM.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Independent checkers on the verification page: nanoda (independent Rust kernel) accepts the full export; con-leche accepts all 1,468,418 declarations in verified mode; con-leche --compare and con-ron --compare each confirm all five theorems against the challenge file; lean4lean accepts all 175,187 compiled modules (five needed a raised step limit); leanchecker replayed every module through Lean's kernel with zero rejections.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "A separate sandboxed rebuild (no network, read-only source, fresh download from the author's site, different machine) reproduced the export byte for byte. One of 175,187 compiled files differs between builds because of a known Lean race in naming a bound variable (fixed in Lean v4.36.0); the page says this does not affect the export or kernel checking.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Checks still running as of 22 November 16:20 UTC: Lean's default and paranoid kernels replaying the full export (single-threaded, running since 20 November, no verdict yet) and the end-to-end lake comparator run (statement comparison and axiom check already passed; its Lean-kernel stage still in progress).",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Five theorems were checked: (1) Mathlib's RiemannHypothesis; (2) the same written out; (3) for every modulus N >= 1 and every Dirichlet character chi, L(chi,s) != 0 for Re s > 1/2 (excluding the pole of the trivial character at s = 1); (4) every zero of L(chi,s) with 0 < Re s < 1 has Re s = 1/2; (5) the same for primitive characters, the usual form of GRH for Dirichlet L-functions.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Scope of 'GRH': the verification page states it means Dirichlet L-functions only (all moduli, all characters); Dedekind zeta functions, Hecke L-functions and general automorphic L-functions are not among the checked statements.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "As a cross-check not depending on Mathlib's zeta definition, the proof was combined with an independent formalization of Robin's and Lagarias's criteria, giving two unconditional divisor-sum inequalities (Robin: sigma(n) < e^gamma n log log n for n > 5040; Lagarias: sigma(n) <= H_n + exp(H_n) log(H_n) for n > 0), which passed the same axiom, con-leche, con-ron and nanoda checks.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The verification page's own caveat: a passing check shows the formal statements, as written against Mathlib's definitions, follow from the three standard axioms according to the kernels used; it relies on those kernels and on Mathlib's definitions being what is intended.",
+     "source_url": "https://math.mit.edu/~drew/grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The community repository README describes itself as a community-led effort to clean up and maintain the formalization of RH and of GRH for Dirichlet L-functions, keeps the unmodified submission on an 'original' branch (commit 40e56bab), and notes the submission was published without a license and is mirrored so it can be checked.",
+     "source_url": "https://raw.githubusercontent.com/leanprover-community/riemann-hypothesis/HEAD/README.md",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Buzzard's 12 November 2026 post sets four questions for any 'checked in Lean' claim: does the Lean statement match the informal one; does the code compile (in a sandbox, since AI-generated Lean can run arbitrary code); does the code prove the statement as written in a trusted file, with no redefined notation or added axioms (tool: lake comparator); and does it exploit a bug in Lean's official kernel (answer: run several independent kernels, lake comparator --paranoid).",
+     "source_url": "https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "The same post warns that passing all four tests makes the Lean proof overwhelmingly likely correct but says nothing about any accompanying prose write-up, which can diverge from the Lean; it also notes Lean has had a kernel soundness bug, which is why multiple independent kernels matter.",
+     "source_url": "https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Scientific American (20 Nov, updated 21 Nov): reports the claim, says it was later verified by independent researchers; quotes Sutherland calling it a historic moment and a human triumph after compiling it himself, and saying much work remains to understand the mathematical details; quotes Hector Pasten and Carlo Pagano in conditional terms ('if the proof is correct and understood', 'if true') on its impact. Notes the announcement came a day after Anthropic's stock-market debut.",
+     "source_url": "https://www.scientificamerican.com/article/anthropic-mathematician-claims-to-prove-riemann-hypothesis-most-famous-problem-in-all-of-math/",
+     "basis": "press"
+    },
+    {
+     "claim": "Scientific American follow-up (20 Nov, updated 21 Nov): quotes the joint statement; quotes Sutherland that the proof was recompiled and rechecked by the Lean kernel with only the three standard axioms and that the chance of anything fishy is about zero; quotes Buzzard from the community chat as, at that time, still awaiting a successful comparator run.",
+     "source_url": "https://www.scientificamerican.com/article/the-ai-riemann-hypothesis-proof-is-almost-certainly-true-independent-mathematicians-attest/",
+     "basis": "press"
+    },
+    {
+     "claim": "Nature news (20 Nov): quotes James Maynard that if it checks out it is a historic milestone and that he suspects it will prove correct, though understanding is still needed; Tristan Buckmaster that it is extremely complicated and will take a long time to digest; Andrew Granville that the note is garbled, that a clearer write-up should have come first, and attributing the timing to the fall in Anthropic's share price after its IPO.",
+     "source_url": "https://www.nature.com/articles/d41586-026-03812-7",
+     "basis": "press"
+    },
+    {
+     "claim": "TechCrunch (20 Nov): says it will be a while before mathematicians have a handle on the proof though most appear confident the Lean result will hold; relays number theorist Chris Birkbeck's chat comment that part of the argument looks like automorphy lifting using Galois representations for GL_n over CM fields; reports Masullo describing his rival proof as 12 years of work.",
+     "source_url": "https://techcrunch.com/2026/11/20/ai-claimed-a-solution-to-the-167-year-old-riemann-hypothesis-and-a-human-did-too/",
+     "basis": "press"
+    },
+    {
+     "claim": "Second proof the same day: Ravi Vakil posted on 20 November a proposed proof of GRH by Alessandro Maria Masullo (PDF titled 'The Music of the Primes'), described as entirely human with no AI, which Brian Conrad had been reading for months; the release was brought forward. An update about 8 hours later says several people reported problems in it, found with the help of AI models, that all issues must be resolved before acceptance, and that Vakil makes no claim about correctness of the strategy.",
+     "source_url": "https://math216.wordpress.com/2026/11/20/hurried-announcement-alessandro-masullo-grh/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Clay Millennium Prize rules: a proposed solution is considered only if published in a qualifying outlet (a refereed mathematics publication of worldwide repute, or one approved under a relaxed procedure), at least two years have passed since publication, and it has general acceptance in the mathematics community; Clay does not accept direct submissions and has sole discretion, including whether a prize is awarded at all or split.",
+     "source_url": "https://www.claymath.org/wp-content/uploads/2022/03/millennium_prize_rules_0.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "No statement from the Clay Mathematics Institute about this proof was found in two web searches; whether a Lean-only release, or an AI-assisted one, can meet the publication requirement is not addressed in any source read.",
+     "source_url": "https://www.claymath.org/millennium-problems/rules/",
+     "basis": "unconfirmed"
+    },
+    {
+     "claim": "A search result summary (page not fetched) attributes to a technical review the figures 17.4 million lines and about 819,000 theorems and lemmas for the archive; only the 17 million lines and 175,187 modules figures were confirmed from fetched pages.",
+     "source_url": "https://leanprover-community.github.io/blog/posts/riemann-hypothesis/",
+     "basis": "unconfirmed"
+    }
+   ],
+   "prerequisites": [
+    "Complex numbers: real part, the complex plane, what it means for s to have real part 1/2 (the critical line) or 0 < Re s < 1 (the critical strip)",
+    "The Riemann zeta function: the series for Re s > 1, analytic continuation to the rest of the plane, and the pole at s = 1 (why the Lean statement excludes s = 1)",
+    "Zeros of zeta: the trivial zeros at -2, -4, -6, ... versus the non-trivial zeros",
+    "Prime numbers and why zeros of zeta control how primes are distributed (Euler product, prime counting, the von Mangoldt function)",
+    "Modular arithmetic and the group of units mod N, needed to define Dirichlet characters",
+    "Dirichlet characters (homomorphisms from units mod N to nonzero complex numbers), primitive versus imprimitive, and Dirichlet L-functions",
+    "What 'generalized' means: the family of L-functions (Dirichlet, Dedekind, Hecke, automorphic) and which of them the checked statements cover",
+    "Divisor sum sigma(n), harmonic numbers and Euler's constant, to read Robin's and Lagarias's inequalities as RH-equivalent statements about whole numbers",
+    "What a proof assistant is: the difference between a statement (a type) and a proof (a term), and what the kernel does",
+    "Axioms of Lean's logic used here: propext, Quot.sound, Classical.choice",
+    "What Mathlib is and why a definition inside it counts as trusted",
+    "Why compiling is not enough: redefined notation, added axioms, kernel bugs, and how a trusted challenge file plus independent checkers address each"
+   ],
+   "not_yet_explained": [
+    "The actual mathematical argument: no source read explains the proof; the author's four-page note is a list of compressed hints (Stepanov's method with multiplicity, iterated theta lifts between definite unitary groups, Bessel/GGP periods, seesaw, Bost slope inequality, Iwasawa tower, relative trace formula, a weakening of Vandiver) and he warns parts of it may not make sense",
+    "How the 175,187 Lean modules are organized and which known theorems were formalized along the way (the archive itself was not downloaded or read)",
+    "Whether the proof can be shortened; the author expects large simplifications but none exist yet",
+    "Whether and when a human-readable paper will appear, and where it would be refereed",
+    "Whether a Lean-only, AI-assisted proof can satisfy the Clay prize publication rule, and who would be credited; no Clay statement was found",
+    "Final verdict of the two checks still running on 22 November (Lean's own kernel on the full export; end-to-end lake comparator)",
+    "Extension beyond Dirichlet L-functions (Dedekind, Hecke, automorphic; the 'Extended' hypothesis the author mentions) is asserted as expected, not released or checked",
+    "Status of the Masullo manuscript after the reported problems: which steps are affected and whether they are repairable is not stated",
+    "What the 'constraint to respect' on the announcement timing was; the author does not say",
+    "The Science magazine report could not be retrieved (HTTP 403) and the community chat thread was not read, so reactions there are known only through press quotes"
+   ]
+  },
+  {
+   "key": "october",
+   "summary": "WHAT WAS PROVED. On 6 October 2026 OpenAI published a large GitHub collection of machine-written maths manuscripts. Family 003 contains two papers claiming the \"quasi-Riemann hypothesis\": that the zeta function has no zeros in a fixed half-plane to the right of some line Re(s) = theta with theta < 1. Paper 1 (dated 30 September 2026, 199 pages) gives theta = 7/8. Paper 2 (dated 5 October 2026, 49 pages) gives the weaker theta = 11/12 by a different, shorter argument. Both cover every Dirichlet L-function and every finite-order Hecke L-function over Q(sqrt(-3)), not just zeta. By the symmetry of the zeros, nontrivial zeros are confined to 1/8 <= Re(s) <= 7/8. This is not the Riemann hypothesis (which needs theta = 1/2).\n\nWHO AND HOW. The only author named is \"OpenAI\"; the work came from an unnamed, unreleased internal model. The README says most results used one fixed procedure (about three hours of compute each) but lists the zeta zero-free region as an exception, without saying what was different. The 11/12 write-up was edited by a person, the only such paper in the release; OpenAI has not said who.\n\nLEAN. The 7/8 result is formalized: the Lean statement is literally \"if 7/8 < Re(s) then riemannZeta s is not 0\", with companion statements for Dirichlet and Hecke L-functions and a Landau-Siegel zero bound. The paper's later applications are not formalized, and the 11/12 paper has no formalization. I read the statement and the final proof line; I did not compile it.\n\nPEER REVIEW. None. It is a repository preprint that OpenAI itself calls raw research data. Quanta (19 October) reports experts largely agree the 11/12 argument is correct, with human write-ups circulating privately; Sarnak withholds the word \"theorem\" until humans check every detail.\n\nCOMPARISON. Before this, no fixed-width zero-free strip was known. The best regions (de la Vallee Poussin; Vinogradov-Korobov) hug the line Re(s) = 1 and get thinner as height grows, so the supremum of real parts of zeros was only known to be at most 1.\n\nMETHOD (11/12 paper's own outline). First, a zero-free half-plane follows from showing that Mobius-function sums twisted by a character cancel with a power saving. Second, that one sum is placed inside a family of sums twisted by sixth-power residue symbols over the Eisenstein integers, and the family is shown to cancel on average. Third, Poisson summation turns the average into cubic Gauss sums, which are coefficients of Kubota's cubic theta function (a metaplectic form); its transformation law plus a quadratic large sieve gives the bound, applied recursively.\n\nCLASSICAL DATES. All confirmed as asked, with two refinements: Weil's curve proof is cited as 1948 (the 1940 announcement was not checked), and the pre-2026 record proportion on the critical line is five-twelfths (Pratt, Robles, Zaharescu, Zeindler), with an August 2026 claim of 67.25% that I saw only on Wikipedia.\n\nMAJOR NEWS OUTSIDE THE BRIEF. On 20 November 2026, two days ago, Quanta reported a claimed Lean proof of the full generalized Riemann hypothesis (Levent Alpoge with Claude, about 17 million lines) and a separate 940-page human manuscript (Masullo). Any page text about the hypothesis's status should be checked against this before it is shown to anyone.\n\nDownloaded sources are in [local scratch path removed]",
+   "facts": [
+    {
+     "claim": "Paper 1 abstract: all finite-order Hecke L-functions over Q(sqrt(-3)) and all Dirichlet L-functions, hence the Riemann zeta function, have no zeros with Re(s) > 7/8 (the pole at s = 1 aside). Title page is dated 30 September 2026; the PDF has 199 pages and names OpenAI as author.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-September-30-2026/paper.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Paper 2 abstract and Theorem 1.1: every finite-order Hecke L-function over Q(sqrt(-3)), hence every Dirichlet L-function including zeta, has no zeros with Re(s) > 11/12. Title page dated October 5, 2026; 49 pages. It describes itself as an intermediate step toward the 7/8 result, isolated for simplicity.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "The repository's contents map lists family 003, 'The quasi-Riemann hypothesis', with three manuscripts: the 7/8 paper, the alternate 11/12 proof, and 'Uniform exclusion of Landau-Siegel zeros' (dated October 1, 2026).",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/CONTENTS.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "The README says the manuscripts were produced by an unnamed internal OpenAI model, are at different stages of verification, are best read as raw research data and not polished papers, and that unformalized results could have issues. It currently counts 721 manuscripts in 373 families with about 42% of top-line results formalized.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/README.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "The README says most results used one fixed procedure averaging three hours of ChatGPT Pro thinking compute, with about 4,000 problems posed, but names the zeta zero-free region work as an exception to that procedure, and says the Re(s) > 11/12 write-up was human edited for readability. It does not say what the exception consisted of.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/README.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "The 11/12 paper's own README states it was written with human assistance and gives author OpenAI, date October 5, 2026.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/README.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "Release date: OpenAI's announcement post 'Sharing AI progress in mathematics' is dated October 6, 2026 and says the results come from an internal frontier model; the GitHub repository was created 2026-10-06T21:47Z. So the papers carry dates (30 September and 5 October) earlier than the public release (6 October).",
+     "source_url": "https://openai.com/index/sharing-ai-progress-in-mathematics/",
+     "basis": "primary"
+    },
+    {
+     "claim": "The Lean challenge statement for the headline result is: theorem riemannZeta_ne_zero_of_seven_eighths_lt_re {s : C} (hs : (7 / 8 : R) < s.re) : riemannZeta s ≠ 0. The challenge file ends in 'sorry' by design; the proof is in the solution module, permitted axioms are propext, Quot.sound and Classical.choice.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/lean/ComparatorChallenges/QuasiRiemannHypothesis.lean",
+     "basis": "primary"
+    },
+    {
+     "claim": "The solution file contains the same theorem with no 'sorry' in that file, concluding by a lemma named SevenEighths.ProbeFinalAssemblyUnconditional.zeta_nonzero. I read it but did not compile it or run the Comparator check.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/lean/OAI/NumberTheory/DirichletL/Nonvanishing.lean",
+     "basis": "primary"
+    },
+    {
+     "claim": "Scope of the formalization per its own doc page: 7/8 for zeta and every Dirichlet L-function (uniformly in modulus and character), the same bound for finite-order Hecke L-functions over Q(sqrt(-3)), and a uniform bound 1 - beta >= c/log q for real zeros of real primitive characters with no explicit c. It states the paper's later applications are not included. The doc lists the 7/8 paper and the Landau-Siegel paper as its accompanying papers, not the 11/12 paper.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/lean/docs/003.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "Quanta (19 October 2026) reports the 7/8 version was formally verified in Lean while the 11/12 version was not yet formally verified, and that mathematicians concentrate on the 11/12 paper because it is shorter.",
+     "source_url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019",
+     "basis": "press"
+    },
+    {
+     "claim": "Not peer reviewed. Quanta reports experts largely agree the 11/12 result is correct; Radziwill can sketch it in half a page and other write-ups of 7 to 13 pages were circulating privately, unpublished, as of 19 October. Radziwill said both papers are written badly enough to be rejected by any journal. Sarnak said he will not call it a theorem until humans have checked and understood all details.",
+     "source_url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019",
+     "basis": "press"
+    },
+    {
+     "claim": "Quanta reports the 11/12 paper was the only one in the release edited by a person, that OpenAI did not say who, and that the company's reply was that the paper is the work of everyone at OpenAI. Quanta counts 377 results and 722 papers on October 6 (the README now says 373 families and 721 manuscripts).",
+     "source_url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019",
+     "basis": "press"
+    },
+    {
+     "claim": "Method as experts describe it to Quanta: no new concepts, a synthesis of known ideas; it treats zeta as one member of a family of functions (an approach Sarnak long advocated), the right family being found through metaplectic forms, and a 2021 formula of Dunn and Radziwill is a key ingredient. Sawin and Bloom doubt the technique reaches 1/2.",
+     "source_url": "https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019",
+     "basis": "press"
+    },
+    {
+     "claim": "Method per the 11/12 paper's outline: (1) reduce the zero-free half-plane to a power saving for Mobius sums twisted by a Hecke character, in the spirit of Littlewood's equivalence of RH with the Mobius-sum bound; (2) embed that sum in a family twisted by sextic residue symbols over the Eisenstein integers and prove a mean-square bound over the family; (3) Poisson summation produces cubic Gauss sums, identified with coefficients of Kubota's cubic theta function; the theta transformation (Dunn-Radziwill) turns the twists into quadratic characters, where the quadratic large sieve (Heath-Brown; Goldmakher-Louvel) applies, and the estimate is iterated. The resulting bound is D^(11/12+epsilon).",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Terence Tao's blog post of 19 October 2026 says a quasi-Riemann hypothesis for all Dirichlet L-functions has been established in two papers of the OpenAI release, that the arguments are analytic and relate the Mobius function to Fourier coefficients of automorphic forms, and that they are still being digested; the post itself explains the separate, shorter Siegel-zero paper instead.",
+     "source_url": "https://terrytao.wordpress.com/2026/10/19/a-sketch-of-the-proof-of-non-existence-of-siegel-zeroes/",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Comparison with earlier knowledge, as the 11/12 paper states it: Hadamard and de la Vallee Poussin (1896) showed no zeros on Re(s) = 1; the classical region is sigma > 1 - c/log(q(|t|+3)); Vinogradov-Korobov gives sigma > 1 - c/((log|t|)^(2/3) (log log|t|)^(1/3)). All of these shrink to zero width as height grows, whereas the new claim is a half-plane of fixed width independent of conductor and height.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf",
+     "basis": "primary"
+    },
+    {
+     "claim": "Best explicit zero-free regions before October 2026 (Mossinghoff, Trudgian, Yang, 2024): sigma >= 1 - 1/(5.558691 log|t|) for |t| >= 2 and sigma >= 1 - 1/(55.241 (log|t|)^(2/3) (log log|t|)^(1/3)) for |t| >= 3. The quasi-Riemann hypothesis is defined there as: the supremum beta of real parts of nontrivial zeros is below 1; RH is beta = 1/2; and pi(x) = li(x) + O(x^beta log x).",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Wikipedia's Riemann hypothesis article states that OpenAI published a Lean formalization of the 7/8 claim but that it had not been independently verified as of October 2026.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "unconfirmed"
+    },
+    {
+     "claim": "Repository history: on 7 October 2026 three manuscripts (Hodge/K3-related) were withdrawn over a sign error and 14 others revised; formalized share then stated as 300/719. None of the withdrawn or revised items listed is in the quasi-Riemann family.",
+     "source_url": "https://raw.githubusercontent.com/openai/math/HEAD/history.md",
+     "basis": "primary"
+    },
+    {
+     "claim": "Riemann 1859: the paper 'Ueber die Anzahl der Primzahlen unter einer gegebenen Grosse' is a 9-page paper published in the November 1859 Monatsberichte of the Berlin Academy.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=On_the_Number_of_Primes_Less_Than_a_Given_Magnitude&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "von Mangoldt 1895: Riemann's explicit formula was sketched in 1859 and first rigorously proved by von Mangoldt in 1895 (Journal fur die reine und angewandte Mathematik 114, pp. 255-305).",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Explicit_formulae_for_L-functions&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Prime number theorem 1896: proved independently by Jacques Hadamard and Charles Jean de la Vallee Poussin in 1896.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Prime_number_theorem&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Hardy 1914: infinitely many zeros on the critical line. Selberg 1942: a positive proportion of zeros on the line. Levinson 1974: one third. Conrey 1989: two fifths.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Record proportion before 2026: more than five-twelfths (about 41.7%) of zeros are on the critical line, by Pratt, Robles, Zaharescu and Zeindler (arXiv 1802.10521, posted February 2018; Wikipedia dates the published result 2020).",
+     "source_url": "https://arxiv.org/abs/1802.10521",
+     "basis": "primary"
+    },
+    {
+     "claim": "Wikipedia reports that in August 2026 Alpoge and Furman published a claimed proof, with a Lean formalization, that more than 67.25% of nontrivial zeros are simple and on the critical line. I did not fetch that paper.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "unconfirmed"
+    },
+    {
+     "claim": "Platt and Trudgian: rigorous interval-arithmetic verification that every zero with 0 < imaginary part <= 3*10^12 has real part 1/2 (arXiv April 2020; cited as published 2021). Wikipedia gives the exact height as 3.0001753328*10^12. By the Riemann-von Mangoldt count that is about 1.24*10^13 zeros (my own calculation), matching the '12 trillion' quoted by Quanta.",
+     "source_url": "https://arxiv.org/abs/2004.09765",
+     "basis": "primary"
+    },
+    {
+     "claim": "Weil and curves over finite fields: Artin conjectured the analogue in 1924, Hasse proved genus 1, and Weil proved the general curve case, cited as Weil 1948 (the book 'Sur les courbes algebriques et les varietes qui s'en deduisent'). Weil stated the conjectures for all varieties in 1949.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Deligne 1974: the Riemann-hypothesis part of the Weil conjectures was proved by Pierre Deligne in 'La conjecture de Weil. I', Publications Mathematiques de l'IHES 43 (1974), pp. 273-307.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Weil_conjectures&action=raw",
+     "basis": "third-party-exposition"
+    },
+    {
+     "claim": "Clay Millennium Prize rules (revised rules adopted 26 September 2018): CMI takes no direct submissions; a proposed solution is considered only if (i) it is published in a Qualifying Outlet, (ii) at least two years have passed since publication, and (iii) it has received general acceptance in the global mathematics community.",
+     "source_url": "https://www.claymath.org/millennium-problems/rules/",
+     "basis": "primary"
+    },
+    {
+     "claim": "Quanta's dispatch dated 20 November 2026 reports that Levent Alpoge (Anthropic) posted a four-page note and about 17 million lines of Lean claiming a proof of the generalized Riemann hypothesis found with Claude; that independent groups (Sutherland at MIT, DeDeo at CMU) had compiled it while Comparator checks were still running; and that Radziwill criticized the lack of a human-understandable argument.",
+     "source_url": "https://www.quantamagazine.org/update/169054/",
+     "basis": "press"
+    },
+    {
+     "claim": "The same Quanta dispatch reports that on 20 November 2026 Ravi Vakil posted a 940-page all-human manuscript by Alessandro Masullo proposing a proof of the generalized Riemann hypothesis, said to have been under review by Brian Conrad for months; number theorists are described as withholding judgement.",
+     "source_url": "https://www.quantamagazine.org/update/169054/",
+     "basis": "press"
+    },
+    {
+     "claim": "Wikipedia (as edited by 22 November 2026) says the Lean FRO and the Mathlib Initiative endorsed the Alpoge formal proof on 21 November 2026 and that, as of November 2026, the proof is not yet understood by mathematicians. I did not fetch the endorsement statement itself.",
+     "source_url": "https://en.wikipedia.org/w/index.php?title=Riemann_hypothesis&action=raw",
+     "basis": "unconfirmed"
+    }
+   ],
+   "prerequisites": [
+    "Prime numbers and unique factorization; how primes thin out (the prime counting function pi(x) and the logarithmic integral li(x))",
+    "Complex numbers as points in a plane: real part, imaginary part, a vertical line and a half-plane",
+    "Infinite series and convergence; the zeta series and why it only converges for Re(s) > 1",
+    "Euler's product formula linking the zeta series to the primes",
+    "Analytic continuation and the functional equation (why zeros come in pairs mirrored about Re(s) = 1/2, so a bound of 7/8 on the right gives 1/8 on the left)",
+    "Trivial zeros, nontrivial zeros, the critical strip 0 < Re(s) < 1 and the critical line Re(s) = 1/2",
+    "The explicit formula: each zero contributes a wave to the prime count, and a zero with real part beta contributes an error of size about x^beta",
+    "What a zero-free region is, and why the classical ones (width shrinking like 1/log t) are weaker than a fixed half-plane",
+    "The Mobius function and the fact that cancellation in its partial sums is equivalent to a zero-free half-plane",
+    "Modular arithmetic, groups (Z/n)^x, and group characters; Dirichlet characters and Dirichlet L-functions",
+    "Quadratic residues and the Legendre symbol, then cubic and sextic residue symbols",
+    "Rings and fields: the Eisenstein integers Z[omega] inside Q(sqrt(-3)), units, ideals, norms, unique factorization there",
+    "Hecke characters and Hecke L-functions as the number-field version of Dirichlet's",
+    "Gauss sums (a character's finite Fourier transform) and Poisson summation",
+    "Averaging over a family and the large sieve inequality (cancellation on average is easier than for one sum)",
+    "Theta functions and automorphic/metaplectic forms at headline level: Kubota's cubic theta function has cubic Gauss sums as coefficients and obeys a symmetry",
+    "Landau-Siegel zeros: hypothetical real zeros very near 1, ruled out by any fixed zero-free half-plane",
+    "What a formal proof in Lean certifies (the stated theorem follows from the axioms) and what it does not (that the statement matches the paper, or that anyone understands the argument)"
+   ],
+   "not_yet_explained": [
+    "The status of the full Riemann hypothesis changed two days ago (20 November 2026): a Lean-only claimed proof of GRH (Alpoge with Claude) and a separate 940-page human manuscript (Masullo). I only read Quanta's dispatch and Wikipedia; I did not fetch the Lean statement, the endorsement by the Lean and Mathlib groups, or either paper. Any wording on the page about whether RH is solved needs a deliberate decision by the user.",
+    "What exactly was different about how the zeta zero-free result was produced. The README only says it was an exception to the fixed three-hour procedure; neither it nor Quanta says how much human steering was involved or which model was used.",
+    "Who edited the 11/12 paper. OpenAI declined to say.",
+    "Whether the Lean proof of the 7/8 statement has been independently compiled and Comparator-checked. Quanta calls it formally verified; Wikipedia says not independently verified as of October 2026; I did not build it.",
+    "Why 7/8 and 11/12 specifically. The 11/12 exponent falls out of a parameter choice in step 2 of the outline (H^(5/6) against H^(-1/3)); I did not read how the 199-page paper improves it to 7/8.",
+    "An anonymous blog comment points to a community tracker claiming the bound has since been pushed to 13/15. Unverified; I did not fetch the tracker.",
+    "The human-written expositions of the 11/12 proof (Radziwill's half page; the 7 to 13 page write-ups) were unpublished as of 19 October. I did not search for whether they have appeared since.",
+    "Weil's 1940 announcement of the curve case was not confirmed in anything I fetched; only the 1948 publication and '1940s' were. Conrey's precise figure (slightly above two fifths) was confirmed only as 'two fifths'.",
+    "The Clay rules page text I retrieved gives the three conditions but not the definition of a Qualifying Outlet (section 6), so whether a Lean repository or a preprint could ever qualify is not established here. The quasi-Riemann result is not the prize problem in any case.",
+    "Counts disagree between sources (377 results and 722 papers in Quanta; 372 topics on Wikipedia; 373 families and 721 manuscripts in the current README) because the repository was revised after release. Quote the README with its date if a number is needed.",
+    "A second independent news report on the quasi-Riemann result could not be read: the two outlets tried returned access-denied pages. The second and third sources used are Quanta's weekly dispatch (same author) and Tao's blog."
+   ]
+  }
+ ]
+}
