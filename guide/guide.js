@@ -475,7 +475,10 @@ const STEPS = [
         <div class="meter"><i></i><b></b><span>a bound on its size</span></div><p class="readout"></p>
         <p class="small">A metaphor: the shape of the argument, not its real objects. Those are theta lifts between unitary groups, named here and not taught.</p></div>`);
       const two = el(`<div hidden><p class="small">The construction is repeated m times. One cost grows like x/m and the other like m. Their sum is least at m = √x, and that is where the ½ comes from.</p>
-        <label class="slide" style="text-transform:none">m = 10<input type="range" min="1" max="3" step="0.01" value="1" aria-label="The number of repeats, m">1,000</label><p class="readout"></p></div>`);
+        <label class="slide" style="text-transform:none">m = 10<input type="range" min="1" max="3" step="0.01" value="1" aria-label="The number of repeats, m">1,000</label>
+        <div class="costs" aria-hidden="true"><i></i><i></i><b></b><span>the least their sum can be: 200</span></div>
+        <p class="legend"><span><i class="sw dot inked"></i>x/m</span><span><i class="sw dot dim"></i>m</span><span>the bar is their sum: slide m and one cost is traded for the other</span></p>
+        <p class="readout"></p></div>`);
       stage.append(one, two);
       one.querySelector('b').style.left = one.querySelector('span').style.left = `${Math.log10(CAP) / TOP * 100}%`;
       const squeeze = () => {
@@ -497,7 +500,8 @@ const STEPS = [
         ctx.textAlign = 'center'; ctx.fillText('m = √x = 100', px(2), h - 4); ctx.fillStyle = C.ink; ctx.fillText('x/m + m', px(2), py(200) - 10);
         ctx.fillRect(px(+input.value) - 4.5, py(X / m + m) - 4.5, 9, 9);
       });
-      const balance = () => { const m = Math.round(10 ** +input.value); two.querySelector('.readout').textContent = `x = 10,000 and m = ${m.toLocaleString('en')}: x/m + m = ${Math.round(X / m).toLocaleString('en')} + ${m.toLocaleString('en')} = ${Math.round(X / m + m).toLocaleString('en')}`; fig.paint(); };
+      const balance = () => { const m = Math.round(10 ** +input.value), [a, b] = two.querySelectorAll('.costs i'); a.style.width = `${X / m / 10.1}%`; b.style.width = `${m / 10.1}%`;   // of 1,010, the most the sum is here
+        two.querySelector('.readout').textContent = `x = 10,000 and m = ${m.toLocaleString('en')}: x/m + m = ${Math.round(X / m).toLocaleString('en')} + ${m.toLocaleString('en')} = ${Math.round(X / m + m).toLocaleString('en')}`; fig.paint(); };
       one.addEventListener('click', e => {
         const chip = e.target.closest('.chip'); if (!chip) return;
         const p = +chip.textContent; on.has(p) ? on.delete(p) : on.add(p);
