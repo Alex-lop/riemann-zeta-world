@@ -352,11 +352,21 @@ const STEPS = [
         ctx.fillStyle = C.blue; ctx.fillText(`${count} primes up to ${x}`, px(x) + dx, py(count) - 8);
         read.textContent = `up to ${x}: ${count} primes, and x / ln x ≈ ${guess.toFixed(1)}. The guess is ${Math.abs(miss).toFixed(1)} ${miss > 0 ? 'short' : 'over'}: ${Math.round(Math.abs(miss) / count * 100)}% of the count`;
       });
-      const move = () => { fig.paint(); ui.done(); };
+      // The count draws itself as the step opens, from 2 up to 100, where the payoff picks it up, unless the visitor takes the slider first.
+      let own = false;
+      const t0 = performance.now(), draw = now => {
+        const u = Math.min(1, (now - t0) / 4000);
+        if (own || still()) return;
+        input.value = Math.round(X0 + (100 - X0) * (1 - (1 - u) ** 3)); fig.paint();
+        if (u < 1) requestAnimationFrame(draw);
+      };
+      requestAnimationFrame(draw);
+      const move = () => { own = true; fig.paint(); ui.done(); };
       input.addEventListener('input', move);
       // Dragging on the picture moves x too.
       fig.canvas.addEventListener('pointermove', e => { if (!e.buttons) return; const r = fig.canvas.getBoundingClientRect(), a = px(X0), b = px(X1); input.value = Math.round(X0 + (X1 - X0) * clamp((e.clientX - r.left - a) / (b - a), 0, 1)); move(); });
       stage.append(box, read);
+      return () => { own = true; };
     } },
 
   { id: 'zeta', tab: 'Zeta', learn: 'complex', title: 'One function knows every prime',
@@ -396,8 +406,8 @@ const STEPS = [
         ctx.fillStyle = C.ink; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 9);
         // The gap between the end of the arrows and the square: small above real part 1, where the sum settles, and large below it.
         const gap = Math.hypot(endRe - re, endIm - im);
-        read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i` + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : '')
-          + ` · ${N - 1} arrows end ${gap.toFixed(gap < 0.1 ? 4 : 2)} from it`;
+        read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i`
+          + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : ` · ${N - 1} arrows end ${gap.toFixed(gap < 0.1 ? 4 : 2)} from it`);
       });
       // The size of zeta up the vertical line through the real part, over a line at 0. On the line through 1/2 it comes down to touch it.
       const strip = plot(stage, 'clamp(92px, 16vh, 128px)', (ctx, w, h) => {
@@ -418,14 +428,29 @@ const STEPS = [
       const realBox = el('<label class="slide later" style="text-transform:none">real part ½<input type="range" min="0.5" max="2" step="0.01" value="2" aria-label="The real part of s">2</label>');
       const read = el('<p class="readout"></p>'), height = heightBox.querySelector('input'), real = realBox.querySelector('input');
       const paint = () => { arrows.paint(); strip.paint(); };
-      height.addEventListener('input', () => {
-        t = +height.value;
-        const zero = up.zeros.find(d => Math.abs(d.at - t) < 0.25); if (zero) t = zero.at;   // land exactly on a zero when the slider is beside one: a few pixels either side
+      const snap = () => { const zero = up.zeros.find(d => Math.abs(d.at - t) < 0.25); if (zero) t = zero.at; };   // land exactly on a zero when the height is beside one: a few pixels either side
+      const climb = () => {
+        t = +height.value; snap();
         if (realBox.classList.contains('later')) { realBox.classList.remove('later'); ui.say('Now slide the real part down to ½.'); }
         paint(); ui.done();
-      });
-      real.addEventListener('input', () => { sigma = +real.value; scan(); paint(); });
+      };
+      const lean = () => { sigma = +real.value; scan(); snap(); paint(); };
+      let own = false;                                      // the visitor has taken a slider, so the step stops playing itself
+      height.addEventListener('input', () => { own = true; climb(); });
+      real.addEventListener('input', () => { own = true; lean(); });
       stage.append(heightBox, realBox, read); scan(); paint();
+      // Nobody is driving: after three seconds the height climbs to the first zero's, and then the real part comes down to ½,
+      // where the square lands on 0.
+      const t0 = performance.now(), ease = u => u * u * (3 - 2 * u);
+      const play = now => {
+        if (own) return;
+        const s = still() ? 0 : (now - t0) / 1000 - 3;
+        if (s > 0 && s <= 5) { height.value = ZEROS[0] * ease(s / 5); climb(); }
+        if (s > 6) { real.value = 2 - 1.5 * ease(Math.min(1, (s - 6) / 5)); lean(); }
+        if (s < 11) requestAnimationFrame(play);
+      };
+      requestAnimationFrame(play);
+      return () => { own = true; };
     } },
 
   { id: 'landscape', tab: 'The land', learn: 'landscape', world: true, title: 'A landscape with wells',
