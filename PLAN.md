@@ -9,9 +9,9 @@ Zeta landscapes and "zeros build the primes" sliders have been made many times, 
 ## Where things stand
 
 - **Live page:** https://alex-lop.github.io/zeta-world/ (GitHub Pages, served from `main` at the repo root). It is one `index.html`, no build step, with three.js 0.187.0 loaded from jsDelivr through an import map.
-- **What it shows:** the terrain of `|ζ(s)|` over the critical strip for heights 0 to 60, coloured by phase, the line Re(s) = 1/2 in gold, and pins on the first 13 zeros. The camera orbits.
-- **What it lacks:** the other 87 zeros, anything about primes, a guided path, and any sign of what is proven and what is claimed.
-- **Step 2 of this plan has been built once already,** in a scratch copy outside the repo, to test the plan. It works: all 100 zeros, the long road, a counter, and a start view of pits in a straight row running into fog. See build step 2 for where it is.
+- **What it shows:** the land from Re(s) = -0.5 to 1.5 for heights 0 to 237, coloured by phase, the gold line Re(s) = 1/2 with pins on the first 100 zeros, a roll-call counter, and the dated status line.
+- **What it lacks:** anything about primes, the walls and slabs, and a guided path.
+- **Build steps 1 and 2 are done and on `main`** (22 Nov, mid-afternoon). The work left starts at step 0, the card, and step 3, the primes panel.
 - **A second page is in an open pull request** (PR #2, from a teammate): `landscape.html`, a free explorer. See "Two pages" below.
 
 How the README's five steps map onto this plan:
@@ -19,8 +19,8 @@ How the README's five steps map onto this plan:
 | README step | State now | In this plan |
 |---|---|---|
 | 1. Understand it first | not written down | "The math in plain words" below |
-| 2. First picture (terrain) | done to height 60 | build step 2 extends it to height 237 |
-| 3. Mark the zeros | 13 of 100 | build step 2 |
+| 2. First picture (terrain) | done to height 237 | build step 2, done |
+| 3. Mark the zeros | 100 of 100 | build step 2, done |
 | 4. Zeros build the primes | not started | build step 3, the centre of the demo |
 | 5. Stretch: quasi-RH marker | not started | promoted to build step 4: it is cheap and now verified |
 | 5. Stretch: sound | not started | stretch idea 3 |
@@ -68,9 +68,9 @@ At an AI hack two days later, a flat "unproven" will look stale and a flat "prov
 
 Where the text stands today:
 
-- **`index.html`** was changed this afternoon to wording that asserts nothing either way: "This page shows what the hypothesis says. It proves nothing." That is safe as it is.
-- **`README.md`** still says "not proven" under "Status of the math" and "the most famous unsolved problem in math" in its opening.
-- **Left to decide:** whether the dated sentence goes on screen. I recommend yes, because the slabs in build step 4 need their dates to mean anything. If yes, it replaces the last two sentences of the page's "Posed in 1859" paragraph, which say nearly the same thing as the end of the recommended status.
+- **`index.html`** now carries the dated sentence above, in the paragraph with id `proof-status`. That paragraph is the one place the page says anything about proof.
+- **`README.md`** carries the same sentence under "Status of the math".
+- **Decided 22 Nov:** the dated sentence is on screen. To change the wording, edit that paragraph and the README together.
 
 This news also hands the demo its story. The walls that fence in the zeros have stood at 0 and 1 since 1896. Last month a proof ruled out everything outside 1/8 to 7/8. Two days ago a computer-checked proof was released that closes the gap all the way to the line.
 
@@ -119,8 +119,8 @@ Two limits to design around. A view of the whole road is a thin band 8 wide and 
 | # | Step | Estimate | After it you can show |
 |---|---|---|---|
 | 0 | The project card | 10 min | a card in the vote |
-| 1 | One status line | 10 min | |
-| 2 | The whole road: bring in the scratch build | 30 min | the hero screenshot |
+| 1 | One status line | done | |
+| 2 | The whole road | done | the hero screenshot |
 | 3 | Zeros to primes panel | 1 h 30 | the part that teaches |
 | 4 | Walls and slabs | 30 min | what is proved and what is claimed |
 | 5 | The tour | 1 h | the whole story, hands off |
@@ -142,6 +142,8 @@ The panel comes before the walls because it is the part that teaches. If the day
 
 ### 1. One status line
 
+**Done 22 Nov.** The status is plain HTML, the paragraph with id `proof-status` in `index.html`, not a script constant: one sentence in one place needs no constant. When the tour needs it, read that paragraph's text. What the step asked for:
+
 - Add a `STATUS` constant and a `CAPTIONS` array at the top of the script in `index.html`. Every sentence about proof on that page reads from `STATUS`.
 - `STATUS` is separate from the page's existing `#status` paragraph and `status` variable, which hold the loading message and the controls hint.
 - Update the two README sentences listed above, and its line "This project visualizes the conjecture".
@@ -149,17 +151,7 @@ The panel comes before the walls because it is the part that teaches. If the day
 
 ### 2. The whole road
 
-This step exists as a working page, built to test this plan:
-
-a scratch folder on the build machine, outside the repo.
-
-That folder is temporary and can be cleared, so bring the page in soon. Screenshots of it are in `shots/` beside it. It is the current `index.html` plus this step, with the layout table above already applied.
-
-To bring it in:
-
-- Delete the lines marked `DRY-RUN ONLY` (11 of them). They add URL switches used for the screenshots.
-- Change `T_MAX` from 240 to 237. The scratch page was built to 240 and so has two unpinned wells at its north end. At 237 with the same 4096 rows there are exactly 100 wells on the road. The start pose is written in the scratch page as z = 113 and z = 98 for T_MAX = 240; write it as `zOf(7)` and `zOf(22)` so it follows the constant.
-- Update the page's own words, which the new scene makes false: the canvas `aria-label` ("Thirteen pins"), the sentence "These are the first 13 of infinitely many", and the "How to read it" paragraph. It should now say Re(s) from -0.5 to 1.5, heights 0 to 237, height squashed so the pole fits, colour is phase.
+**Done 22 Nov.** The test build of this step is now `index.html` on `main`, with its test switches removed, `T_MAX` = 237 and the page's words updated. Screenshots from the test build are not in the repo.
 
 What it does, for anyone building it fresh:
 
@@ -300,7 +292,7 @@ Notes on three.js 0.187 that differ from older tutorials: the package has no `.m
 
 ## Open questions
 
-1. **The status wording.** Recommended text is above. Everything on screen waits on it.
+1. **The status wording.** Settled 22 Nov: the recommended sentence is on the page and in the README.
 2. **The two-page split, and when PR #2 merges.** That is between you and your teammate.
 3. **The card:** its fields, the vote cutoff, and whether it can be edited after posting. Step 0 answers this.
 4. **The demo machine and browser.** Only Chrome on one Mac has been tested.
