@@ -27,14 +27,14 @@
     .back { font-size: 13px; text-decoration: none; margin-right: 14px; }
     h1 { font-size: 24px; line-height: 1.2; margin: 8px 0 4px; }
     .lede { color: var(--muted); max-width: 900px; margin: 0 0 8px; font-size: 14px; }
-    nav.sub { position: sticky; top: 0; z-index: 5; background: rgba(11, 13, 18, 0.92); backdrop-filter: blur(6px);
+    nav.sub { position: sticky; top: var(--zw-nav-h, 0px); z-index: 5; background: rgba(11, 13, 18, 0.92); backdrop-filter: blur(6px);
       border-bottom: 1px solid var(--border); margin-top: 10px; }
     nav.sub div { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
     nav.sub a { text-decoration: none; color: var(--muted); font-size: 13px; padding: 3px 10px; border-radius: 999px;
       border: 1px solid var(--border); }
     nav.sub a b { color: var(--gold); font-weight: 600; margin-right: 4px; }
     nav.sub a:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
-    section { padding-top: 34px; scroll-margin-top: 52px; }
+    section { padding-top: 34px; scroll-margin-top: 44px; }
     .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 26px; align-items: start; }
     .num { color: var(--gold); font: 600 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
     h2 { font-size: 20px; line-height: 1.25; margin: 4px 0 8px; }
@@ -72,11 +72,11 @@
       .controls { grid-template-columns: minmax(0, 1fr); }
     }
   </style>
+<script src="./nav.js" defer></script>
 </head>
 <body>
   <header>
     <a class="back" href="./proof.html">← The proof in four pictures</a>
-    <a class="back" href="./landscape.html">Zeta World explorer</a>
     <h1>Step 4 in detail: where the ceiling comes from</h1>
     <p class="lede">Step 3 needs a ceiling: a weighted count of primes that never rises above about x<sup>½ + 9ε</sup> on
       long windows. The announced proof gets it from arithmetic, in six moves. Panels marked <span class="tag real">real data</span>

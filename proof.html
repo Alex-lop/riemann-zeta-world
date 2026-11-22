@@ -46,7 +46,7 @@
     .tab[aria-selected="true"] .ttl { display: inline; }
     [hidden] { display: none !important; }
     .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
-      min-height: clamp(250px, calc(100vh - 410px), 560px); align-content: center; }
+      min-height: clamp(250px, calc(100vh - 410px - var(--zw-nav-h, 0px)), 560px); align-content: center; }
     .fbox { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 9px;
       border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); text-decoration: none; color: var(--text); }
     .fbox:hover { border-color: var(--gold); background: rgba(245, 197, 66, 0.06); }
@@ -56,7 +56,7 @@
       color: var(--gold); font-size: 14px; }
     .fend { grid-column: 1 / -1; text-align: center; padding: 10px; border-radius: 9px; color: var(--gold);
       border: 1px dashed rgba(245, 197, 66, 0.5); font-weight: 600; }
-    canvas.fill { height: clamp(250px, calc(100vh - 410px), 560px); }
+    canvas.fill { height: clamp(250px, calc(100vh - 410px - var(--zw-nav-h, 0px)), 560px); }
     .caption { padding: 8px 2px 0; font-size: 13.5px; color: #cfd3dc; }
     .caption p { margin: 0 0 6px; }
     .caption p.small { font-size: 12.5px; color: var(--muted); }
@@ -96,10 +96,10 @@
       h1 { font-size: 25px; }
     }
   </style>
+<script src="./nav.js" defer></script>
 </head>
 <body>
   <header>
-    <a class="back" href="./landscape.html">← Zeta World explorer</a>
     <h1>How the announced proof works, in four pictures</h1>
     <p class="lede">If a zero of ζ sat off the critical line, the primes would show it. The announced proof caps the
       primes from above, using arithmetic. Drag the hypothetical zero on the left and watch its effect on the right.

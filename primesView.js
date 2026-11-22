@@ -40,7 +40,8 @@ export function createPrimesView({ canvas, nInput, nVal, playBtn, xMaxInput, err
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const wide = w > 760;
     const left = wide ? 16 + 340 + 56 : 48;
-    const top = wide ? 40 : Math.min(h * 0.45, 380);
+    const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zw-nav-h')) || 0; // site bar
+    const top = (wide ? 40 : Math.min(h * 0.45, 380)) + navH;
     const right = w - 24, bottom = h - 36;
     const gap = 34;
     const waveH = Math.max(70, (bottom - top) * 0.24);

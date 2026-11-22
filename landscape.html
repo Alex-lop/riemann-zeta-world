@@ -19,8 +19,8 @@
     #scene { position: fixed; inset: 0; }
     .panel { position: fixed; background: var(--panel); border: 1px solid var(--border);
       border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(6px); }
-    #controls { top: 16px; left: 16px; width: 340px; max-width: calc(100vw - 32px);
-      max-height: calc(100vh - 32px); overflow-y: auto; }
+    #controls { top: calc(16px + var(--zw-nav-h, 0px)); left: 16px; width: 340px; max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 32px - var(--zw-nav-h, 0px)); overflow-y: auto; }
     [hidden] { display: none !important; }
     .tabs { display: flex; gap: 4px; margin: 0 0 10px; padding: 3px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.06); }
@@ -38,8 +38,6 @@
       font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; overflow-x: auto; }
     .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: 0; }
     #controls h1 { font-size: 16px; margin: 0 0 2px; }
-    .prooflink { display: inline-block; margin: 0 0 8px; color: #8fd3ff; font-size: 12.5px; text-decoration: none; }
-    .prooflink:hover { text-decoration: underline; }
     #controls p { margin: 0 0 10px; color: var(--muted); font-size: 12.5px; }
     label { display: block; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
     label b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -83,6 +81,7 @@
       #curvePanel p { display: none; }
     }
   </style>
+<script src="./nav.js" defer></script>
 </head>
 <body>
   <div id="scene" data-for="zeta xi dirichlet"></div>
@@ -90,7 +89,6 @@
 
   <div id="controls" class="panel">
     <h1>Zeta World</h1>
-    <a class="prooflink" href="./proof.html">How the announced proof works →</a>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="zeta" aria-selected="true">ζ(s) &nbsp;zeta</button>
       <button class="tab" role="tab" data-mode="dirichlet" aria-selected="false">L(s,χ)</button>
