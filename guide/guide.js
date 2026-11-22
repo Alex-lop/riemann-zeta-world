@@ -165,6 +165,7 @@ function wave(x, beta, gamma) {
 }
 // Where those swings first reach the band, as a power of ten. Finite for every beta above 1/2, however close to the line.
 const breakExp = (beta, gamma) => Math.log(BAND * rho2(beta, gamma) / 2) / ((beta - 0.5) * Math.LN10);
+const FULL = '<p><a href="./proof.html">the full pictures, on the proof page</a></p>';
 const sup = n => String(n).replace(/./g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d] ?? '⁻');
 const pow10 = e => { if (e >= 15) return `10${sup(Math.round(e))}`; let k = Math.floor(e), m = Math.round(10 ** (e - k)); if (m === 10) { m = 1; k++; } return `${m} × 10${sup(k)}`; };
 
@@ -251,7 +252,7 @@ const STEPS = [
       The land here is the size of ξ(s) = ½ s(s − 1) π<sup>−s/2</sup> Γ(s/2) ζ(s), divided at each height by its size on the line. It has the same nontrivial zeros as ζ.
       The walls: proved 1896, every nontrivial zero lies between these walls.
       The stripes: a machine-written paper released on 6 Oct 2026 states that no zero lies in here. Its repository says this is formalized in Lean. Not peer reviewed.
-      The red zero stops at the stripes. That is this guide’s rule for the fiction, not a theorem.</details>`,
+      The red zero stops at the stripes. That is this guide’s rule for the fiction, not a theorem.</details>` + FULL,
     mount(stage, ui) {
       const box = el('<label class="slide">on the line<input type="range" min="0.5" max="0.875" step="0.005" aria-label="Real part of the hypothetical zero">7/8</label>');
       const input = box.querySelector('input'), read = el('<p class="readout"></p>');
@@ -283,6 +284,7 @@ const STEPS = [
     todo: 'Add the hypothetical zero’s wave.',
     payoff: 'Its wave grows faster than √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
     legend: [['gold', 'band', 'the band, if every zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
+    more: FULL,
     mount(stage, ui) {
       const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
       ghost.beta = 0.85;                                     // far enough off the line that the break falls inside the real data
@@ -348,8 +350,46 @@ const STEPS = [
     todo: 'Toggle primes into the number.',
     payoff: 'As the guides describe the announced proof: arithmetic caps the upward swings; an off-line zero would break the cap; so no zero lies to the right of the line, and by the mirror no nontrivial zero lies to the left.',
     more: `<details><summary>Where groups come in</summary>One step of the argument averages over the characters of a finite abelian group. <a href="./learn.html#characters">The long version teaches them in six steps.</a></details>
-      <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>`,
-    fig: '4 · 9 · 25 = 900' },
+      <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>` + FULL,
+    mount(stage, ui) {
+      // Both pictures are schematic, as on proof.html: seven of these primes fit under the bound and the eighth does not.
+      const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19], CAP = 1e6, TOP = 8, X = 10000, on = new Set();
+      const one = el(`<div><p class="chips">${PRIMES.map(p => `<button type="button" class="btn chip" aria-pressed="false">${p}</button>`).join('')}</p>
+        <div class="meter"><i></i><b></b><span>a bound on its size</span></div><p class="readout"></p>
+        <p class="small">A metaphor: the shape of the argument, not its real objects. Those are theta lifts between unitary groups, named here and not taught.</p></div>`);
+      const two = el(`<div hidden><p class="small">The construction is repeated m times. One cost grows like x/m and the other like m. Their sum is least at m = √x, and that is where the ½ comes from.</p>
+        <label class="slide" style="text-transform:none">m = 10<input type="range" min="1" max="3" step="0.01" value="1" aria-label="The number of repeats, m">1,000</label><p class="readout"></p></div>`);
+      stage.append(one, two);
+      one.querySelector('b').style.left = one.querySelector('span').style.left = `${Math.log10(CAP) / TOP * 100}%`;
+      const squeeze = () => {
+        const list = PRIMES.filter(p => on.has(p)), least = list.reduce((a, p) => a * p, 1);
+        one.querySelector('i').style.width = `${Math.min(100, Math.log10(least) / TOP * 100)}%`;
+        one.querySelector('.readout').innerHTML = !list.length ? 'divisible by nothing in particular: it can be as small as 1'
+          : `divisible by ${list.join(', ')}: at least <span class="blue">${list.join(' × ')}${list.length > 1 ? ' = ' + least.toLocaleString('en') : ''}</span>` + (least > CAP ? '. Over the bound: only so many primes fit.' : '');
+      };
+      const input = two.querySelector('input');
+      const fig = plot(two, '150px', (ctx, w, h) => {      // x/m, m and their sum against m, both axes logarithmic
+        const px = e => 12 + (w - 24) * (e - 1) / 2, py = v => h - 16 - (h - 34) * (Math.log10(v) - 1) / 2.1, m = 10 ** +input.value;
+        for (const [cost, colour, width] of [[e => X / 10 ** e, C.muted, 1], [e => 10 ** e, C.muted, 1], [e => X / 10 ** e + 10 ** e, C.ink, 1.5]]) {
+          ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.beginPath();
+          for (let e = 1; e <= 3.001; e += 0.02) ctx.lineTo(px(e), py(cost(e)));
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1; line(ctx, px(2) + 0.5, py(200), px(2) + 0.5, h - 16, C.strong);
+        ctx.fillStyle = C.muted; ctx.fillText('x/m', px(1) + 4, py(1000) + 16); ctx.textAlign = 'right'; ctx.fillText('m', px(3) - 4, py(1000) + 16);
+        ctx.textAlign = 'center'; ctx.fillText('m = √x = 100', px(2), h - 4); ctx.fillStyle = C.ink; ctx.fillText('x/m + m', px(2), py(200) - 10);
+        ctx.fillRect(px(+input.value) - 4.5, py(X / m + m) - 4.5, 9, 9);
+      });
+      const balance = () => { const m = Math.round(10 ** +input.value); two.querySelector('.readout').textContent = `x = 10,000 and m = ${m.toLocaleString('en')}: x/m + m = ${Math.round(X / m).toLocaleString('en')} + ${m.toLocaleString('en')} = ${Math.round(X / m + m).toLocaleString('en')}`; fig.paint(); };
+      one.addEventListener('click', e => {
+        const chip = e.target.closest('.chip'); if (!chip) return;
+        const p = +chip.textContent; on.has(p) ? on.delete(p) : on.add(p);
+        chip.setAttribute('aria-pressed', on.has(p)); squeeze();
+        if (two.hidden) { two.hidden = false; ui.say('Now slide m.'); ui.done(); balance(); }   // the second thing to do, in place of the first
+      });
+      input.addEventListener('input', balance);
+      squeeze();
+    } },
 
   { id: 'checked', learn: 'y2026-checks', title: 'Released, checked, still needed',
     idea: 'On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.',
