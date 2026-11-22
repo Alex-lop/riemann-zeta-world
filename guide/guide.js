@@ -320,7 +320,7 @@ const STEPS = [
     idea: 'Primes get rarer as numbers grow, but unevenly. Still, the number of primes up to x is roughly x / ln x.',
     todo: 'Drag along the number line.',
     payoff: 'Up to 100 there are 25 primes, and x / ln x says about 21.7. The central question is how far a sharpened estimate misses.',
-    legend: [['blue', '', 'the count of primes, one step at each'], ['inked', '', 'the smooth guess, x / ln x']],
+    legend: [['blue', '', 'the count of primes, one step at each'], ['inked', '', 'the smooth guess, x / ln x'], ['inked', 'dot', 'how far the guess misses']],
     mount(stage, ui) {
       const X0 = 2, X1 = 200, TOP = 50, PRIMES = Array.from({ length: X1 - 1 }, (_, k) => k + 2).filter(isPrime);   // the axis starts at 2: ln 1 is 0
       const box = el(`<label class="slide">2<input type="range" min="${X0}" max="${X1}" step="1" value="100" aria-label="x, how far along the number line">200</label>`);
@@ -345,9 +345,12 @@ const STEPS = [
         for (const p of PRIMES) { if (p > x) break; ctx.lineTo(px(p), py(count)); ctx.lineTo(px(p), py(++count)); }
         ctx.lineTo(px(x), py(count)); ctx.stroke(); ctx.lineWidth = 1;
         line(ctx, px(x) + 0.5, 12, px(x) + 0.5, base, C.strong);
+        // The miss: how far the guess is from the count at x, as a heavy stroke between the two curves and as a number under the chart.
+        const guess = x / Math.log(x), miss = count - guess;
+        ctx.lineWidth = 3; line(ctx, px(x) + 0.5, py(count), px(x) + 0.5, py(guess), C.ink); ctx.lineWidth = 1;
         ctx.textAlign = x > 150 ? 'right' : 'left'; const dx = x > 150 ? -8 : 8;
         ctx.fillStyle = C.blue; ctx.fillText(`${count} primes up to ${x}`, px(x) + dx, py(count) - 8);
-        read.textContent = `up to ${x}: ${count} primes, and x / ln x ≈ ${(x / Math.log(x)).toFixed(1)}`;
+        read.textContent = `up to ${x}: ${count} primes, and x / ln x ≈ ${guess.toFixed(1)}. The guess is ${Math.abs(miss).toFixed(1)} ${miss > 0 ? 'short' : 'over'}: ${Math.round(Math.abs(miss) / count * 100)}% of the count`;
       });
       const move = () => { fig.paint(); ui.done(); };
       input.addEventListener('input', move);
