@@ -5,6 +5,7 @@ Written Sunday 22 Nov 2026 by the session that set up the site, and revised abou
 **Built, and where it departs from this brief (22 Nov, about 3:40 PM).** The guide is live as the home page. Read this before acting on anything below.
 
 - **The look is dark, not light.** After this brief was revised, Alex asked for the theme of his Nemisis site (https://alex-lop.github.io/Nemisis/): a near-black ground, light ink, hairlines, mono labels and one red, with the personal site's ticks still behind every screen. Section 4.2's paper palette and "nothing is dark" no longer apply. The meanings of the colours do: gold is the critical line and the band, blue the primes, red the hypothetical zero and what it causes. Do not move the page back to paper.
+- **The home page has one button, Get started.** On 22 Nov at about 6 PM Alex had the shortcut "What the paper actually proved" removed: a first visit should go through every step in order. Do not put a way straight to the proof back on the first screen.
 - **Steps 7 and 8 run inside the 3D world,** as Alex asked next: the land morphs into the gamma-completed, mirror-symmetric one, the hypothetical zero is dragged in the scene, and the band chart docks beside it. Step 3 has a second variable, the real part, and a line where zeta is zero.
 - **The order of work changed too:** all ten steps have their interaction, and the swap is done. `PLAN.md`, "Where things stand", has the current state.
 
