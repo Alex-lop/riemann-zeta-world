@@ -2,11 +2,18 @@
 
 A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai Hack 150 (Building 3D Worlds).
 
-The idea is still broad. The goal is a world you can fly through that lets you *see* the most famous unsolved problem in math and how it connects to the prime numbers.
+The idea is still broad. The goal is a world you can fly through that lets you *see* the most famous problem in math and how it connects to the prime numbers.
 
 ## Status of the math
 
-The Riemann hypothesis is **not proven**. In October 2026 a proof of a weaker "quasi-Riemann hypothesis" was announced, with its first version checked in Lean. This project visualizes the conjecture; it does not claim anything about it.
+On 20 November 2026 Levent Alpöge announced a proof of the Riemann hypothesis, and of the generalized Riemann hypothesis for Dirichlet L-functions, published as a formal proof in Lean (175,187 files).
+
+- **Machine-checked:** two independent proof checkers (Lean's kernel and NanoDA, written in Rust) accepted the complete proof, and several outside groups report reproducing that. It uses only Lean's three standard axioms, and its final statements match Mathlib's definition of the Riemann hypothesis.
+- **Not yet refereed:** there is no human-readable write-up of the argument, and mathematicians have not reviewed it.
+
+Before that, in October 2026, a proof of a weaker "quasi-Riemann hypothesis" was announced.
+
+This project visualizes the statement: the zeros, the critical line, and how the zeros shape the primes. It makes no claim about the proof. For a map of the announced proof and a record of who has checked what, see [riemann-rev](https://github.com/nasqret/riemann-rev) ([site](https://nasqret.github.io/riemann-rev/)).
 
 ## Getting started
 
