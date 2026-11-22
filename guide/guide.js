@@ -2,7 +2,7 @@
 // Every sentence of mathematics or news below is cut from docs/guide-content.json, PLAN.md or the teammate's proof.html
 // (see GUIDE_BRIEF.md, section 6). Do not write new ones from memory. Each step is at most 60 words: sentence, instruction, payoff.
 
-import { ZEROS } from './zeros.js';
+import { ZEROS, zetaGrid } from './zeros.js?v=2';
 
 const $ = id => document.getElementById(id), root = document.documentElement;
 const el = html => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
@@ -39,7 +39,7 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=4').then(m => {
+  return opening ??= import('./scene.js?v=5').then(m => {
     scene = m;
     world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step
@@ -240,30 +240,65 @@ const STEPS = [
     idea: 'ζ(s) adds 1/n<sup>s</sup> over every whole number n. Each term is an arrow, and ζ adds arrows that turn at different speeds.',
     todo: 'Drag the height t.',
     payoff: 'At t = 0 nothing has turned, and the total is π<sup>2</sup>/6 ≈ 1.6449. Euler showed the same total is a product with one factor for each prime.',
+    legend: [['inked', 'open', 'ζ(s)'], ['inked', 'dot', 'a height where its size touches 0']],
     mount(stage, ui) {
-      // The real part stays at 2. On the critical line this sum does not settle, so it is not drawn there.
-      const box = el('<label class="slide" style="text-transform:none">t = 0<input type="range" min="0" max="40" step="0.05" value="0" aria-label="t, the height of s">40</label>');
-      const input = box.querySelector('input'), read = el('<p class="readout"></p>');
-      const fig = plot(stage, 'clamp(230px, 56vh, 460px)', (ctx, w, h) => {
-        const t = +input.value, unit = Math.min((w - 40) / 2, (h - 36) / 1.5), ox = (w - 1.75 * unit) / 2, oy = h / 2, N = 300;
+      // Two variables: t, the height of s, and its real part, which starts at 2, where the sum settles. The value of zeta is
+      // zetaGrid's, so left of 1, where the sum no longer settles, the open square still marks zeta's one extension.
+      const T1 = 40, M = 800, TOP = 3.3;
+      let sigma = 2, t = 0, up = null;                      // up: the size of zeta up the line through sigma, and the heights where it dips
+      const zeta = (sg, tt) => { const z = zetaGrid(sg, sg, 1, tt, tt, 1); return [z.re[0], z.im[0]]; };
+      const sizeAt = tt => Math.hypot(...zeta(sigma, tt));
+      const scan = () => {
+        const z = zetaGrid(sigma, sigma, 1, 0, T1, M), size = Float32Array.from({ length: M + 1 }, (_, j) => Math.hypot(z.re[2 * j], z.im[2 * j])), dips = [];
+        for (let j = 1; j < M; j++) if (size[j] < size[j - 1] && size[j] <= size[j + 1] && size[j] < 0.3) {   // close in on each dip
+          let a = (j - 1) * T1 / M, b = (j + 1) * T1 / M;
+          for (let k = 0; k < 40; k++) { const p = a + (b - a) / 3, q = b - (b - a) / 3; if (sizeAt(p) < sizeAt(q)) b = q; else a = p; }
+          dips.push({ at: (a + b) / 2, low: sizeAt((a + b) / 2) });
+        }
+        up = { size, zeros: dips.filter(d => d.low < 1e-3), low: Math.min(...size, ...dips.map(d => d.low)) };
+      };
+      const arrows = plot(stage, 'clamp(200px, 38vh, 320px)', (ctx, w, h) => {
+        const unit = Math.min((w - 20) / 4.6, (h - 20) / 3.1), ox = w / 2 - 0.65 * unit, oy = h / 2, settles = sigma > 1, N = settles ? 300 : 120;
         line(ctx, 8, oy + 0.5, w - 8, oy + 0.5, C.hair); line(ctx, ox + 0.5, 8, ox + 0.5, h - 8, C.hair);
-        ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText('0', ox - 8, oy + 14); ctx.fillText('1', ox + unit, oy + 14); line(ctx, ox + unit + 0.5, oy - 3, ox + unit + 0.5, oy + 4, C.strong);
-        ctx.textAlign = 'left'; ctx.fillText('s = 2 + it: the real part stays at 2', 12, 18);
-        let re = 0, im = 0;
-        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(ox, oy);
-        for (let n = 1; n < N; n++) { const a = t * Math.log(n); re += Math.cos(a) / (n * n); im -= Math.sin(a) / (n * n); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length 1/n², turned by −t ln n
-        ctx.stroke(); ctx.lineWidth = 1;
-        ctx.fillStyle = C.ink;
-        for (let n = 1, x = 0, y = 0; n <= 8; n++) { const a = t * Math.log(n); x += Math.cos(a) / (n * n); y -= Math.sin(a) / (n * n); ctx.fillRect(ox + x * unit - 2.5, oy - y * unit - 2.5, 5, 5); }   // where the first eight arrows end
-        // What is left of the sum after N terms: N^(1-s) / (s - 1) + N^(-s) / 2. With it, this is zeta(2 + it) to about 1e-7.
-        const a = t * Math.log(N), d = 1 + t * t;
-        re += (Math.cos(a) - t * Math.sin(a)) / (N * d) + Math.cos(a) / (2 * N * N); im += (-Math.sin(a) - t * Math.cos(a)) / (N * d) - Math.sin(a) / (2 * N * N);
-        ctx.strokeStyle = C.ink; ctx.strokeRect(Math.round(ox + re * unit) - 6.5, Math.round(oy - im * unit) - 6.5, 13, 13);
-        ctx.textAlign = 'left'; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 8);
-        read.textContent = `s = 2 + ${t.toFixed(2)}i: the arrows add up to ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i`;
+        ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText('0', ox - 9, oy + 15); ctx.fillText('1', ox + unit, oy + 15); line(ctx, ox + unit + 0.5, oy - 3, ox + unit + 0.5, oy + 4, C.strong);
+        ctx.textAlign = 'left';
+        ctx.fillText(settles ? `real part ${sigma.toFixed(2)}: the arrows settle on ζ(s)` : `real part ${sigma.toFixed(2)}: the sum only works above 1. The square is ζ’s one extension`, 12, 18);
+        ctx.strokeStyle = settles ? C.ink : C.muted; ctx.lineWidth = settles ? 1.5 : 1; ctx.beginPath(); ctx.moveTo(ox, oy);
+        for (let n = 1, re = 0, im = 0; n < N; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length n^-sigma, turned by -t ln n
+        ctx.stroke(); ctx.lineWidth = 1; ctx.fillStyle = settles ? C.ink : C.muted;
+        for (let n = 1, re = 0, im = 0; n <= 8; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.fillRect(ox + re * unit - 2.5, oy - im * unit - 2.5, 5, 5); }   // where the first eight arrows end
+        const [re, im] = zeta(sigma, t);
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(Math.round(ox + re * unit) - 6.5, Math.round(oy - im * unit) - 6.5, 13, 13); ctx.lineWidth = 1;
+        ctx.fillStyle = C.ink; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 9);
+        read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i` + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : '');
       });
-      input.addEventListener('input', () => { fig.paint(); ui.done(); });
-      stage.append(box, read);
+      // The size of zeta up the vertical line through the real part, over a line at 0. On the line through 1/2 it comes down to touch it.
+      const strip = plot(stage, 'clamp(92px, 16vh, 128px)', (ctx, w, h) => {
+        const L = 26, base = h - 16, px = v => L + (w - L - 10) * v / T1, py = v => Math.max(6, base - (base - 22) * v / TOP);
+        ctx.fillStyle = C.muted; ctx.fillText(w > 520 ? `the size of ζ(s) up the line, real part ${sigma.toFixed(2)}` : 'the size of ζ(s)', L, 13);
+        ctx.textAlign = 'right'; ctx.fillText(up.zeros.length ? `touches 0 at ${up.zeros.length} heights` : `never touches 0 here: lowest ${up.low.toFixed(3)}`, w - 10, 13);
+        ctx.fillText('0', L - 8, base + 4); ctx.textAlign = 'center';
+        for (let v = 0; v <= T1; v += 10) ctx.fillText(v, px(v), h - 2);
+        ctx.lineWidth = 1.5; line(ctx, L, base + 0.5, w - 10, base + 0.5, C.ink);             // the line where the size is 0
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.beginPath();
+        for (let j = 0; j <= M; j++) ctx.lineTo(px(j * T1 / M), py(up.size[j]));
+        ctx.stroke(); ctx.fillStyle = C.ink;
+        for (const d of up.zeros) ctx.fillRect(px(d.at) - 4, base - 4, 8, 8);
+        line(ctx, Math.round(px(t)) + 0.5, 20, Math.round(px(t)) + 0.5, base, C.strong);
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(Math.round(px(t)) - 5.5, Math.round(py(sizeAt(t))) - 5.5, 11, 11);
+      });
+      const heightBox = el(`<label class="slide" style="text-transform:none">t = 0<input type="range" min="0" max="${T1}" step="0.05" value="0" aria-label="t, the height of s">${T1}</label>`);
+      const realBox = el('<label class="slide" style="text-transform:none" hidden>real part ½<input type="range" min="0.5" max="2" step="0.01" value="2" aria-label="The real part of s">2</label>');
+      const read = el('<p class="readout"></p>'), height = heightBox.querySelector('input'), real = realBox.querySelector('input');
+      const paint = () => { arrows.paint(); strip.paint(); };
+      height.addEventListener('input', () => {
+        t = +height.value;
+        const zero = up.zeros.find(d => Math.abs(d.at - t) < 0.08); if (zero) t = zero.at;   // land exactly on a zero when the slider is beside one
+        if (realBox.hidden) { realBox.hidden = false; ui.say('Now slide the real part down to ½.'); }
+        paint(); ui.done();
+      });
+      real.addEventListener('input', () => { sigma = +real.value; scan(); paint(); });
+      stage.append(heightBox, realBox, read); scan(); paint();
     } },
 
   { id: 'landscape', learn: 'landscape', world: true, title: 'A landscape with wells',
