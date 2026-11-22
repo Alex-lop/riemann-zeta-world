@@ -65,6 +65,8 @@
   html[data-mode=world] #world, html[data-mode=fly] #world { opacity: 1; visibility: visible; transition: opacity .9s; }
   .count { position: fixed; z-index: 2; top: 46px; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
   html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
+  #passed { padding: .55rem .8rem .6rem; text-align: right; background: rgb(13 17 23 / .88); border: 1px solid var(--hair); }   /* the ride's readout, on a ground of its own: from the side view the road runs behind it */
+  #passed small { display: block; margin-top: .3rem; font-size: .8rem; line-height: 1.6; color: var(--muted); }
 
   /* The step bar, on every screen but the intro: where you are in the climb, and a way to jump anywhere in it. */
   #tabs { position: fixed; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: stretch; height: 46px; padding: 0 var(--pad); background: rgb(13 17 23 / .92); border-bottom: 1px solid var(--hair); overflow-x: auto; scrollbar-width: none; white-space: nowrap; font: 400 .72rem/1 var(--mono); letter-spacing: .04em; }
@@ -225,6 +227,7 @@
 
   @media (max-width: 899px) {   /* no room beside the card: it scrolls, and always leaves a band of the world above it */
     html[data-mode=world] #panel { pointer-events: auto; max-height: 72dvh; } html[data-mode=world] #s-more { display: none; }
+    #passed { padding: 0; background: none; border: 0; } #passed small { display: none; }   /* the band of world above the card is small: the count alone, as before */
   }
   @media (max-width: 30rem) {   /* phones: leave the scene some room above the card */
     body { font-size: 15px; } html[data-mode=world] #panel, html[data-mode=fly] #panel { padding: .7rem 1rem .8rem; }
@@ -314,7 +317,7 @@
     <p class="small" id="fly-status">Loading the 3D view. It needs JavaScript and WebGL.</p>
     <details class="small">
       <summary>How to read it</summary>
-      Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The mound at the south end is the pole at s = 1, where ζ is infinite.
+      Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The grey lines are the strip’s edges, and the numbers along the east side are heights, Im(s). The mound at the south end is the pole at s = 1, where ζ is infinite.
     </details>
     <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
     <p class="small">Built for Sundai Hack 150. <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>

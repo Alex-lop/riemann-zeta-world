@@ -39,7 +39,7 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=5').then(m => {
+  return opening ??= import('./scene.js?v=6').then(m => {
     scene = m;
     world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step
@@ -60,10 +60,14 @@ function withWorld(fn) {
 
 // The ride, shared by two steps: one slider moves the point the camera looks at along the line, and the camera keeps its offset.
 // T is where the middle of the view meets the line, and the zeros south of it count as passed. each(T, passed) runs every frame.
-function ride(stage, ui, each) {
+// The world's survey rides along at T (scene.js: the dial, the path, the gate), and the counter reads out what it shows.
+// pace: how many units of height a second the ride moves at while nobody is driving.
+function ride(stage, ui, each, pace = 11) {
   const box = el('<label class="slide">south<input type="range" min="12" max="237" step="0.1" value="12" aria-label="Ride north along the line">north</label>');
   const input = box.querySelector('input'), canvas = $('world');
-  stage.append(box);
+  // A second place to watch from: off to one side, where the path is seen to come back to the rail at every pin.
+  const view = el('<button type="button" class="btn" aria-pressed="false">Side view</button>'), bar = el('<div class="bar"></div>');
+  bar.append(view, box); stage.append(bar);
   let own = false, stop = () => {};                          // own: the visitor has taken the slider, so the ride stops driving itself
   // Under the slider, a mark for each of the 100 zeros where it stands along the line. A mark is tall and solid once passed.
   let at = 12, seen = -1;
@@ -74,22 +78,55 @@ function ride(stage, ui, each) {
   input.addEventListener('input', () => { own = true; ui.done(); });
   withWorld(w => {
     const tOf = z => (scene.zOf(0) - z) / (scene.zOf(0) - scene.zOf(1)), t0 = performance.now();
-    let last = t0;
+    let last = t0, at2 = +input.value;
     w.camera.position.set(-3.5, 6.5, scene.zOf(-3)); w.controls.target.set(0, 0, scene.zOf(12));   // the start view's offset, 10 further south
     w.controls.enableZoom = false;                           // in a ride the wheel moves you along the line
     const wheel = e => { input.value = +input.value + e.deltaY * 0.04; own = true; ui.done(); };
     canvas.addEventListener('wheel', wheel, { passive: true });
+    // A click on a pin rides to its zero. A drag is the orbit controls', so a press that moved is not a click.
+    let down = [0, 0], said = '';
+    const press = e => { down = [e.clientX, e.clientY]; };
+    const hover = e => { const g = e.buttons ? undefined : w.pick(e.clientX, e.clientY); w.light(g); canvas.style.cursor = g ? 'pointer' : ''; };
+    const click = e => {
+      const g = Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 6 && w.pick(e.clientX, e.clientY);
+      if (g) { input.value = g; own = true; w.light(); ui.done(); }
+    };
+    canvas.addEventListener('pointerdown', press); canvas.addEventListener('pointermove', hover); canvas.addEventListener('click', click);
+    // The two views: where the camera is from the point it looks at, as [east, up, south]. pose is the one it is moving to,
+    // until it is there or the visitor takes the view by dragging.
+    const POSES = [[-3.5, 6.5, 15], [9, 5, 10]];
+    let pose = null;
+    const free = () => { pose = null; };
+    w.controls.addEventListener('start', free);
+    view.addEventListener('click', () => {
+      const side = view.getAttribute('aria-pressed') !== 'true';
+      view.setAttribute('aria-pressed', side); view.textContent = side ? 'Road view' : 'Side view'; pose = POSES[+side];
+    });
     w.tick = now => {
-      if (!own && !still() && now - t0 > 3000) { input.value = +input.value + (now - last) * 0.011; ui.done(); }   // nobody is driving: ride anyway, 11 a second
+      if (!own && !still() && now - t0 > 3000) { at2 += (now - last) * pace / 1000; input.value = at2; ui.done(); }   // nobody is driving: ride anyway. The slider rounds to tenths, so the place is kept here
       last = now;
-      const dz = (scene.zOf(+input.value) - w.controls.target.z) * (still() ? 1 : 0.1);   // ponytail: eased per frame, not per second; fine at 60 or 120 Hz
+      const goal = w.zeros.find(g => Math.abs(g - input.value) < 0.051) ?? +input.value;   // the slider moves in tenths: beside a zero, it means the zero
+      const dz = (scene.zOf(goal) - w.controls.target.z) * (still() ? 1 : 0.1);   // ponytail: eased per frame, not per second; fine at 60 or 120 Hz
       w.camera.position.z += dz; w.controls.target.z += dz;
+      if (pose) {
+        const c = w.camera.position, o = w.controls.target, k = still() ? 1 : 0.1, gap = [o.x + pose[0] - c.x, pose[1] - c.y, o.z + pose[2] - c.z];
+        c.set(c.x + gap[0] * k, c.y + gap[1] * k, c.z + gap[2] * k);
+        if (Math.hypot(...gap) < 0.01) pose = null;
+      }
       const T = tOf(w.controls.target.z);
-      const passed = w.zeros.filter(g => g < T).length;
+      const passed = w.zeros.filter(g => g < T - 0.004).length;
       if (passed !== seen) { seen = passed; at = T; marks.paint(); }
+      // The readout: where you are, zeta's value there (the arrow on the dial), and the zero you are on or coming to.
+      const [re, im] = w.probe(T), on = w.zeros.findIndex(g => Math.abs(g - T) < 0.004), next = w.zeros[passed];
+      const text = `${passed} of 100 zeros passed<small>s = ½ + ${T.toFixed(2)}i<br>ζ(s) ≈ ${re.toFixed(2)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(2)}i<br>`
+        + (on >= 0 ? `on zero ${on + 1}: size 0.00` : `size ${Math.hypot(re, im).toFixed(2)}` + (next ? ` · zero ${passed + 1} in ${(next - T).toFixed(2)}` : '')) + '</small>';
+      if (text !== said) $('passed').innerHTML = said = text;
       each(T, passed);
     };
-    stop = () => { w.tick = null; w.controls.enableZoom = true; canvas.removeEventListener('wheel', wheel); };
+    stop = () => {
+      w.tick = null; w.probe(); w.light(); w.controls.enableZoom = true; w.controls.removeEventListener('start', free); canvas.style.cursor = '';
+      canvas.removeEventListener('wheel', wheel); canvas.removeEventListener('pointerdown', press); canvas.removeEventListener('pointermove', hover); canvas.removeEventListener('click', click);
+    };
   });
   return () => stop();
 }
@@ -327,7 +364,7 @@ const STEPS = [
     idea: 'Draw the size of ζ(s) as the height of land. A zero is a point where the land touches the floor.',
     todo: 'Drag to look around.',
     payoff: 'Each pin stands on a nontrivial zero, at the bottom of a dark well. Height is squashed so the pole at s = 1 fits.',
-    legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero']],
+    legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['dim', '', 'the edges of the critical strip, Re(s) = 0 and 1']],
     mount(stage, ui) {
       let stop = () => {};
       withWorld(w => { startView(w); w.controls.addEventListener('start', ui.done); stop = () => w.controls.removeEventListener('start', ui.done); });
@@ -336,9 +373,16 @@ const STEPS = [
 
   { id: 'road', tab: 'The ride', learn: 'statement', world: true, title: 'Every well on one line',
     idea: 'Here are the first 100 zeros in this strip, and every one is on the same straight line.',
-    todo: 'Drag the slider to ride north.',
+    todo: 'Drag the slider to ride north, or click a pin.',
     payoff: 'The gold line is Re(s) = ½. These are the first 100 of infinitely many, and the land here stops just past the 100th.',
-    mount: (stage, ui) => ride(stage, ui, (T, passed) => { $('passed').textContent = `${passed} of 100 zeros passed`; }) },
+    legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['inked', '', 'the arrow ζ(s) where you are, and the path of its tip']],
+    more: `<details><summary>What the dial and the white curve are</summary>
+      At each point s, the value ζ(s) is an arrow. Its length is called the size of ζ(s). The dial shows that arrow where you are on the line:
+      right is its real part, up is its imaginary part, and the ring is size 1. The white curve is where the arrow’s tip has been.
+      At a zero the arrow has no length, so the curve passes through the middle of the dial. Each pin’s head is on one of those crossings.
+      Lengths are squashed as the land’s heights are. The grey lines on the land are Re(s) = 0 and Re(s) = 1, the edges of the critical strip,
+      and the numbers along its east edge are heights.</details>`,
+    mount: (stage, ui) => ride(stage, ui, () => {}, 4) },   // slow enough to watch the arrow turn
 
   { id: 'waves', tab: 'Waves', learn: 'waves', world: true, title: 'Each zero is a wave',
     idea: 'Add the waves of the zeros you have passed, and spikes rise at 2, 3, 5, 7, 11.',
@@ -366,8 +410,7 @@ const STEPS = [
         if (named) { ctx.fillStyle = C.blue; let last = -99; for (const p of PRIMES) { const x = px(p); if (x - last >= 15) { ctx.fillText(p, x, py(spikes(p, T, ZEROS)) - 5); last = x; } } }
         ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(`${ZEROS.filter(g => g < T).length} waves added`, w - 8, 14);
       });
-      return ride(stage, ui, (t, passed) => {
-        $('passed').textContent = `${passed} of 100 zeros passed`;
+      return ride(stage, ui, t => {
         if (Math.abs(t - T) < 0.02) return;
         T = t; named ||= T >= 150; fig.paint();
       });
