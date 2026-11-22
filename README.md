@@ -28,6 +28,9 @@ ES modules need a server, not `file://`:
 python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
+- `index.html`: the home page, a self-contained terrain with the first 13 zeros.
+- `landscape.html`: the explorer, with ζ(s) and ξ(s) tabs, a movable window up to t = 110, a critical-line probe, and the curve panel. Open http://localhost:8000/landscape.html.
+
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), the completed function ξ(s), Hardy's Z(t), and a zero finder.
 - `main.js`: the terrain (ζ or ξ computed per vertex in a shader, switched by tabs), critical-line probe, and the critical-line curve.
 
