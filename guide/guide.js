@@ -279,7 +279,7 @@ const STEPS = [
         for (let n = 1, re = 0, im = 0; n < N; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length n^-sigma, turned by -t ln n
         ctx.stroke(); ctx.lineWidth = 1; ctx.fillStyle = settles ? C.ink : C.muted;
         for (let n = 1, re = 0, im = 0; n <= 8; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.fillRect(ox + re * unit - 2.5, oy - im * unit - 2.5, 5, 5); }   // where the first eight arrows end
-        const [re, im] = zeta(sigma, t);
+        const [re, im] = zeta(sigma, t).map(v => Math.abs(v) < 5e-5 ? 0 : v);   // so a zero reads 0.0000 + 0.0000i, never −0.0000
         ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(Math.round(ox + re * unit) - 6.5, Math.round(oy - im * unit) - 6.5, 13, 13); ctx.lineWidth = 1;
         ctx.fillStyle = C.ink; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 9);
         read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i` + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : '');
