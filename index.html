@@ -32,7 +32,7 @@
     summary { cursor: pointer; font-size: 12.5px; font-weight: 600; }
     details p, details li { color: var(--muted); font-size: 12.5px; }
     details p { margin: 8px 0 0; }
-    details ul { margin: 6px 0 0; padding-left: 18px; }
+    details ul { margin: 6px 0 10px; padding-left: 18px; }
     .math { display: block; margin: 8px 0 0; padding: 6px 8px; border-radius: 6px;
       background: rgba(255, 255, 255, 0.05); color: var(--text);
       font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; overflow-x: auto; }
@@ -100,6 +100,37 @@
 
     <p data-for="zeta">Ground: s = σ + it. Height: log(1 + |ζ(s)|). Color: the phase (angle) of ζ(s).
       The white line is the critical line σ = ½. Green dots are zeros.</p>
+
+    <details data-for="zeta" open>
+      <summary>What ζ(s) is</summary>
+      <p>For Re s &gt; 1 it is the sum</p>
+      <span class="math">ζ(s) = Σ 1/nˢ = 1 + 1/2ˢ + 1/3ˢ + ⋯</span>
+      <p><b>Built from the primes.</b> Euler showed that the same function is a product over the primes:</p>
+      <span class="math">ζ(s) = ∏<sub>p</sub> 1/(1 − p<sup>−s</sup>)</span>
+      <p>Expanding each factor and multiplying out gives every 1/nˢ exactly once, because every n factors into
+        primes in exactly one way. This is why ζ knows where the primes are (see the Primes tab).</p>
+      <p><b>Beyond Re s &gt; 1.</b> The series stops converging at σ = 1, but ζ extends to the whole plane except
+        s = 1. The app uses the alternating series η(s) = 1 − 1/2ˢ + 1/3ˢ − ⋯, which converges for σ &gt; 0,
+        and ζ(s) = η(s) / (1 − 2<sup>1−s</sup>).</p>
+      <p><b>Landmarks in the picture.</b></p>
+      <ul>
+        <li><b>The pole at s = 1</b>, where ζ is infinite: the spike at the near end (clipped) when the window starts at t = 0.</li>
+        <li><b>The critical strip</b> 0 &lt; σ &lt; 1, between the gray lines, holds all the interesting zeros.</li>
+        <li><b>The nontrivial zeros</b> (green): ½ + 14.1347i, ½ + 21.0220i, ½ + 25.0109i, …
+          They come in conjugate pairs; only t &gt; 0 is shown.</li>
+        <li><b>The trivial zeros</b> at s = −2, −4, −6, … lie left of the ground shown here (σ ≥ −1).</li>
+      </ul>
+      <p><b>Reading the terrain.</b> The height log(1 + |ζ|) is 0 exactly at a zero, so zeros touch the ground.
+        The color is the angle of ζ(s): walking once around a zero passes through every color once.
+        Faint bands mark each doubling of |ζ|.</p>
+      <p><b>Not symmetric.</b> The functional equation ζ(s) = χ(s)·ζ(1−s) links σ and 1 − σ, but the factor χ(s)
+        stretches one side, so this landscape rises to the left and flattens toward 1 on the right.
+        Only the zeros are mirror images across the white line. Select completed ξ(s) to see the factor removed
+        and the landscape become a mirror image.</p>
+      <p><b>The Riemann Hypothesis</b> says every nontrivial zero lies on the white line σ = ½. More than 10<sup>13</sup>
+        zeros have been checked, and a formal proof was announced in November 2026 (see the README).
+        The corner panel shows ζ(½ + it): the curve passes through the origin at each zero on the line.</p>
+    </details>
 
     <p data-for="xi" hidden>The same ground and coloring, now for Riemann's completed function ξ(s).
       It has exactly the same zeros as ζ in the strip, but its landscape is a mirror image
