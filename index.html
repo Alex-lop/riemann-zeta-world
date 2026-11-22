@@ -88,7 +88,8 @@
   #intro { position: relative; z-index: 2; min-height: 100dvh; display: flex; flex-direction: column; }
   .nav { border-bottom: 1px solid var(--hair); }
   .nav .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 60px; gap: 24px; }
-  .wordmark { font-weight: 650; letter-spacing: -.02em; text-decoration: none; font-size: 1.05rem; }
+  .wordmark { font-weight: 650; letter-spacing: -.02em; text-decoration: none; font-size: 1.05rem; color: var(--ink); }
+  .wordmark:hover { color: var(--act); }
   .nav ul { display: flex; gap: 22px; margin: 0; padding: 0; list-style: none; font-size: .86rem; }
   .nav a { display: inline-flex; align-items: center; min-height: 44px; }
   .hero { position: relative; flex: 1; display: flex; align-items: center; overflow: hidden; }
@@ -175,7 +176,7 @@
   .atoms i { color: var(--muted); font-style: normal; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
   .chip { min-width: 46px; justify-content: center; font-family: var(--mono); }
-  .chip[aria-pressed=true] { background: var(--blue); border-color: var(--blue); color: var(--bg); }
+  .chip[aria-pressed=true] { background: var(--blue); border-color: var(--blue); color: var(--bg); }   /* once it is in the number it is a prime: blue */
   .meter { position: relative; height: 26px; margin: 1.9rem 0 0; border: 1px solid var(--hair-strong); background: var(--bg-plot); }
   .meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--blue); transition: width .3s; }
   .meter b { position: absolute; top: -7px; bottom: -7px; width: 2px; background: var(--ink); }
@@ -196,7 +197,7 @@
   /* Off the intro it sits at the right end of the step bar. Where the bar has no room, it goes under it over the world. */
   @media (min-width: 900px) { html:not([data-mode=intro]) .motion-dock { top: 1px; bottom: auto; } }
   @media (max-width: 899px) { html:is([data-mode=world], [data-mode=fly]) .motion-dock { top: 48px; bottom: auto; left: var(--pad); right: auto; } }
-  .onward { margin-top: 1rem; } .onward a { color: var(--ink); } .onward > div { align-items: start; } .onward dt { padding-top: 14px; }
+  .onward { margin-top: 1rem; } .onward > div { align-items: start; } .onward dt { padding-top: 14px; }
 
   @media (max-width: 899px) {   /* no room beside the card: it scrolls, and always leaves a band of the world above it */
     html[data-mode=world] #panel { pointer-events: auto; max-height: 72dvh; } html[data-mode=world] #s-more { display: none; }
