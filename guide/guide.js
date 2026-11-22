@@ -46,6 +46,9 @@ function openWorld() {
     return world;
   }).catch(() => null);
 }
+// The view the world was tuned for: west of the line near its south end, looking north up it (PLAN.md, "The world").
+// Step 4 and the open world begin here, wherever a ride or the hypothetical zero left the camera.
+function startView(w) { w.camera.position.set(-3.5, 6.5, scene.zOf(7)); w.controls.target.set(0, 0, scene.zOf(22)); }
 // Runs fn(world) once the world is up, unless the visitor has moved on to another screen by then.
 function withWorld(fn) {
   const mine = turn;
@@ -325,7 +328,7 @@ const STEPS = [
     legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero']],
     mount(stage, ui) {
       let stop = () => {};
-      withWorld(w => { w.controls.addEventListener('start', ui.done); stop = () => w.controls.removeEventListener('start', ui.done); });
+      withWorld(w => { startView(w); w.controls.addEventListener('start', ui.done); stop = () => w.controls.removeEventListener('start', ui.done); });
       return () => stop();
     } },
 
@@ -574,7 +577,7 @@ function show() {
   for (const tab of $('tabs').children) if (mode !== 'intro' && tab.hash === location.hash) { tab.setAttribute('aria-current', 'step'); tab.scrollIntoView({ block: 'nearest', inline: 'center' }); } else tab.removeAttribute('aria-current');
   world?.run(mode === 'world' || mode === 'fly');             // no drawing while the land is off screen
   if (!step?.lab) { clearTimeout(morph); mirrored = false; if (world) { world.ghost(); world.mirror(false); } }   // the fiction never leaves its two steps
-  if (mode === 'fly') withWorld(() => { $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
+  if (mode === 'fly') withWorld(w => { startView(w); $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
   if (!step) return;
 
   const stage = $('s-stage'), payoff = $('s-payoff');
