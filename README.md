@@ -19,3 +19,14 @@ The Riemann hypothesis is **not proven**. In October 2026 a proof of a weaker "q
 ## Stack
 
 Three.js and a plain `index.html` to start. Add a build step only when something needs it.
+
+## Running
+
+ES modules need a server, not `file://`:
+
+```sh
+python3 -m http.server 8000   # then open http://localhost:8000
+```
+
+- `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), Hardy's Z(t), and a zero finder.
+- `main.js`: the terrain (ζ computed per vertex in a shader), critical-line probe, and the ζ(½ + it) output-plane curve.
