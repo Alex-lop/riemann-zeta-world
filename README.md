@@ -30,3 +30,5 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), Hardy's Z(t), and a zero finder.
 - `main.js`: the terrain (ζ computed per vertex in a shader), critical-line probe, and the ζ(½ + it) output-plane curve.
+
+See [docs/riemann_graph_v1.md](docs/riemann_graph_v1.md) for how it works, with the math.
