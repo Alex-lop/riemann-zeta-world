@@ -40,6 +40,8 @@ export function makeSky({ stars = 3600 } = {}) {
         col += uA * smoothstep(0.38, 0.8, n2) * (0.3 + 1.1 * band);
         col += uB * smoothstep(0.42, 0.85, n1) * (0.5 + 0.5 * band);
         col += uC * band * band * smoothstep(0.3, 0.75, n2 * n1 * 2.2);
+        float north = 1.0 - dot(d, normalize(vec3(0.0, 0.02, -1.0)));           // a far light due north, where the line leads
+        col += vec3(1.0, 0.86, 0.66) * (0.6 * exp(-north * 260.0) + 0.17 * exp(-north * 42.0) + 0.04 * exp(-north * 7.0));
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
       }`,
