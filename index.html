@@ -71,9 +71,10 @@
   #tabs::-webkit-scrollbar { display: none; }
   html[data-mode=intro] #tabs { display: none; }
   #tabs a { display: inline-flex; align-items: center; gap: .45rem; padding: 0 .65rem; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; }
-  #tabs a:hover { color: var(--red); }
-  #tabs a[aria-current] { color: var(--ink); border-bottom-color: var(--ink); }
-  #tabs b { font-weight: 400; }
+  #tabs a:hover { color: var(--ink); }
+  #tabs a[aria-current] { color: var(--ink); border-bottom-color: var(--act); }
+  #tabs b { font-weight: 400; color: var(--act); }   /* the numbers are the handles */
+  #tabs .fly span { color: var(--act); }
   #tabs .wordmark { margin-right: .8rem; padding-left: 0; font: 650 1rem/1 var(--sans); letter-spacing: -.02em; color: var(--ink); }
   #tabs .fly { margin-left: .8rem; padding-left: 1.2rem; border-left: 1px solid var(--hair); }
   @media (min-width: 900px) { #tabs { padding-right: 10rem; } }   /* room for Pause motion at its right end */
