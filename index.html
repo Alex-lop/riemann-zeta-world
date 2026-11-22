@@ -14,7 +14,7 @@
 <meta property="og:url" content="https://alex-lop.github.io/zeta-world/">
 <meta property="og:image" content="https://alex-lop.github.io/zeta-world/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230d1117'/><path d='M16 2v28' stroke='%23f5c542' stroke-width='1.5'/><rect x='13' y='7' width='6' height='6' fill='%23ecebe6'/><rect x='13' y='19' width='6' height='6' fill='%23ecebe6'/><rect x='22.5' y='13.5' width='5' height='5' fill='none' stroke='%23e6392d' stroke-width='1.5'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='78' font-size='90' text-anchor='middle' fill='%23f5c542'>ζ</text></svg>">
 <!-- Before first paint: a reload on a step or on #fly must not flash the intro. -->
 <script>document.documentElement.dataset.mode = { '': 'intro', '#': 'intro', '#fly': 'fly' }[location.hash] || 'paper';</script>
 <!-- No build step: three.js comes from a pinned CDN version, and is fetched only when a step first needs the 3D world. -->
@@ -61,8 +61,22 @@
   #field { z-index: 0; pointer-events: none; }
   #world { z-index: 1; opacity: 0; visibility: hidden; transition: opacity .9s, visibility 0s .9s; touch-action: none; }
   html[data-mode=world] #world, html[data-mode=fly] #world { opacity: 1; visibility: visible; transition: opacity .9s; }
-  .count { position: fixed; z-index: 2; top: 0; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
+  .count { position: fixed; z-index: 2; top: 46px; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
   html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
+
+  /* The step bar, on every screen but the intro: where you are in the climb, and a way to jump anywhere in it. */
+  #tabs { position: fixed; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: stretch; height: 46px; padding: 0 var(--pad); background: rgb(13 17 23 / .92); border-bottom: 1px solid var(--hair); overflow-x: auto; scrollbar-width: none; white-space: nowrap; font: 400 .72rem/1 var(--mono); letter-spacing: .04em; }
+  #tabs::-webkit-scrollbar { display: none; }
+  html[data-mode=intro] #tabs { display: none; }
+  #tabs a { display: inline-flex; align-items: center; gap: .45rem; padding: 0 .65rem; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; }
+  #tabs a:hover { color: var(--red); }
+  #tabs a[aria-current] { color: var(--ink); border-bottom-color: var(--ink); }
+  #tabs b { font-weight: 400; }
+  #tabs .wordmark { margin-right: .8rem; padding-left: 0; font: 650 1rem/1 var(--sans); letter-spacing: -.02em; color: var(--ink); }
+  #tabs .fly { margin-left: .8rem; padding-left: 1.2rem; border-left: 1px solid var(--hair); }
+  @media (min-width: 900px) { #tabs { padding-right: 10rem; } }   /* room for Pause motion at its right end */
+  @media (max-width: 1320px) { #tabs a:not([aria-current], .wordmark, .fly) span { display: none; } }   /* numbers only, and the name of the step you are on */
+  @media (max-width: 620px) { #tabs .wordmark { display: none; } #tabs a { padding: 0 .55rem; } }
 
   /* One screen at a time. */
   html:not([data-mode=intro]) #intro, html[data-mode=intro] #panel, html[data-mode=fly] #step, html:not([data-mode=fly]) #fly { display: none; }
@@ -99,7 +113,7 @@
 
   /* The step card. On a step with a 2D figure it is two columns: the words, then the figure. Over the 3D world it docks
      at the bottom left and lets drags through to the canvas, and the figure docks beside it. */
-  #panel { position: relative; z-index: 2; min-height: 100dvh; display: flex; align-items: safe center; justify-content: center; padding: 5vh var(--pad) 72px; }
+  #panel { position: relative; z-index: 2; min-height: 100dvh; display: flex; align-items: safe center; justify-content: center; padding: calc(46px + 4vh) var(--pad) 72px; }
   #step { width: min(100%, 36rem); }
   #fly { width: 100%; }
   @media (min-width: 900px) {
@@ -108,18 +122,14 @@
     html[data-mode=paper] #s-fig { grid-area: fig; align-self: center; }
   }
   html[data-mode=world] #panel, html[data-mode=fly] #panel {
-    position: fixed; left: 0; bottom: 0; display: block; min-height: 0; max-height: 100dvh; overflow-y: auto; width: min(30rem, 100%); padding: 1rem 1.4rem 1.1rem;
+    position: fixed; left: 0; bottom: 0; display: block; min-height: 0; max-height: calc(100dvh - 46px); overflow-y: auto; width: min(30rem, 100%); padding: 1rem 1.4rem 1.1rem;
     background: rgb(13 17 23 / .92); border-top: 1px solid var(--hair-strong); border-right: 1px solid var(--hair-strong); pointer-events: none;
   }
   #panel :is(a, button, input, summary, label, canvas) { pointer-events: auto; }
   @media (min-width: 900px) {   /* beside the docked card, along the bottom of the world */
     html[data-mode=world] #s-fig:not(:empty) { position: fixed; left: 30rem; right: 0; bottom: 0; padding: .8rem 1.2rem .9rem; background: rgb(13 17 23 / .92); border-top: 1px solid var(--hair-strong); }
   }
-  .top { display: flex; justify-content: space-between; align-items: center; margin: 0 0 .7rem; color: var(--muted); font: 400 .72rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-  .top a { text-decoration: none; padding: 10px 0; }
-  .ticks { display: inline-flex; align-items: flex-end; gap: 5px; height: 14px; margin-left: .7rem; vertical-align: -2px; }
-  .ticks i { width: 1px; height: 8px; background: var(--hair-strong); }
-  .ticks i.done { background: var(--muted); } .ticks i.now { height: 14px; width: 2px; background: var(--ink); }
+  .top { margin: 0 0 .7rem; color: var(--muted); font: 400 .72rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
   #step h1, #fly h1 { font-size: clamp(1.7rem, 3vw, 2.4rem); }
   #step h1:focus { outline: none; }
   #step p, #fly p, #fly details { margin: .7rem 0 0; }
@@ -171,9 +181,12 @@
   .checks details p { margin: .4rem 0 .1rem 2.2rem; color: var(--muted); font-size: .86rem; }
   .checks details[open] summary b { color: var(--ink); }
 
-  .motion-dock { position: fixed; z-index: 3; right: var(--pad); bottom: 10px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--muted); font: 400 .7rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+  .motion-dock { position: fixed; z-index: 4; right: var(--pad); bottom: 10px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--muted); font: 400 .7rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
   .motion-dock:hover { color: var(--red); } .motion-dock[disabled] { cursor: default; }
-  html[data-mode=world] .motion-dock, html[data-mode=fly] .motion-dock { top: 0; bottom: auto; left: var(--pad); right: auto; }
+  /* Off the intro it sits at the right end of the step bar. Where the bar has no room, it goes under it over the world. */
+  @media (min-width: 900px) { html:not([data-mode=intro]) .motion-dock { top: 1px; bottom: auto; } }
+  @media (max-width: 899px) { html:is([data-mode=world], [data-mode=fly]) .motion-dock { top: 48px; bottom: auto; left: var(--pad); right: auto; } }
+  .onward { margin-top: 1rem; } .onward a { color: var(--ink); } .onward > div { align-items: start; } .onward dt { padding-top: 14px; }
 
   @media (max-width: 899px) {   /* no room beside the card: it scrolls, and always leaves a band of the world above it */
     html[data-mode=world] #panel { pointer-events: auto; max-height: 72dvh; } html[data-mode=world] #s-more { display: none; }
@@ -200,6 +213,8 @@
 <p class="count" id="count"></p>
 <p class="count" id="passed"></p>
 <span class="tag" id="tag-a">hypothetical</span><span class="tag" id="tag-b">its twin, also hypothetical</span>
+
+<nav id="tabs" aria-label="Steps of the climb"></nav>
 
 <div id="intro">
   <nav class="nav" aria-label="Primary">
@@ -237,7 +252,7 @@
 <main id="panel">
   <article id="step">
     <div id="s-top">
-      <p class="top"><a href="#">‹ Zeta World</a><span><span id="s-count"></span><span class="ticks" id="s-ticks" aria-hidden="true"></span></span></p>
+      <p class="top" id="s-count"></p>
       <h1 id="s-title" tabindex="-1"></h1>
       <p id="s-idea"></p>
       <p id="s-do"></p>
@@ -253,7 +268,7 @@
 
   <!-- "Just let me fly": the plain 3D world with free controls. -->
   <aside id="fly">
-    <p class="top"><a href="#">‹ Zeta World</a></p>
+    <p class="top">No guide</p>
     <h1>Zeta World</h1>
     <p>The Riemann hypothesis, as a place you can look at.</p>
     <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each pin stands on a zero, where the land drops to height zero. These are the first 100 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
@@ -266,12 +281,13 @@
     </details>
     <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
     <p class="small">Built for Sundai Hack 150. <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
+    <p class="actions"><a class="btn btn-go" href="#primes">Start the climb ›</a></p>
   </aside>
 </main>
 
 <button type="button" class="motion-dock" id="motion">Pause motion</button>
 
 <script src="./guide/field.js" defer></script>
-<script type="module" src="./guide/guide.js?v=8"></script>
+<script type="module" src="./guide/guide.js?v=9"></script>
 </body>
 </html>

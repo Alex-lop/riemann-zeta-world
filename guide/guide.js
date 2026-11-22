@@ -170,12 +170,13 @@ const sup = n => String(n).replace(/./g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d] ?
 const pow10 = e => { if (e >= 15) return `10${sup(Math.round(e))}`; let k = Math.floor(e), m = Math.round(10 ** (e - k)); if (m === 10) { m = 1; k++; } return `${m} × 10${sup(k)}`; };
 
 // ---- the ten steps -----------------------------------------------------------------------------
-// id: the name in the URL hash. learn: the anchor of the long version in learn.html. world: the step runs over the 3D world.
+// id: the name in the URL hash. tab: its short name in the step bar and on the Next and Back buttons.
+// learn: the anchor of the long version in learn.html. world: the step runs over the 3D world.
 // lab: the step keeps the mirror land and the hypothetical zero up.
 // mount(stage, ui) builds the interaction and may return a cleanup. ui.done() shows the payoff, ui.say(html) replaces the instruction.
 // A step with no mount yet shows fig, a static figure, and no instruction.
 const STEPS = [
-  { id: 'primes', learn: 'primes', title: 'Primes are the atoms',
+  { id: 'primes', tab: 'Primes', learn: 'primes', title: 'Primes are the atoms',
     idea: 'Every whole number above 1 breaks into primes, and it does so in exactly one way.',
     todo: 'Type a number.',
     payoff: 'Start 360 another way, as 8 × 45, and you get the same primes: three 2s, two 3s and one 5.',
@@ -198,7 +199,7 @@ const STEPS = [
       stage.append(box); split();
     } },
 
-  { id: 'counting', learn: 'counting', title: 'Random up close, smooth from afar',
+  { id: 'counting', tab: 'Counting', learn: 'counting', title: 'Random up close, smooth from afar',
     idea: 'Primes get rarer as numbers grow, but unevenly. Still, the number of primes up to x is roughly x / ln x.',
     todo: 'Drag along the number line.',
     payoff: 'Up to 100 there are 25 primes, and x / ln x says about 21.7. The central question is how far a sharpened estimate misses.',
@@ -236,7 +237,7 @@ const STEPS = [
       stage.append(box, read);
     } },
 
-  { id: 'zeta', learn: 'complex', title: 'One function knows every prime',
+  { id: 'zeta', tab: 'Zeta', learn: 'complex', title: 'One function knows every prime',
     idea: 'ζ(s) adds 1/n<sup>s</sup> over every whole number n. Each term is an arrow, and ζ adds arrows that turn at different speeds.',
     todo: 'Drag the height t.',
     payoff: 'At t = 0 nothing has turned, and the total is π<sup>2</sup>/6 ≈ 1.6449. Euler showed the same total is a product with one factor for each prime.',
@@ -301,7 +302,7 @@ const STEPS = [
       stage.append(heightBox, realBox, read); scan(); paint();
     } },
 
-  { id: 'landscape', learn: 'landscape', world: true, title: 'A landscape with wells',
+  { id: 'landscape', tab: 'The land', learn: 'landscape', world: true, title: 'A landscape with wells',
     idea: 'Draw the size of ζ(s) as the height of land. A zero is a point where the land touches the floor.',
     todo: 'Drag to look around.',
     payoff: 'Each pin stands on a nontrivial zero, at the bottom of a dark well. Height is squashed so the pole at s = 1 fits.',
@@ -312,13 +313,13 @@ const STEPS = [
       return () => stop();
     } },
 
-  { id: 'road', learn: 'statement', world: true, title: 'Every well on one line',
+  { id: 'road', tab: 'The ride', learn: 'statement', world: true, title: 'Every well on one line',
     idea: 'Here are the first 100 zeros in this strip, and every one is on the same straight line.',
     todo: 'Drag the slider to ride north.',
     payoff: 'The gold line is Re(s) = ½. These are the first 100 of infinitely many, and the land here stops just past the 100th.',
     mount: (stage, ui) => ride(stage, ui, (T, passed) => { $('passed').textContent = `${passed} of 100 zeros passed`; }) },
 
-  { id: 'waves', learn: 'waves', world: true, title: 'Each zero is a wave',
+  { id: 'waves', tab: 'Waves', learn: 'waves', world: true, title: 'Each zero is a wave',
     idea: 'Add the waves of the zeros you have passed, and spikes rise at 2, 3, 5, 7, 11.',
     todo: 'Ride north again.',
     payoff: 'No prime was given to the sum. The small bumps at 4, 8 and 9 are prime powers. Zeros and primes encode each other.',
@@ -351,7 +352,7 @@ const STEPS = [
       });
     } },
 
-  { id: 'suppose', learn: 'strip', world: true, lab: true, title: 'Suppose one zero were off the line',
+  { id: 'suppose', tab: 'One zero off', learn: 'strip', world: true, lab: true, title: 'Suppose one zero were off the line',
     idea: 'Completed with its gamma factor, ζ’s land mirrors itself across the line. So a nontrivial zero off the line needs a twin.',
     todo: 'Drag the red zero off the line.',
     payoff: 'A nontrivial zero left of the line forces one to its right. So it is enough to show that no zero lies to the right.',
@@ -395,7 +396,7 @@ const STEPS = [
       return () => stop();
     } },
 
-  { id: 'band', learn: 'y2026-shape', world: true, lab: true, title: 'The primes would show it',
+  { id: 'band', tab: 'The band', learn: 'y2026-shape', world: true, lab: true, title: 'The primes would show it',
     idea: 'If every nontrivial zero is on the line, a weighted, centred count of prime powers, over √x, stays in the gold band.',
     todo: 'Add the hypothetical zero’s wave.',
     payoff: 'Its wave outgrows √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
@@ -461,7 +462,7 @@ const STEPS = [
       return () => stop();
     } },
 
-  { id: 'ceiling', learn: 'y2026-size', title: 'Where the ceiling comes from',
+  { id: 'ceiling', tab: 'The ceiling', learn: 'y2026-size', title: 'Where the ceiling comes from',
     idea: 'A nonzero whole number divisible by many primes is at least their product.',
     todo: 'Toggle primes into the number.',
     payoff: 'As the guides describe the announced proof: arithmetic caps the upward swings; an off-line zero would break the cap; so no zero lies to the right of the line, and by the mirror no nontrivial zero lies to the left.',
@@ -507,10 +508,11 @@ const STEPS = [
       squeeze();
     } },
 
-  { id: 'checked', learn: 'y2026-checks', title: 'Released, checked, still needed',
+  { id: 'checked', tab: 'The record', learn: 'y2026-checks', title: 'Released, checked, still needed',
     idea: 'On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.',
     todo: 'Open each check.',
     payoff: 'Still to come: the author’s written proof, review by independent experts, a human account of the central inequality, and the end of two long checks.',
+    more: '<dl class="rows onward"><div><dt>Keep going</dt><dd><a href="#fly">Fly the world</a><a href="./proof.html">The proof page</a><a href="./landscape.html">The explorer</a><a href="./learn.html">The long version</a><a href="#primes">Start again</a></dd></div></dl>',
     mount(stage, ui) {
       // A passed check is a tick and the word. The texts are content y2026-checks and y2026-needed.
       let n = 0;
@@ -538,21 +540,22 @@ function show() {
   const mode = step ? (step.world ? 'world' : 'paper') : id === 'fly' ? 'fly' : 'intro';
   root.dataset.mode = mode; root.dataset.step = step ? id : '';
   document.title = step ? `${step.title} · Zeta World` : TITLE;
+  for (const tab of $('tabs').children) if (mode !== 'intro' && tab.hash === location.hash) { tab.setAttribute('aria-current', 'step'); tab.scrollIntoView({ block: 'nearest', inline: 'center' }); } else tab.removeAttribute('aria-current');
   world?.run(mode === 'world' || mode === 'fly');             // no drawing while the land is off screen
   if (!step?.lab) { clearTimeout(morph); mirrored = false; if (world) { world.ghost(); world.mirror(false); } }   // the fiction never leaves its two steps
   if (mode === 'fly') withWorld(() => { $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
   if (!step) return;
 
   const stage = $('s-stage'), payoff = $('s-payoff');
-  $('s-count').textContent = `${i + 1} / ${STEPS.length}`;
-  $('s-ticks').innerHTML = STEPS.map((_, k) => `<i class="${k < i ? 'done' : k === i ? 'now' : ''}"></i>`).join('');
+  $('s-count').textContent = `Step ${i + 1} of ${STEPS.length}`;
   $('s-title').innerHTML = step.title; $('s-idea').innerHTML = step.idea;
   $('s-do').innerHTML = step.todo; $('s-do').hidden = !step.mount;
   $('s-legend').innerHTML = (step.legend || []).map(([colour, kind, text]) => `<span><i class="sw ${kind} ${colour}"></i>${text}</span>`).join('');
   $('s-more').innerHTML = (step.more || '') + `<p><a href="./learn.html#${step.learn}">the long version of this step</a></p>`;
   payoff.innerHTML = step.payoff; payoff.classList.remove('on'); $('s-live').textContent = '';
-  $('s-back').href = '#' + (STEPS[i - 1]?.id || '');
-  $('s-next').href = '#' + (STEPS[i + 1]?.id || 'fly'); $('s-next').textContent = STEPS[i + 1] ? 'Next ›' : 'Fly the world ›';
+  // Next and Back say where they lead, and the last step leads on into the open world.
+  $('s-back').href = '#' + (STEPS[i - 1]?.id || ''); $('s-back').textContent = `‹ ${STEPS[i - 1]?.tab || 'Start'}`;
+  $('s-next').href = '#' + (STEPS[i + 1]?.id || 'fly'); $('s-next').textContent = STEPS[i + 1] ? `Next: ${STEPS[i + 1].tab} ›` : 'Fly the world ›';
 
   // The payoff shows once the visitor has acted, or after a few seconds if they have not.
   const ui = { done() { if (payoff.classList.contains('on')) return; payoff.classList.add('on'); $('s-live').textContent = payoff.textContent; }, say(html) { $('s-do').innerHTML = html; } };
@@ -560,15 +563,19 @@ function show() {
   stage.replaceChildren();
   if (step.mount) leave = step.mount(stage, ui) || null; else stage.append(el(`<p class="fig">${step.fig}</p>`));
   scrollTo(0, 0); $('s-title').focus({ preventScroll: true });
+  if (!still()) $('step').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, easing: 'ease-out' });   // each step flows in. Opacity only: a transform would unpin the docked figure
 }
+// The step bar: the way home, the ten steps by number and name, and the open world.
+$('tabs').innerHTML = '<a class="wordmark" href="#">Zeta World</a>' + STEPS.map((s, k) => `<a href="#${s.id}"><b>${k + 1}</b><span>${s.tab}</span></a>`).join('') + '<a class="fly" href="#fly"><span>Fly</span></a>';
 addEventListener('hashchange', show);
 show();
 
-// Arrow keys and Space move between steps, unless a slider, field, button or summary has the focus: then the key is theirs.
+// Arrow keys and Space move between steps, and a digit jumps to that step (0 is the tenth), unless a slider, field, button
+// or summary has the focus: then the key is theirs.
 addEventListener('keydown', e => {
   if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input, button, select, textarea, summary')) return;
   const mode = root.dataset.mode, forward = e.key === 'ArrowRight' || e.key === ' ';
-  const to = mode === 'intro' ? (e.key === 'ArrowRight' ? '#' + STEPS[0].id : null) : mode === 'fly' ? null : forward ? $('s-next').hash : e.key === 'ArrowLeft' ? $('s-back').hash || '#' : null;
+  const to = /^\d$/.test(e.key) ? '#' + STEPS[(+e.key + 9) % 10].id : mode === 'intro' ? (e.key === 'ArrowRight' ? '#' + STEPS[0].id : null) : mode === 'fly' ? null : forward ? $('s-next').hash : e.key === 'ArrowLeft' ? $('s-back').hash || '#' : null;
   if (to === null) return;
   e.preventDefault(); location.hash = to;
 });
