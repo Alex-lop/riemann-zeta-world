@@ -13,8 +13,7 @@ const SIG0 = -0.5, SIG1 = 1.5, NS = 64, NT = 4096;
 export const T_MAX = 237;                          // the road ends between zero 100 (236.52) and zero 101 (237.77), so every well has a pin
 const FOG0 = 45, FOG1 = 130, FOG_H = 6.5;          // fog from 45 to 130 up to the start pose's height. Above that it scales with height
 const PIN = 1.5 * RISE, HEAD = 0.1;                // pin height and head radius
-const LUM0 = 0.06, LUM1 = 0.5;                     // lightness at the floor and how much full height adds: pits must read as dark
-const SUN = [0.68, 0.57, 0.46], SHADE0 = 0.8;      // wash look: slopes facing away from this direction darken to 0.8, baked into the colours
+const SUN = [0.68, 0.57, 0.46], SHADE0 = 0.8;      // slopes facing away from this direction darken to 0.8, baked into the colours
 const ROLL_MS = 40;                                // roll call: one pin every 40 ms, 4 s for all 100
 
 // ---- the math --------------------------------------------------------------
@@ -67,9 +66,9 @@ console.assert(CHECKED.every(Boolean) && ZETA2_OK, 'zeta self-check failed');
 // y = RISE * (2 / pi) * atan|zeta(s)|: a zero is a pit to the floor and the pole s = 1 is a spire of height RISE.
 export const xOf = sigma => WIDTH * (sigma - 0.5), zOf = t => LEN * (T_MAX / 2 - t);
 
-// The wash look, for the guide: the canvas is transparent so the page's ground and ticks show around the land.
-// The land is a wash by height, from WELL at the floor to HIGH on top, and nothing is lit, so these are the colours on screen.
-// The palette is the guide's (guide.html): a near-black ground, light ink for what is real, gold for the critical line.
+// The look: the canvas is transparent, so the page's ground and ticks show around the land. The land is shaded by height,
+// from WELL at the floor to HIGH on top, and nothing is lit, so these are the colours on screen. The palette is the page's
+// (index.html): a near-black ground, light ink for what is real, gold for the critical line, red for the hypothetical zero.
 const GROUND = 0x0d1117, WELL = 0x05070b, HIGH = 0x566279, GOLD = 0xf5c542, INK = 0xecebe6, UNCHECKED = 0x364052, RED = 0xe6392d;
 const squash = size => RISE * (2 / Math.PI) * Math.atan(size);   // every height in the world: 0 at a zero, RISE at the pole
 
@@ -82,23 +81,17 @@ function lnAbsGamma(x, y) {
 }
 console.assert(Math.abs(lnAbsGamma(0.5, 0) - 0.5 * Math.log(Math.PI)) < 1e-7 && Math.abs(lnAbsGamma(1, 1) - 0.5 * Math.log(Math.PI / Math.sinh(Math.PI))) < 1e-7, 'gamma self-check failed');
 
-// Starts the world on a canvas and returns { camera, controls, zeros, resize, run, tick }, plus, in the wash look,
+// Starts the world on a canvas and returns { camera, controls, zeros, resize, run, tick }, plus
 // { mirror, ghost, project, holding, onGhost } for the second half of the guide. Throws where WebGL is unavailable.
 // panel: the text panel a portrait layout frames the scene above. Call resize() when its height changes.
-// count: the element the roll call writes to. wash: the wash look above, in place of the phase colours.
-// quiet: a function that says whether motion is paused. Set tick to a function of the frame timestamp to move the camera.
-// run(false) stops drawing and run(true) resumes.
-export function startWorld(canvas, { panel, count, wash = false, quiet = () => false } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: wash });
+// count: the element the roll call writes to. quiet: a function that says whether motion is paused.
+// Set tick to a function of the frame timestamp to move the camera. run(false) stops drawing and run(true) resumes.
+export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });   // the canvas stays clear. Never setClearColor: its alpha defaults to 1
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  if (!wash) scene.background = new THREE.Color(0x05060f);    // in the wash look the canvas stays clear. Never setClearColor: its alpha defaults to 1
-  scene.fog = new THREE.Fog(wash ? GROUND : 0x05060f, FOG0, FOG1);   // the render loop rescales it
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a3a, 1.6));
-  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-  sun.position.set(30, 25, 20);
-  scene.add(sun);
+  scene.fog = new THREE.Fog(GROUND, FOG0, FOG1);     // the far end of the land fades into the page. The render loop rescales it
 
   // Baked north to south (t from T_MAX down to 0): that is PlaneGeometry's row order after rotateX(-90 deg),
   // so the grid index is the vertex index and the fill loop needs no arithmetic.
@@ -110,10 +103,10 @@ export function startWorld(canvas, { panel, count, wash = false, quiet = () => f
   for (let v = 0; v < pos.count; v++) pos.setY(v, squash(Math.hypot(re[v], im[v])));   // the pole is Infinity, which atan turns into RISE
   terrain.computeVertexNormals();
   const W = NS + 1, normal = terrain.attributes.normal, well = new THREE.Color(WELL), high = new THREE.Color(HIGH);
-  // Wash look. The land can morph between two lands, y0 (zeta, as baked above) and y1 (set by mirror() below), each with its own
+  // The land can morph between two lands, y0 (zeta, as baked above) and y1 (set by mirror() below), each with its own
   // baked slope shading s0 and s1. mix runs from 0 to 1 toward `to`.
   const shading = () => Float32Array.from(pos.array.subarray(0, pos.count), (_, v) => SHADE0 + (1 - SHADE0) * Math.max(0, normal.getX(v) * SUN[0] + normal.getY(v) * SUN[1] + normal.getZ(v) * SUN[2]));
-  const land = { y0: null, y1: null, s0: null, s1: null, mix: 0, to: 0, hatch: false, tint: new Float32Array(wash ? pos.count : 0) };   // tint: how red, for the hypothetical wells
+  const land = { y0: null, y1: null, s0: null, s1: null, mix: 0, to: 0, hatch: false, tint: new Float32Array(pos.count) };   // tint: how red, for the hypothetical wells
   const blush = new THREE.Color(RED);
   // Sets the heights and colours of rows j0 to j1. The line and its casing keep the colours they were given once.
   function paint(j0 = 0, j1 = NT) {
@@ -128,34 +121,25 @@ export function startWorld(canvas, { panel, count, wash = false, quiet = () => f
       const q = tint[v] * mix;                                                // everything the hypothetical zero causes is red
       colors[v * 3] = (well.r + (high.r - well.r) * k) * shade * (1 - q) + blush.r * q; colors[v * 3 + 1] = (well.g + (high.g - well.g) * k) * shade * (1 - q) + blush.g * q; colors[v * 3 + 2] = (well.b + (high.b - well.b) * k) * shade * (1 - q) + blush.b * q;
     }
-    pos.needsUpdate = true;
-    if (terrain.attributes.color) terrain.attributes.color.needsUpdate = true;
-  }
-  if (wash) {
-    land.y0 = land.y1 = Float32Array.from(pos.array.subarray(0, pos.count), (_, v) => pos.getY(v)); land.s0 = land.s1 = shading();
-    for (let v = 0; v < pos.count; v++) {
-      const col = Math.abs(v % W - ROAD);
-      if (col === 0) c.set(GOLD).toArray(colors, v * 3);                      // the critical line, painted on,
-      else if (col === 1) c.set(GROUND).toArray(colors, v * 3);               // with a dark casing so it is gold against the ground even on high land
-    }
-    paint();
-  } else for (let v = 0; v < pos.count; v++) {
-    if (v % W === ROAD) c.set(0xf5c542);                                      // the critical line, painted on
-    else c.setHSL(Math.atan2(im[v], re[v]) / (2 * Math.PI) + 0.5, 0.75, LUM0 + LUM1 * pos.getY(v) / RISE);   // +0.5: positive real is cyan, so the gold line stands out
-    c.toArray(colors, v * 3);
+    pos.needsUpdate = true; terrain.attributes.color.needsUpdate = true;
   }
   terrain.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  land.y0 = land.y1 = Float32Array.from(pos.array.subarray(0, pos.count), (_, v) => pos.getY(v)); land.s0 = land.s1 = shading();
+  for (let v = 0; v < pos.count; v++) {
+    const col = Math.abs(v % W - ROAD);
+    if (col === 0) c.set(GOLD).toArray(colors, v * 3);                        // the critical line, painted on,
+    else if (col === 1) c.set(GROUND).toArray(colors, v * 3);                 // with a dark casing so it is gold against the ground even on high land
+  }
+  paint();
   // Mesh self-check, by world position: a north-south flip would lift the first pit, an east-west flip would move the spire off Re(s) = 1.
   const vPit = Math.round((1 - ZEROS[0] / T_MAX) * NT) * (NS + 1) + ROAD, vPole = NT * (NS + 1) + NS * (1 - SIG0) / (SIG1 - SIG0);
   console.assert(Math.abs(pos.getZ(vPit) - zOf(ZEROS[0])) < LEN * T_MAX / NT && pos.getY(vPit) < 0.05 * RISE
     && Math.hypot(pos.getX(vPole) - xOf(1), pos.getZ(vPole) - zOf(0)) < 1e-3 && pos.getY(vPole) === RISE, 'terrain self-check failed: the mesh is flipped');
-  scene.add(new THREE.Mesh(terrain, wash ? new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
-    : new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1, side: THREE.DoubleSide })));
+  scene.add(new THREE.Mesh(terrain, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })));
 
   // Pin heads sit above everything (the land never exceeds RISE) so no ridge hides them; the stalk's foot is the zero.
   const pin = new THREE.CylinderGeometry(HEAD / 7, HEAD / 7, PIN).translate(0, PIN / 2, 0), head = new THREE.SphereGeometry(HEAD, 16, 12).translate(0, PIN, 0);
-  const dim = new THREE.MeshBasicMaterial({ color: wash ? UNCHECKED : 0x4a4d66 });
-  const glow = new THREE.MeshBasicMaterial({ color: wash ? INK : 0xffffff, fog: false });   // a checked pin shows through the fog
+  const dim = new THREE.MeshBasicMaterial({ color: UNCHECKED }), glow = new THREE.MeshBasicMaterial({ color: INK, fog: false });   // a checked pin shows through the fog
   const markers = ZEROS.map(t => {
     const marker = new THREE.Group().add(new THREE.Mesh(pin, dim), new THREE.Mesh(head, dim));
     marker.position.set(0, 0, zOf(t));
@@ -193,7 +177,7 @@ export function startWorld(canvas, { panel, count, wash = false, quiet = () => f
 
   const world = { camera, controls, zeros: ZEROS, resize, tick: null, run: on => renderer.setAnimationLoop(on ? frame : null) };
 
-  // ---- the second half of the guide: the mirror, and one hypothetical zero. Wash look only. ----
+  // ---- the second half of the guide: the mirror, and one hypothetical zero ----
   // The completed function xi(s) = s (s - 1) / 2 * pi^(-s/2) * Gamma(s/2) * zeta(s) has zeta's nontrivial zeros and is its own
   // mirror image: xi(s) = xi(1 - s). Its size falls fast going north, so each row is divided by its size on the line. That leaves
   // a land equal to zeta's on the line and symmetric across it. s Gamma(s/2) / 2 = Gamma(s/2 + 1) keeps it finite at s = 0.
@@ -236,7 +220,7 @@ export function startWorld(canvas, { panel, count, wash = false, quiet = () => f
   const WELL_R = 0.5, REACH = 5;                     // the wells' width in units of s, and how many units north and south they are drawn
   let spot = null, cut = null;                       // where the hypothetical zero is, and the rows its wells were cut into
   world.ghost = (beta, gamma) => {
-    if (!wash) return;
+    if (beta == null && !spot) return;               // nothing to remove
     if (!size1) bakeMirror();
     const was = cut, hadSpot = !!spot;
     if (cut) for (let v = cut[0] * W, end = (cut[1] + 1) * W; v < end; v++) { land.y1[v] = squash(size1[v]); land.tint[v] = 0; }   // fill the old wells in

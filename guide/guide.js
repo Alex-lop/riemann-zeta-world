@@ -22,7 +22,7 @@ const HYPOTHETICAL = 'hypothetical: no nontrivial zero off the line has ever bee
       <span class="gold" style="left:calc(50% + 9px);top:10px">Re(s) = ½</span><span style="left:6px;bottom:8px">0</span><span style="right:6px;bottom:8px">1</span>`
       + ZEROS.filter(t => t < TOP - 2).map(t => `<i class="zero" style="${at(0.5, t)}"></i><span style="right:calc(50% + 14px);${at(0.5, t).split(';')[1]};margin-top:-5px">${t.toFixed(2)}</span>`).join('')
       + `<i class="ghost" style="${at(ghost.beta, ghost.gamma)}"></i><i class="ghost" style="${at(1 - ghost.beta, ghost.gamma)}"></i>
-      <span class="red" id="strip-note" style="left:12px;right:12px;bottom:34px;white-space:normal;text-align:center;line-height:1.5">${HYPOTHETICAL}</span>`;
+      <span class="red" id="strip-note" style="left:12px;right:12px;bottom:62px;white-space:normal;text-align:center;line-height:1.5">${HYPOTHETICAL}</span>`;
   };
   draw();
   // Move the pointer over the hero and the open square follows, with its twin. Real zeros never move.
@@ -39,9 +39,9 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=3').then(m => {
+  return opening ??= import('./scene.js?v=4').then(m => {
     scene = m;
-    world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), wash: true, quiet: still });
+    world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step
     return world;
   }).catch(() => null);
