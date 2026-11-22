@@ -37,7 +37,14 @@
   .ways a { display: flex; flex-direction: column; gap: .15rem; padding: .55rem .65rem; border-radius: .5rem; text-decoration: none;
     color: #ebe9f5; background: rgb(255 255 255 / .05); border: 1px solid rgb(143 211 255 / .35); }
   .ways a:hover, .ways a:focus-visible { border-color: #f5c542; background: rgb(245 197 66 / .08); }
-  .ways b { color: #f5c542; font-size: 1rem; }
+  .ways b { color: #f5c542; font-size: 1rem; white-space: nowrap; }
+  #formula { position: fixed; top: calc(var(--zw-nav-h, 44px) + .75rem); right: 1rem; margin: 0; padding: .55rem .9rem .6rem;
+    background: rgb(5 6 15 / .78); border: 1px solid rgb(255 255 255 / .1); border-radius: .6rem; pointer-events: none;
+    font: 1.15rem/1.45 Georgia, 'Times New Roman', serif; color: #ebe9f5; text-align: right; }
+  #formula .f-title { display: block; margin-bottom: .1rem; font: 600 .78rem/1.3 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #f5c542; }
+  #formula .f-sub { display: block; margin-top: .15rem; font: .78rem/1.3 system-ui, sans-serif; color: #b9b6cc; }
+  #formula sub, #formula sup { font-size: .7em; }
+  @media (max-width: 30rem) { #formula { left: .75rem; right: .75rem; font-size: .95rem; text-align: center; padding: .4rem .6rem; } #formula .f-sub { font-size: .7rem; } }
   .ways span { font-size: .78rem; line-height: 1.35; color: #b9b6cc; }
   @media (max-width: 30rem) { h1 { font-size: 2rem; } main { font-size: .9rem; padding: 1rem; border-radius: 0; } #proof-status { display: none; } .ways { grid-template-columns: minmax(0, 1fr); gap: .35rem; } .ways a { flex-direction: row; align-items: baseline; gap: .5rem; padding: .4rem .6rem; } }   /* phones: the status would leave no room for the scene */
   @media (max-height: 30rem) and (orientation: landscape) { .long { display: none; } }
@@ -47,6 +54,12 @@
 <body>
 <!-- The explorer's live zeta landscape, in its background mode: no panels, a slow orbit. -->
 <iframe id="world" src="./landscape.html?bg=1" title="3D landscape of the Riemann zeta function over the critical strip: height is the size of ζ(s), color its phase. Green dots mark nontrivial zeros, all on the white line where the real part is one half."></iframe>
+<!-- The function in the picture. -->
+<p id="formula" aria-label="The Riemann zeta function: zeta of s equals the sum over n of 1 over n to the s">
+  <span class="f-title">Riemann Zeta Function</span>
+  ζ(s) = Σ<sub>n≥1</sub> 1/n<sup>s</sup>
+  <span class="f-sub">s = σ + it · the sum converges for σ &gt; 1; ζ extends to every s ≠ 1</span>
+</p>
 <main>
   <h1>Zeta World</h1>
   <p class="tag">The Riemann zeta function, explained, and the announced proof of the Riemann hypothesis, visualized.</p>
@@ -64,8 +77,31 @@
     <summary>How to read it</summary>
     The ground is the complex plane s = σ + it, for σ from −1 to 2 and t from 10 to 50. Height is log(1 + |ζ(s)|), so zeros touch the ground. Color is the phase (angle) of ζ(s): going once around a zero passes through every color. Faint bands mark each doubling of |ζ|. The white line is σ = ½, the middle of the critical strip (σ from 0 to 1, between the gray lines), which holds every nontrivial zero. Open the explorer to move along t, switch to ξ(s), or probe the critical line.
   </details>
-  <p class="small">Built by <a href="https://github.com/Alex-lop">Alexander Lopez</a> and <a href="https://github.com/andrei-radulescu-banu">Andrei Radulescu-Banu</a> at Sundai AI Hack 150: Building 3D Worlds, November 2026. <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
+  <p class="small">Built by <a href="https://github.com/Alex-lop">Alexander Lopez</a> and <a href="https://github.com/andrei-radulescu-banu">Andrei Radulescu-Banu</a> at Sundai AI Hack 150: Building 3D Worlds, November 2026.<br><a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a> · Found a mistake? <a href="https://github.com/Alex-lop/zeta-world/issues">Open an issue</a>.</p>
 </main>
+
+<script>
+// Tell the background view which part of the screen is free, so the landscape never sits under the
+// text panel or the formula: right of the panel on wide screens, above it on narrow ones.
+(function () {
+  const frame = document.getElementById('world'), panel = document.querySelector('main'), formula = document.getElementById('formula');
+  function send() {
+    if (!frame.contentWindow) return;
+    const W = innerWidth, H = innerHeight, p = panel.getBoundingClientRect(), f = formula.getBoundingClientRect();
+    const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zw-nav-h')) || 44;
+    const wide = p.width < W * 0.6;
+    const free = wide
+      ? { left: p.right + 16, top: Math.max(navH, f.bottom) + 8, right: W - 8, bottom: H - 8 }
+      : { left: 8, top: Math.max(navH, f.bottom) + 8, right: W - 8, bottom: p.top - 8 };
+    frame.contentWindow.postMessage({ type: 'zw-free', free }, '*');
+  }
+  addEventListener('message', (e) => { if (e.data && e.data.type === 'zw-bg-ready') send(); });
+  frame.addEventListener('load', send);
+  addEventListener('resize', send);
+  panel.querySelector('details').addEventListener('toggle', send);
+  new ResizeObserver(send).observe(panel);
+})();
+</script>
 
 </body>
 </html>

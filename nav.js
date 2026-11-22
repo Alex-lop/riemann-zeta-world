@@ -4,7 +4,7 @@
 // their own fixed panels. It also adds the credits line at the bottom of the page (the front page
 // carries its own, in its text panel). It does nothing inside the front page's background view.
 (function () {
-  if (new URLSearchParams(location.search).has('bg') || window.top !== window.self) return;
+  if (new URLSearchParams(location.search).has('bg')) return; // the front page's background view
 
   const PAGES = [
     { key: 'learn', href: './learn.html', label: 'Learn', title: 'From the primes to the proof, step by step' },
@@ -13,8 +13,9 @@
   ];
   // Shared with the front page, which shows the same words in its text panel.
   const CREDITS = 'Built by <a href="https://github.com/Alex-lop">Alexander Lopez</a> and ' +
-    '<a href="https://github.com/andrei-radulescu-banu">Andrei Radulescu-Banu</a> at Sundai AI Hack 150: Building 3D Worlds, November 2026. ' +
-    '<a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a>';
+    '<a href="https://github.com/andrei-radulescu-banu">Andrei Radulescu-Banu</a> at Sundai AI Hack 150: Building 3D Worlds, November 2026.<br>' +
+    '<a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a> · ' +
+    'Found a mistake? <a href="https://github.com/Alex-lop/zeta-world/issues">Open an issue</a>.';
   const file = location.pathname.split('/').pop() || 'index.html';
   const current = { 'learn.html': 'learn', 'landscape.html': 'explore', 'proof.html': 'proof', 'step4.html': 'proof' }[file] || 'home';
   // Full-screen 3D pages get a fixed bar over the scene; scrolling pages get a sticky one.
@@ -35,8 +36,8 @@
     .zw-credits { box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 18px 16px 28px; color: #8c89a3;
       font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; border-top: 1px solid rgba(255, 255, 255, 0.08); }
     .zw-credits a { color: #8fd3ff; }
-    .zw-credits.zw-float { position: fixed; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 900; max-width: none;
-      width: max-content; padding: 4px 12px; border: 0; border-radius: 999px; background: rgba(5, 6, 15, 0.7); font-size: 11.5px; }
+    .zw-credits.zw-float { position: fixed; right: 16px; bottom: 10px; z-index: 900; max-width: calc(100vw - 32px);
+      width: max-content; padding: 4px 0 4px 14px; border: 0; border-radius: 10px; text-align: right; background: rgba(5, 6, 15, 0.7); font-size: 11.5px; }
     @media (max-width: 900px) { .zw-credits.zw-float { display: none; } }
     @media (max-width: 420px) {
       .zw-nav { padding: 0 6px; gap: 0; font-size: 13px; }

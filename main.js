@@ -58,13 +58,60 @@ if (BG) {
   controls.autoRotateSpeed = 0.35;
   camera.position.set(17, 9, 15);
 }
-// In background mode, shift the picture clear of the front page's text panel: right of it on wide
-// screens, above it on narrow ones (where the panel sits along the bottom).
+// In background mode, fit the picture into the part of the screen the front page leaves free (it posts
+// the free rectangle: right of its text panel on wide screens, above it on narrow ones). Until it
+// does, assume a panel of 34rem on the left, or along the bottom on narrow screens.
+let bgFree = null, bgZoom = 1;
+const BG_CORNERS = [];
+for (const x of [-6, 6]) for (const y of [0, 4.8]) for (const z of [-12, 12]) BG_CORNERS.push(new THREE.Vector3(x, y, z));
+const bgTmp = new THREE.Vector3();
+
+function bgFreeRect() {
+  const W = innerWidth, H = innerHeight;
+  return bgFree || (W > 760 ? { left: 560, top: 60, right: W, bottom: H } : { left: 0, top: 60, right: W, bottom: H * 0.45 });
+}
+// The terrain's bounding box on screen, in pixels, for the camera as it is (no zoom, no offset).
+function bgScreenBox() {
+  camera.clearViewOffset(); camera.zoom = 1; camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const c of BG_CORNERS) {
+    bgTmp.copy(c).project(camera);
+    const px = ((bgTmp.x + 1) / 2) * innerWidth, py = ((1 - bgTmp.y) / 2) * innerHeight;
+    x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+  }
+  return { x0, y0, x1, y1 };
+}
+// Pick one zoom that fits the terrain into the free part at every angle of the slow orbit.
 function applyBgOffset() {
   if (!BG) return;
-  const W = innerWidth, H = innerHeight;
-  if (W > 760) camera.setViewOffset(W, H, -W * 0.17, 0, W, H);
-  else camera.setViewOffset(W, H, 0, H * 0.24, W, H);
+  const f = bgFreeRect(), fw = Math.max(80, f.right - f.left), fh = Math.max(80, f.bottom - f.top);
+  const saved = camera.position.clone(), target = controls.target;
+  const r = Math.hypot(saved.x - target.x, saved.z - target.z), y = saved.y, a0 = Math.atan2(saved.z - target.z, saved.x - target.x);
+  let bw = 0, bh = 0;
+  for (let k = 0; k < 24; k++) {
+    const a = a0 + (k / 24) * 2 * Math.PI;
+    camera.position.set(target.x + r * Math.cos(a), y, target.z + r * Math.sin(a));
+    camera.lookAt(target);
+    const b = bgScreenBox();
+    bw = Math.max(bw, b.x1 - b.x0); bh = Math.max(bh, b.y1 - b.y0);
+  }
+  camera.position.copy(saved); camera.lookAt(target);
+  bgZoom = Math.min(1, (0.94 * fw) / bw, (0.94 * fh) / bh);
+  bgFrame();
+}
+// Each frame: center the terrain's current box in the free part, at the fixed zoom.
+function bgFrame() {
+  const f = bgFreeRect(), W = innerWidth, H = innerHeight;
+  const b = bgScreenBox();
+  const cx = W / 2 + bgZoom * ((b.x0 + b.x1) / 2 - W / 2), cy = H / 2 + bgZoom * ((b.y0 + b.y1) / 2 - H / 2);
+  camera.zoom = bgZoom;
+  camera.setViewOffset(W, H, cx - (f.left + f.right) / 2, cy - (f.top + f.bottom) / 2, W, H);
+}
+if (BG) {
+  addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'zw-free') { bgFree = e.data.free; applyBgOffset(); }
+  });
+  parent.postMessage({ type: 'zw-bg-ready' }, '*');
 }
 applyBgOffset();
 
@@ -653,6 +700,7 @@ setMode(mode);
 renderer.setAnimationLoop(() => {
   if (mode === 'primes') return; // the 3D scene is hidden
   controls.update();
+  if (BG) bgFrame();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 });
