@@ -63,7 +63,7 @@ if (BG) {
 // does, assume a panel of 34rem on the left, or along the bottom on narrow screens.
 let bgFree = null, bgZoom = 1;
 const BG_CORNERS = [];
-for (const x of [-6, 6]) for (const y of [0, 4.8]) for (const z of [-12, 12]) BG_CORNERS.push(new THREE.Vector3(x, y, z));
+for (const x of [-7, 7]) for (const y of [0, 4.8]) for (const z of [-12, 12]) BG_CORNERS.push(new THREE.Vector3(x, y, z)); // terrain plus its axis labels
 const bgTmp = new THREE.Vector3();
 
 function bgFreeRect() {
@@ -308,10 +308,12 @@ const zeros = criticalZeros(T_START_MAX + WINDOW + 2);
 const overlay = new THREE.Group();
 scene.add(overlay);
 
-function label(text, cls, pos) {
+// prio: when labels collide (or sit under a panel), lower numbers are kept and higher ones hidden
+function label(text, cls, pos, prio = 5) {
   const el = document.createElement('div');
   el.className = `label ${cls}`;
   el.textContent = text;
+  el.dataset.prio = prio;
   const obj = new CSS2DObject(el);
   obj.position.copy(pos);
   return obj;
@@ -342,12 +344,12 @@ function rebuildOverlay() {
   overlay.add(lineAlongT(1, 0x9aa1b2, 0.5));
 
   const near = zOf(tStart) + 0.6;
-  overlay.add(label('σ = 0', '', new THREE.Vector3(xOf(0), 0, near)));
-  overlay.add(label('σ = ½', 'crit', new THREE.Vector3(xOf(0.5), 0, near)));
-  overlay.add(label('σ = 1', '', new THREE.Vector3(xOf(1), 0, near)));
+  overlay.add(label('σ = ½', 'crit', new THREE.Vector3(xOf(0.5), 0, near), 0));
+  overlay.add(label('σ = 0', '', new THREE.Vector3(xOf(0), 0, near), 1));
+  overlay.add(label('σ = 1', '', new THREE.Vector3(xOf(1), 0, near), 1));
 
   for (let t = Math.ceil(tStart / 5) * 5; t <= tStart + WINDOW; t += 5) {
-    overlay.add(label(`t = ${t}`, '', new THREE.Vector3(xOf(SIGMA_MIN) - 0.9, 0, zOf(t))));
+    overlay.add(label(`t = ${t}`, '', new THREE.Vector3(xOf(SIGMA_MIN) - 0.9, 0, zOf(t)), 3));
   }
 
   // background mode: the critical line drawn along the surface, so it stays visible from any angle
@@ -362,7 +364,7 @@ function rebuildOverlay() {
     const m = new THREE.Mesh(zeroGeom, zeroMat);
     m.position.set(xOf(0.5), 0.02, zOf(t));
     overlay.add(m);
-    overlay.add(label(dir ? t.toFixed(3) : `#${i + 1}  ${t.toFixed(3)}`, 'zero', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(t))));
+    overlay.add(label(dir ? t.toFixed(3) : `#${i + 1}  ${t.toFixed(3)}`, 'zero', new THREE.Vector3(xOf(0.5) + 1.3, 0, zOf(t)), 4 + i / 1000));
   });
 
   // the real axis, and the trivial zero of L (Lambda has none: the Gamma factor cancels it)
@@ -371,13 +373,13 @@ function rebuildOverlay() {
       new THREE.Vector3(xOf(SIGMA_MIN), 0.01, zOf(0)), new THREE.Vector3(xOf(SIGMA_MAX), 0.01, zOf(0)),
     ]);
     overlay.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x9aa1b2, transparent: true, opacity: 0.6 })));
-    overlay.add(label('t = 0  (real axis)', '', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(0) + 0.5)));
+    overlay.add(label('t = 0  (real axis)', '', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(0)), 2));
     if (L.fn === 'L') {
       const s0 = -L.ch.parity;
       const m = new THREE.Mesh(zeroGeom, trivialMat);
       m.position.set(xOf(s0), 0.02, zOf(0));
       overlay.add(m);
-      overlay.add(label(`trivial zero s = ${s0 === 0 ? '0' : '−1'}`, '', new THREE.Vector3(xOf(s0), 0, zOf(0) - 0.6)));
+      overlay.add(label(`trivial zero s = ${s0 === 0 ? '0' : '−1'}`, '', new THREE.Vector3(xOf(s0) + 0.4, 0, zOf(0) + 1.1), 2));
     }
   }
 }
@@ -673,6 +675,7 @@ function setMode(m) {
   }
   if (group(prev) !== group(m) || prev === 'primes') tStart = tStarts[group(m)];
   setWindow(tStart);
+  if (typeof relayout === 'function') requestAnimationFrame(relayout);
 }
 for (const b of document.querySelectorAll('.tab')) {
   b.addEventListener('click', () => setMode(b.dataset.mode === 'zeta' ? zetaFn : b.dataset.mode));
@@ -697,10 +700,81 @@ tStart = tStarts[group(mode)];
 setCharacter(4, 1);
 setLFunction('L');
 setMode(mode);
+// ---- Keeping the 3D view clear of the panels (normal mode) -------------------------
+// The free part of the screen: right of the controls (or below them on phones), and either left of
+// the curve panel or above it and the credits, whichever leaves more room.
+const visibleRect = (el) => {
+  if (!el || el.hidden || el.closest('[hidden]') || getComputedStyle(el).display === 'none') return null;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.height > 0 ? r : null;
+};
+const panelRects = () => [document.getElementById('controls'), document.getElementById('curvePanel'),
+  document.querySelector('.zw-credits'), document.querySelector('.zw-nav')].map(visibleRect).filter(Boolean);
+
+function freeRect() {
+  const W = innerWidth, H = innerHeight;
+  const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zw-nav-h')) || 0;
+  const c = visibleRect(document.getElementById('controls')), cp = visibleRect(document.getElementById('curvePanel'));
+  const cr = visibleRect(document.querySelector('.zw-credits'));
+  let left = 12, top = navH + 12;
+  if (c) { if (c.width < W * 0.6) left = c.right + 12; else top = c.bottom + 12; }
+  const colRight = cp ? cp.left - 12 : W - 12;
+  const a = { left, top, right: colRight, bottom: cr && cr.left < colRight ? cr.top - 8 : H - 12 }; // left of the curve panel
+  const b = { left, top, right: W - 12, bottom: Math.min(cp ? cp.top : H, cr ? cr.top : H) - 12 }; // above it
+  const area = (f) => Math.max(0, f.right - f.left) * Math.max(0, f.bottom - f.top);
+  return area(a) >= area(b) ? a : b;
+}
+
+// Fit the terrain into the free part once (on load, resize, tab or panel changes); after that the
+// visitor's own orbiting and zooming are left alone.
+function frameScene() {
+  if (BG || mode === 'primes') return;
+  const f = freeRect(), W = innerWidth, H = innerHeight;
+  const fw = Math.max(80, f.right - f.left), fh = Math.max(80, f.bottom - f.top);
+  const b = bgScreenBox();
+  const z = Math.min(1.25, (0.94 * fw) / (b.x1 - b.x0), (0.94 * fh) / (b.y1 - b.y0));
+  const cx = W / 2 + z * ((b.x0 + b.x1) / 2 - W / 2), cy = H / 2 + z * ((b.y0 + b.y1) / 2 - H / 2);
+  camera.zoom = z;
+  camera.setViewOffset(W, H, cx - (f.left + f.right) / 2, cy - (f.top + f.bottom) / 2, W, H);
+}
+
+// Hide labels that would sit under a panel or on top of a higher-priority label.
+function layoutLabels() {
+  const blockers = BG ? [] : panelRects();
+  const els = overlay.children.filter((o) => o.isCSS2DObject && o.element.style.display !== 'none').map((o) => o.element);
+  els.sort((x, y) => x.dataset.prio - y.dataset.prio);
+  const placed = [];
+  const hit = (r, q) => Math.min(r.right, q.right) - Math.max(r.left, q.left) > -2 && Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top) > -2;
+  for (const el of els) {
+    const r = el.getBoundingClientRect();
+    const off = r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight;
+    const hide = off || blockers.some((q) => hit(r, q)) || placed.some((q) => hit(r, q));
+    el.style.visibility = hide ? 'hidden' : '';
+    if (!hide) placed.push(r);
+  }
+}
+
+// The credits line hides itself wherever it would touch the controls.
+function fitCredits() {
+  const cr = document.querySelector('.zw-credits.zw-float');
+  if (!cr) return;
+  cr.style.visibility = '';
+  const r = visibleRect(cr), c = visibleRect(document.getElementById('controls'));
+  if (r && c && Math.min(r.right, c.right) > Math.max(r.left, c.left) && Math.min(r.bottom, c.bottom) > Math.max(r.top, c.top)) cr.style.visibility = 'hidden';
+}
+
+function relayout() { fitCredits(); frameScene(); }
+addEventListener('resize', relayout);
+for (const el of [document.getElementById('controls'), document.getElementById('curvePanel')]) new ResizeObserver(relayout).observe(el);
+addEventListener('load', relayout);
+setTimeout(relayout, 300); // after nav.js has added the bar and the credits
+
+let frameNo = 0;
 renderer.setAnimationLoop(() => {
   if (mode === 'primes') return; // the 3D scene is hidden
   controls.update();
   if (BG) bgFrame();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
+  if (frameNo++ % 4 === 0) layoutLabels();
 });
