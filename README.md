@@ -2,6 +2,8 @@
 
 A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai Hack 150 (Building 3D Worlds).
 
+[![The home page: the land of the zeta function under a night sky, with the critical line in gold and a star on each zero](og.jpg)](https://alex-lop.github.io/zeta-world/)
+
 **Live: https://alex-lop.github.io/zeta-world/** · [From primes to the proof, in 28 steps](https://alex-lop.github.io/zeta-world/learn.html) · [The plan](PLAN.md) · [Brief for the interactive guide](GUIDE_BRIEF.md)
 
 The home page is a guided climb in ten short steps, each with one thing to do:
@@ -17,7 +19,9 @@ The home page is a guided climb in ten short steps, each with one thing to do:
 9. See where the announced proof's ceiling comes from.
 10. Read what was released, what was checked and what is still needed.
 
-"Just let me fly" (`#fly`) is the plain 3D world with free controls. The look follows Alex's [Nemisis](https://alex-lop.github.io/Nemisis/) site, with the ticks of his personal site behind every screen. The hypothetical zero is fiction and is labelled so wherever it shows.
+The page measures as it goes, in the visitor's browser: how far x / ln x misses the count, how many of the 15 tallest spikes are primes (15 of 15 by the end of the ride), how much of their band the real primes use (49%), and how long the land's 266,305 values of ζ took to compute.
+
+"Just let me fly" (`#fly`) is the plain 3D world with free controls. The look follows Alex's [Nemisis](https://alex-lop.github.io/Nemisis/) site: the 3D world floats in a night sky, and the ticks of his personal site are behind the other screens. The hypothetical zero is fiction and is labelled so wherever it shows.
 
 ## Status of the math
 
