@@ -124,7 +124,7 @@ let mirrored = false, morph = 0, aim = 2;           // aim: how far north of the
 function lab(w, ahead = 2) {
   aim = ahead;
   w.camera.position.set(0, 6.5, scene.zOf(ghost.gamma - 11)); w.controls.target.set(0, 0, scene.zOf(ghost.gamma + aim));
-  if (!mirrored) morph = setTimeout(() => w.mirror(true), still() ? 0 : 900);
+  if (mirrored) w.mirror(true); else morph = setTimeout(() => w.mirror(true), still() ? 0 : 900);   // back on, if the last step's switch left it off
   mirrored = true;
 }
 function tags(w) {
@@ -289,13 +289,13 @@ const STEPS = [
         ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(Math.round(px(t)) - 5.5, Math.round(py(sizeAt(t))) - 5.5, 11, 11);
       });
       const heightBox = el(`<label class="slide" style="text-transform:none">t = 0<input type="range" min="0" max="${T1}" step="0.05" value="0" aria-label="t, the height of s">${T1}</label>`);
-      const realBox = el('<label class="slide" style="text-transform:none" hidden>real part ½<input type="range" min="0.5" max="2" step="0.01" value="2" aria-label="The real part of s">2</label>');
+      const realBox = el('<label class="slide later" style="text-transform:none">real part ½<input type="range" min="0.5" max="2" step="0.01" value="2" aria-label="The real part of s">2</label>');
       const read = el('<p class="readout"></p>'), height = heightBox.querySelector('input'), real = realBox.querySelector('input');
       const paint = () => { arrows.paint(); strip.paint(); };
       height.addEventListener('input', () => {
         t = +height.value;
-        const zero = up.zeros.find(d => Math.abs(d.at - t) < 0.08); if (zero) t = zero.at;   // land exactly on a zero when the slider is beside one
-        if (realBox.hidden) { realBox.hidden = false; ui.say('Now slide the real part down to ½.'); }
+        const zero = up.zeros.find(d => Math.abs(d.at - t) < 0.25); if (zero) t = zero.at;   // land exactly on a zero when the slider is beside one: a few pixels either side
+        if (realBox.classList.contains('later')) { realBox.classList.remove('later'); ui.say('Now slide the real part down to ½.'); }
         paint(); ui.done();
       });
       real.addEventListener('input', () => { sigma = +real.value; scan(); paint(); });
@@ -566,7 +566,7 @@ function show() {
   if (!still()) $('step').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, easing: 'ease-out' });   // each step flows in. Opacity only: a transform would unpin the docked figure
 }
 // The step bar: the way home, the ten steps by number and name, and the open world.
-$('tabs').innerHTML = '<a class="wordmark" href="#">Zeta World</a>' + STEPS.map((s, k) => `<a href="#${s.id}"><b>${k + 1}</b><span>${s.tab}</span></a>`).join('') + '<a class="fly" href="#fly"><span>Fly</span></a>';
+$('tabs').innerHTML = '<a class="wordmark" href="#">Zeta World</a>' + STEPS.map((s, k) => `<a href="#${s.id}" aria-label="Step ${k + 1}: ${s.tab}"><b>${k + 1}</b><span>${s.tab}</span></a>`).join('') + '<a class="fly" href="#fly" aria-label="Fly the world, no guide"><span>Fly</span></a>';
 addEventListener('hashchange', show);
 show();
 
