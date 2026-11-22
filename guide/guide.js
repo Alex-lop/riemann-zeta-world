@@ -721,6 +721,13 @@ const STEPS = [
         <li><b>21 Nov</b>the Lean and Mathlib communities certify it in a joint statement</li>
         <li class="open"><b>22 Nov</b>two long checks are still running</li>
         <li class="open"><b>not yet</b>the author’s paper, and peer review</li></ol>`));
+      // The record in figures, one under each date. They are the release's, from docs/guide-content.json (research, key "release"), and the status sentence's.
+      stage.append(el(`<dl class="figs">
+        <div><dt>17 million</dt><dd>lines, by the joint statement’s count</dd></div>
+        <div><dt>175,187</dt><dd>Lean modules, compiled with zero errors</dd></div>
+        <div><dt>1,468,418</dt><dd>declarations in the exported proof</dd></div>
+        <div><dt>3</dt><dd>axioms, Lean’s standard three</dd></div>
+        <div class="open"><dt>0</dt><dd>papers, and no peer review yet</dd></div></dl>`));
       stage.append(el(`<div class="checks">
         ${check('The statement is the right one', 'The target is Mathlib’s own definition of the hypothesis. The generalized hypothesis is covered for Dirichlet L-functions only. This says nothing about the proof.')}
         ${check('The code compiles', 'Dozens of people reported compiling the code without errors. Alone, that would not catch a redefined symbol or an added axiom.')}
