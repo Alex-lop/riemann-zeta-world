@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { zeta, termsFor, borweinWeights, criticalZeros } from './zeta.js';
+import { zeta, xiScaled, termsFor, borweinWeights, criticalZeros } from './zeta.js';
 
 // ---- Layout: how math units map to world units --------------------------------
 const SIGMA_MIN = -1, SIGMA_MAX = 2; // real part of s shown
@@ -14,6 +14,7 @@ const H = 1.6;                        // world units per unit of log(1 + |zeta|)
 const LOG_CAP = 3.0;                  // clip the pole at s = 1
 
 let tStart = 10;
+let mode = location.hash === '#xi' ? 'xi' : 'zeta'; // which function the terrain shows
 const tCenter = () => tStart + WINDOW / 2;
 const xOf = (sigma) => (sigma - 0.5) * SX;
 const zOf = (t) => -(t - tCenter()) * SZ;
@@ -47,32 +48,73 @@ const vertexShader = /* glsl */ `
   uniform vec2 uSigma;   // (min, max)
   uniform vec2 uT;       // (min, max)
   uniform float uTc, uSX, uSZ, uH, uCap;
-  varying vec2 vZ;       // zeta(s)
+  uniform int uMode;     // 0: zeta(s), 1: xi(s) scaled by a positive function of t (see zeta.js)
+  varying vec2 vZ;       // the plotted value
   varying vec3 vPos;
 
   const float LN2 = 0.6931471805599453;
+  const float LN_PI = 1.1447298858494002;
+  const float HALF_LN_2PI = 0.9189385332046727;
 
-  // zeta(s) = eta(s) / (1 - 2^(1-s)), eta summed with Borwein weights (see zeta.js)
-  vec2 zeta(float s, float t) {
-    vec2 eta = vec2(0.0);
+  vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
+  vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-12); }
+  vec2 clog(vec2 z) { return vec2(0.5 * log(dot(z, z)), atan(z.y, z.x)); }
+
+  // eta(s) summed with Borwein weights (see zeta.js)
+  vec2 eta(float s, float t) {
+    vec2 e = vec2(0.0);
     for (int k = 0; k < ${MAX_TERMS}; k++) {
       if (k >= uN) break;
       float L = log(float(k + 1));
       float m = uW[k] * exp(-s * L);
       float a = t * L;
-      eta += m * vec2(cos(a), -sin(a));
+      e += m * vec2(cos(a), -sin(a));
     }
+    return e;
+  }
+
+  // 1 - 2^(1-s)
+  vec2 etaDen(float s, float t) {
     float m2 = exp((1.0 - s) * LN2);
     float a2 = t * LN2;
-    vec2 den = vec2(1.0 - m2 * cos(a2), m2 * sin(a2));
-    float dd = max(dot(den, den), 1e-12); // s = 1 is a pole
-    return vec2(eta.x * den.x + eta.y * den.y, eta.y * den.x - eta.x * den.y) / dd;
+    return vec2(1.0 - m2 * cos(a2), m2 * sin(a2));
+  }
+
+  // zeta(s) = eta(s) / (1 - 2^(1-s)); cdiv clamps the pole at s = 1
+  vec2 zeta(float s, float t) { return cdiv(eta(s, t), etaDen(s, t)); }
+
+  // log Gamma(z), Re z > 0: shift by 8, then Stirling (same as logGamma in zeta.js)
+  vec2 logGamma(vec2 z) {
+    vec2 sh = vec2(0.0);
+    for (int k = 0; k < 8; k++) sh += clog(z + vec2(float(k), 0.0));
+    vec2 w = z + vec2(8.0, 0.0);
+    vec2 g = cmul(w - vec2(0.5, 0.0), clog(w)) - w + vec2(HALF_LN_2PI, 0.0);
+    vec2 iw = cdiv(vec2(1.0, 0.0), w);
+    vec2 u = cmul(iw, iw);
+    vec2 p = cmul(vec2(-1.0 / 360.0, 0.0) + u / 1260.0, u) + vec2(1.0 / 12.0, 0.0);
+    return g + cmul(p, iw) - sh;
+  }
+
+  // G(s) = log(pi^(-s/2) Gamma(s/2 + 1)), so xi(s) = (s-1) zeta(s) e^G(s)
+  vec2 xiLogFactor(float s, float t) {
+    return logGamma(vec2(s / 2.0 + 1.0, t / 2.0)) - vec2(s, t) * (0.5 * LN_PI);
+  }
+
+  // xi(s) / N(t), with N(t) = |(s-1) e^G(s)| at s = 1/2 + it (xiScaled in zeta.js)
+  vec2 xiScaled(float s, float t) {
+    vec2 sm1 = vec2(s - 1.0, t);
+    vec2 r = dot(sm1, sm1) < 1e-8 ? vec2(1.0 / LN2, 0.0) : cdiv(sm1, etaDen(s, t)); // (s-1)/(1-2^(1-s))
+    vec2 p = cmul(eta(s, t), r);   // (s-1) zeta(s), finite at s = 1
+    vec2 g = xiLogFactor(s, t);
+    float g0 = xiLogFactor(0.5, t).x;
+    float m = exp(g.x - g0) / length(vec2(0.5, t));
+    return cmul(p, m * vec2(cos(g.y), sin(g.y)));
   }
 
   void main() {
     float sigma = mix(uSigma.x, uSigma.y, uv.x);
     float t = mix(uT.x, uT.y, uv.y);
-    vZ = zeta(sigma, t);
+    vZ = uMode == 1 ? xiScaled(sigma, t) : zeta(sigma, t);
     float y = uH * min(log(1.0 + length(vZ)), uCap);
     vPos = vec3((sigma - 0.5) * uSX, y, -(t - uTc) * uSZ);
     gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0);
@@ -112,6 +154,7 @@ const uniforms = {
   uSZ: { value: SZ },
   uH: { value: H },
   uCap: { value: LOG_CAP },
+  uMode: { value: 0 },
 };
 
 const terrain = new THREE.Mesh(
@@ -188,9 +231,10 @@ const curveCanvas = document.getElementById('curve');
 const ctx = curveCanvas.getContext('2d');
 
 const probeT = () => tStart + Number(probeInput.value) * WINDOW;
+const f = () => (mode === 'xi' ? xiScaled : zeta);
 const fmt = (x) => (x >= 0 ? ' ' : '') + x.toFixed(4);
 
-let curve = []; // samples of zeta(1/2 + it) across the window
+let curve = []; // samples of the current function at 1/2 + it across the window
 
 function setWindow(start) {
   tStart = Math.min(Math.max(start, 0), T_START_MAX);
@@ -207,7 +251,7 @@ function setWindow(start) {
   curve = [];
   for (let i = 0; i <= 1500; i++) {
     const t = tStart + (i / 1500) * WINDOW;
-    curve.push(zeta(0.5, t));
+    curve.push({ t, ...f()(0.5, t) });
   }
   rebuildOverlay();
   updateProbe();
@@ -216,7 +260,7 @@ function setWindow(start) {
 function updateProbe() {
   const t = probeT();
   document.getElementById('probeVal').textContent = t.toFixed(3);
-  const z = zeta(0.5, t);
+  const z = f()(0.5, t);
   const mag = Math.hypot(z.re, z.im);
   const y = yOf(mag);
   probe.position.set(xOf(0.5), 0, zOf(t));
@@ -226,13 +270,16 @@ function updateProbe() {
   let nearest = -1;
   zeros.forEach((zt, i) => { if (nearest < 0 || Math.abs(zt - t) < Math.abs(zeros[nearest] - t)) nearest = i; });
   const dist = Math.abs(zeros[nearest] - t);
+  const sym = mode === 'xi' ? 'ξ̃' : 'ζ';
   readout.innerHTML =
-    `ζ(½ + ${t.toFixed(3)}i) =${fmt(z.re)} ${z.im < 0 ? '−' : '+'} ${Math.abs(z.im).toFixed(4)}i<br>` +
-    `|ζ| = ${mag.toFixed(4)}<br>` +
+    (mode === 'xi'
+      ? `ξ̃(½ + ${t.toFixed(3)}i) =${fmt(z.re)} &nbsp;(real)<br>`
+      : `ζ(½ + ${t.toFixed(3)}i) =${fmt(z.re)} ${z.im < 0 ? '−' : '+'} ${Math.abs(z.im).toFixed(4)}i<br>`) +
+    `|${sym}| = ${mag.toFixed(4)}<br>` +
     (dist < 0.02
       ? `<span class="zero">at zero #${nearest + 1} (t = ${zeros[nearest].toFixed(6)})</span>`
       : `nearest zero: #${nearest + 1} at t = ${zeros[nearest].toFixed(3)}`);
-  drawCurve(z);
+  if (mode === 'xi') drawGraph(t, z.re); else drawCurve(z);
 }
 
 function drawCurve(current) {
@@ -275,6 +322,55 @@ function drawCurve(current) {
   ctx.beginPath(); ctx.arc(px(current.re), py(current.im), 9, 0, 2 * Math.PI); ctx.fill();
 }
 
+// xi on the critical line is real, so instead of a curve in the plane we plot its value against t.
+function drawGraph(tNow, current) {
+  const W = curveCanvas.width, Hc = curveCanvas.height;
+  let r = 1;
+  for (const p of curve) r = Math.max(r, Math.abs(p.re));
+  r *= 1.1;
+  const px = (t) => ((t - tStart) / WINDOW) * W;
+  const py = (v) => Hc / 2 - (v / r) * (Hc / 2);
+
+  ctx.clearRect(0, 0, W, Hc);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, Hc / 2); ctx.lineTo(W, Hc / 2); ctx.stroke();
+
+  ctx.fillStyle = 'rgba(154,161,178,0.9)';
+  ctx.font = '20px ui-monospace, Menlo, monospace';
+  ctx.fillText(`±${r.toFixed(1)}`, 8, 22);
+  ctx.fillText(`t = ${tStart.toFixed(0)}`, 8, Hc - 10);
+  const right = `t = ${(tStart + WINDOW).toFixed(0)}`;
+  ctx.fillText(right, W - 8 - ctx.measureText(right).width, Hc - 10);
+
+  // same colors as the terrain: positive real is cyan (phase 0), negative real is red (phase pi)
+  ctx.lineWidth = 2.5;
+  for (let i = 1; i < curve.length; i++) {
+    const a = curve[i - 1], b = curve[i];
+    ctx.strokeStyle = b.re >= 0 ? 'hsl(180 80% 62%)' : 'hsl(0 80% 62%)';
+    ctx.beginPath(); ctx.moveTo(px(a.t), py(a.re)); ctx.lineTo(px(b.t), py(b.re)); ctx.stroke();
+  }
+
+  ctx.fillStyle = '#7dffb2';
+  for (const zt of zeros) {
+    if (zt < tStart || zt > tStart + WINDOW) continue;
+    ctx.beginPath(); ctx.arc(px(zt), Hc / 2, 6, 0, 2 * Math.PI); ctx.fill();
+  }
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(px(tNow), py(current), 9, 0, 2 * Math.PI); ctx.fill();
+}
+
+// ---- Tabs: zeta or xi -------------------------------------------------------------
+function setMode(m) {
+  mode = m;
+  uniforms.uMode.value = m === 'xi' ? 1 : 0;
+  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
+  for (const el of document.querySelectorAll('[data-for]')) el.hidden = el.dataset.for !== m;
+  history.replaceState(null, '', m === 'xi' ? '#xi' : location.pathname + location.search);
+  setWindow(tStart);
+}
+for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => setMode(b.dataset.mode));
+
 tStartInput.addEventListener('input', () => setWindow(Number(tStartInput.value)));
 probeInput.addEventListener('input', updateProbe);
 addEventListener('keydown', (e) => {
@@ -288,7 +384,7 @@ addEventListener('resize', () => {
   labelRenderer.setSize(innerWidth, innerHeight);
 });
 
-setWindow(tStart);
+setMode(mode);
 renderer.setAnimationLoop(() => {
   controls.update();
   renderer.render(scene, camera);
