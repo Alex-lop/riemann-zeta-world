@@ -50,6 +50,27 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(0, 0.5, 0);
 
+// ---- Zoom tuned for trackpads ------------------------------------------------------
+// OrbitControls 0.160 scales each wheel event by |deltaY| / (100 · devicePixelRatio). A Mac trackpad
+// pinch sends many events of 1-5 units, so it barely moves. Our own handler: a pinch (which arrives
+// as a wheel event with ctrlKey) zooms about 3x per gesture, a two-finger scroll about 3-4x per swipe.
+// It catches wheel events on the container before OrbitControls sees them; touch pinch on phones and
+// tablets still goes through OrbitControls.
+const HOME = { pos: new THREE.Vector3(15, 11, 17), target: new THREE.Vector3(0, 0.5, 0) };
+const MIN_DIST = 4, MAX_DIST = 90;
+function dolly(factor) {
+  const off = camera.position.clone().sub(controls.target);
+  off.setLength(THREE.MathUtils.clamp(off.length() * factor, MIN_DIST, MAX_DIST));
+  camera.position.copy(controls.target).add(off);
+  controls.update();
+}
+function resetView() {
+  camera.position.copy(HOME.pos);
+  controls.target.copy(HOME.target);
+  controls.update();
+  if (typeof frameScene === 'function') frameScene();
+}
+
 // Background mode (landscape.html?bg=1, used behind the front page): no panels or labels, a slow orbit.
 const BG = new URLSearchParams(location.search).has('bg');
 if (BG) {
@@ -685,6 +706,10 @@ tStartInput.addEventListener('input', () => setWindow(Number(tStartInput.value))
 probeInput.addEventListener('input', updateProbe);
 addEventListener('keydown', (e) => {
   if (mode === 'primes') return;
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range' || e.target.tagName === 'SELECT') return;
+  if (e.key === '+' || e.key === '=') dolly(0.8);
+  if (e.key === '-' || e.key === '_') dolly(1.25);
+  if (e.key === '0') resetView();
   if (e.key === 'w' || e.key === 'W') setWindow(tStart + 0.5);
   if (e.key === 's' || e.key === 'S') setWindow(tStart - 0.5);
 });
@@ -709,7 +734,7 @@ const visibleRect = (el) => {
   return r.width > 0 && r.height > 0 ? r : null;
 };
 const panelRects = () => [document.getElementById('controls'), document.getElementById('curvePanel'),
-  document.querySelector('.zw-credits'), document.querySelector('.zw-nav')].map(visibleRect).filter(Boolean);
+  document.querySelector('.zw-credits'), document.querySelector('.zw-nav'), document.getElementById('zoomCtl')].map(visibleRect).filter(Boolean);
 
 function freeRect() {
   const W = innerWidth, H = innerHeight;
@@ -764,6 +789,18 @@ function fitCredits() {
 }
 
 function relayout() { fitCredits(); frameScene(); }
+
+if (!BG) {
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault(); // also stops the browser from zooming the whole page on a pinch
+    e.stopPropagation(); // OrbitControls' own (slow) wheel zoom never sees it
+    const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+    dolly(Math.exp(dy * (e.ctrlKey ? 0.012 : 0.0025)));
+  }, { passive: false, capture: true });
+  document.getElementById('zoomIn').addEventListener('click', () => dolly(0.75));
+  document.getElementById('zoomOut').addEventListener('click', () => dolly(1 / 0.75));
+  document.getElementById('zoomReset').addEventListener('click', resetView);
+}
 addEventListener('resize', relayout);
 for (const el of [document.getElementById('controls'), document.getElementById('curvePanel')]) new ResizeObserver(relayout).observe(el);
 addEventListener('load', relayout);

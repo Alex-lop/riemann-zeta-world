@@ -68,7 +68,12 @@
     #curvePanel h2 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
     #curvePanel p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
     #curve { width: 100%; aspect-ratio: 1; display: block; }
-    html.bg #controls, html.bg #curvePanel, html.bg .label { display: none !important; }
+    html.bg #controls, html.bg #curvePanel, html.bg .label, html.bg #zoomCtl { display: none !important; }
+    #zoomCtl { position: fixed; top: calc(var(--zw-nav-h, 0px) + 12px); right: 16px; z-index: 5; display: flex; flex-direction: column; gap: 6px; }
+    #zoomCtl button { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--border); background: var(--panel);
+      color: var(--text); font: 600 18px/1 system-ui, sans-serif; cursor: pointer; backdrop-filter: blur(6px); }
+    #zoomCtl button:hover { border-color: #f5c542; color: #f5c542; }
+    @media (max-width: 700px) { #zoomCtl { top: auto; right: auto; left: 12px; bottom: 12px; flex-direction: row; } }
     .label { color: var(--muted); font: 11px ui-monospace, Menlo, monospace; pointer-events: none;
       text-shadow: 0 0 3px #000; }
     .label.crit { color: #fff; }
@@ -271,7 +276,13 @@
       <input id="probe" type="range" min="0" max="1" step="0.0005" value="0.105" />
     </label>
     <div id="readout" data-for="zeta xi dirichlet"></div>
-    <div class="hint" data-for="zeta xi dirichlet">Drag to orbit · scroll to zoom · W/S to move along t</div>
+    <div class="hint" data-for="zeta xi dirichlet">Drag to orbit · pinch or scroll to zoom (or + / −, 0 to reset) · W/S to move along t</div>
+  </div>
+
+  <div id="zoomCtl" data-for="zeta xi dirichlet" role="group" aria-label="Zoom">
+    <button id="zoomIn" title="Zoom in (pinch out, scroll up, or +)" aria-label="Zoom in">+</button>
+    <button id="zoomOut" title="Zoom out (pinch in, scroll down, or −)" aria-label="Zoom out">−</button>
+    <button id="zoomReset" title="Reset the view (0)" aria-label="Reset the view">⟲</button>
   </div>
 
   <div id="curvePanel" class="panel" data-for="zeta xi dirichlet">
