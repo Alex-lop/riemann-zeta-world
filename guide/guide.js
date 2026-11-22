@@ -527,7 +527,7 @@ const STEPS = [
     idea: 'On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.',
     todo: 'Open each check.',
     payoff: 'Still to come: the author’s written proof, review by independent experts, a human account of the central inequality, and the end of two long checks.',
-    more: '<dl class="rows onward"><div><dt>Keep going</dt><dd><a href="#fly">Fly the world</a><a href="./proof.html">The proof page</a><a href="./landscape.html">The explorer</a><a href="./learn.html">The long version</a><a href="#primes">Start again</a></dd></div></dl>',
+    more: '<dl class="rows onward"><div><dt>Keep going</dt><dd><a href="#fly">Fly the world</a><a href="./proof.html">The proof page</a><a href="./landscape.html">The explorer</a><a href="./learn.html">The long version</a></dd></div></dl>',
     mount(stage, ui) {
       // A passed check is a tick and the word. The texts are content y2026-checks and y2026-needed.
       let n = 0;
@@ -575,9 +575,9 @@ function show() {
   $('s-legend').innerHTML = (step.legend || []).map(([colour, kind, text]) => `<span><i class="sw ${kind} ${colour}"></i>${text}</span>`).join('');
   $('s-more').innerHTML = (step.more || '') + `<p><a href="./learn.html#${step.learn}">the long version of this step</a></p>`;
   payoff.innerHTML = step.payoff; payoff.classList.remove('on'); $('s-live').textContent = '';
-  // Next and Back say where they lead, and the last step leads on into the open world.
+  // Next and Back say where they lead, and the last step leads back to the home page, where every way on is.
   $('s-back').href = '#' + (STEPS[i - 1]?.id || ''); $('s-back').textContent = `‹ ${STEPS[i - 1]?.tab || 'Start'}`;
-  $('s-next').href = '#' + (STEPS[i + 1]?.id || 'fly'); $('s-next').textContent = STEPS[i + 1] ? `Next: ${STEPS[i + 1].tab} ›` : 'Fly the world ›';
+  $('s-next').href = '#' + (STEPS[i + 1]?.id || ''); $('s-next').textContent = STEPS[i + 1] ? `Next: ${STEPS[i + 1].tab} ›` : 'Back to the home page ›';
 
   // The payoff shows once the visitor has acted, or after a few seconds if they have not.
   const ui = { done() { if (payoff.classList.contains('on')) return; payoff.classList.add('on'); $('s-live').textContent = payoff.textContent; }, say(html) { $('s-do').innerHTML = html; } };
