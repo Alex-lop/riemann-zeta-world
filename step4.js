@@ -23,10 +23,12 @@ const isPrime = (n) => { if (n < 2) return false; for (let p = 2; p * p <= n; p+
 const primePower = (n) => { for (let p = 2; p <= n; p++) if (n % p === 0) { let k = 0; while (n % p === 0) { n /= p; k++; } return n === 1 ? [p, k] : null; } return null; };
 
 // A: primes colored by split / inert / ramified, with each prime power's contribution to ASK(a)
-function drawInert(D, a) {
+let inertGeom = null; // for mapping the pointer back to n
+function drawInert(D, a, hoverN = null) {
   const { g, w, h } = setup($('inert'), 0.42);
   const L = 34, R = w - 8, T = 18, B = h - 30;
   const px = (n) => L + ((n - 1) / (a - 0.5)) * (R - L);
+  inertGeom = { L, R, a };
   const terms = [];
   for (let n = 2; n <= a; n++) {
     const pp = primePower(n);
@@ -48,6 +50,10 @@ function drawInert(D, a) {
       g.fillStyle = t.c === 0 ? 'rgba(154,161,178,0.8)' : C.gold;
       g.fillRect(px(t.n) - bw / 2, py(t.v), bw, B - py(t.v));
     }
+    if (t.n === hoverN) { // outline the prime power under the pointer
+      g.strokeStyle = C.white; g.lineWidth = 1.5;
+      g.strokeRect(px(t.n) - bw / 2 - 2, Math.min(py(t.v), B - 4) - 2, bw + 4, B - Math.min(py(t.v), B - 4) + 16);
+    }
     if (t.k === 1) { // a dot for every prime, colored by its type
       g.beginPath(); g.arc(px(t.n), B + 7, 3, 0, 2 * Math.PI);
       if (t.c === 0) { g.strokeStyle = C.text; g.lineWidth = 1; g.stroke(); }
@@ -59,7 +65,7 @@ function drawInert(D, a) {
   g.fillStyle = C.gold; g.fillText('● inert', R - 150, T - 6);
   g.fillStyle = '#6fd6ff'; g.fillText('● split', R - 96, T - 6);
   g.fillStyle = C.text; g.fillText('○ ramified', R - 46 - 18, T + 8);
-  return { ask, inert: terms.filter((t) => t.k === 1 && t.c < 0).map((t) => t.n) };
+  return { ask, terms, inert: terms.filter((t) => t.k === 1 && t.c < 0).map((t) => t.n) };
 }
 
 // B: ASK and MAIN from the primes up to 10^6, and their difference / sqrt(a)
@@ -181,16 +187,103 @@ function draw4a() {
 }
 
 // ---- 4b, 4c, 4d ------------------------------------------------------------------------
+// ---- explaining one prime (4b) ---------------------------------------------------------
+// The nine fields all have class number 1, so every split prime is the norm of an element and
+// factors explicitly as that element times its conjugate.
+const root = (D) => (D === -4 ? 'i' : D === -8 ? '√−2' : `√−${-D}`);
+const coef = (y, r) => (y === 1 ? r : `${y}${r}`);
+
+function factorSplit(D, p) {
+  const r = root(D);
+  if (D === -4 || D === -8) {
+    const d = D === -4 ? 1 : 2;
+    for (let y = 1; d * y * y <= p; y++) {
+      const x = Math.round(Math.sqrt(p - d * y * y));
+      if (x * x + d * y * y === p) return `${p} = (${x} + ${coef(y, r)})(${x} − ${coef(y, r)})`;
+    }
+  } else {
+    const d = -D; // ring of integers Z[(1 + sqrt(-d))/2]: norms are (u^2 + d v^2)/4 with u = v mod 2
+    for (let v = 1; d * v * v <= 4 * p; v++) {
+      const u = Math.round(Math.sqrt(4 * p - d * v * v));
+      if (u * u + d * v * v !== 4 * p || (u - v) % 2) continue;
+      if (u % 2 === 0) return `${p} = (${u / 2} + ${coef(v / 2, r)})(${u / 2} − ${coef(v / 2, r)})`;
+      return `${p} = ((${u} + ${coef(v, r)})/2)·((${u} − ${coef(v, r)})/2)`;
+    }
+  }
+  return `${p} splits`;
+}
+
+function ramifiedForm(D, p) {
+  if (D === -4) return '2 = −i·(1 + i)²';
+  if (D === -8) return '2 = −(√−2)²';
+  return `${p} = −(${root(D)})²`;
+}
+
+function explainTerm(D, t, a) {
+  const name = FIELDS.find((f) => f.D === D).name;
+  const w = 1 - t.c;
+  const contrib = w === 0
+    ? 'contributes 0 to ASK.'
+    : `contributes ${w}·log ${t.p}·(${a}/${t.n} − 1) = <b>${t.v.toFixed(2)}</b> to ASK.`;
+  if (t.k > 1) {
+    return `${t.n} = ${t.p}${sup(t.k)}, a prime power: χ(${t.n}) = χ(${t.p})${sup(t.k)} = ${t.c > 0 ? '+1' : t.c < 0 ? '−1' : '0'}, so it ${contrib}`;
+  }
+  const c = kroneckerPrime(D, t.p);
+  if (c > 0) return `${t.p} <b style="color:#6fd6ff">splits</b> in ${name}: ${factorSplit(D, t.p)}. χ(${t.p}) = +1, so it ${contrib}`;
+  if (c < 0) return `${t.p} <b style="color:#f5c542">stays inert</b> in ${name}: it is still prime there (${D} is not a square mod ${t.p}). χ(${t.p}) = −1, so it ${contrib}`;
+  return `${t.p} <b>ramifies</b> in ${name}: ${ramifiedForm(D, t.p)}. χ(${t.p}) = 0, so it ${contrib}`;
+}
+
+const WORKED_MAX = 12;
+function workedSum(D, A, a, main) {
+  const nz = A.terms.filter((t) => t.v > 0), zero = A.terms.filter((t) => t.v === 0);
+  const label = (t) => (t.k > 1 ? `${t.n} = ${t.p}${sup(t.k)}` : t.c > 0 ? `${t.n} split` : t.c < 0 ? `${t.n} inert` : `${t.n} ramified`);
+  const sym = nz.map((t) => `${1 - t.c}·log ${t.p}·(${a}/${t.n} − 1)`).join(' + ') || '0';
+  const num = nz.map((t) => t.v.toFixed(2)).join(' + ') || '0';
+  const F = fieldData(D);
+  return `ASK(${a}) = ${sym}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= ${num} = <b>${A.ask.toFixed(2)}</b>` +
+    `&nbsp; (${nz.map(label).join(', ') || 'no inert primes yet'})<br>` +
+    (zero.length ? `zero terms: ${zero.map(label).join(', ')} (χ = +1)<br>` : '') +
+    `MAIN(${a}) = ${a}·(log ${a} − 1 − γ + L′/L(1, χ)) = ${a}·(${Math.log(a).toFixed(3)} − 1 − 0.577 + ${F.logDeriv.toFixed(3)}) = <b>${main.toFixed(2)}</b><br>` +
+    `ASK − MAIN = G(${a}) − g<sub>χ</sub>(${a}) = <b>${(A.ask - main).toFixed(2)}</b>`;
+}
+
+let hoverN = null;
 function draw4b() {
   const D = state.D, a = Number($('a').value);
   $('aVal').textContent = a;
-  const A = drawInert(D, a);
+  if (hoverN !== null && hoverN > a) hoverN = null;
+  const A = drawInert(D, a, hoverN);
   const F = fieldData(D);
   const main = a * (Math.log(a) - 1 - EULER_GAMMA + F.logDeriv);
   const name = FIELDS.find((f) => f.D === D).name;
+  const hovered = A.terms.find((t) => t.n === hoverN);
+  if (hovered) { $('r4b').innerHTML = explainTerm(D, hovered, a); return; }
+  if (a <= WORKED_MAX) { $('r4b').innerHTML = workedSum(D, A, a, main); return; }
   const list = A.inert.length > 14 ? `${A.inert.slice(0, 14).join(', ')}, …` : A.inert.join(', ') || 'none';
-  $('r4b').innerHTML = `${name}: inert primes up to ${a}: ${list}.<br>ASK(${a}) = ${A.ask.toFixed(1)}; its expected size MAIN(${a}) = ${main.toFixed(1)}.`;
+  $('r4b').innerHTML = `${name}: inert primes up to ${a}: ${list}.<br>ASK(${a}) = ${A.ask.toFixed(1)}; its expected size MAIN(${a}) = ${main.toFixed(1)}.<br>` +
+    `<span style="color:var(--muted)">Hover over (or tap) a bar or dot to explain that prime. Set a ≤ ${WORKED_MAX} to see the sum term by term.</span>`;
 }
+
+function inertPointer(e) {
+  if (!inertGeom) return;
+  const rect = $('inert').getBoundingClientRect();
+  const { L, R, a } = inertGeom;
+  const n = 1 + ((e.clientX - rect.left - L) / (R - L)) * (a - 0.5);
+  // nearest prime power to the pointer, within half a unit (or a few pixels when bars are dense)
+  let best = null, bestD = Infinity;
+  for (let m = Math.max(2, Math.floor(n) - 2); m <= Math.min(a, Math.ceil(n) + 2); m++) {
+    if (!primePower(m)) continue;
+    const dd = Math.abs(m - n);
+    if (dd < bestD) { bestD = dd; best = m; }
+  }
+  const tol = Math.max(0.6, (6 / (R - L)) * a);
+  const next = bestD <= tol ? best : null;
+  if (next !== hoverN) { hoverN = next; draw4b(); }
+}
+$('inert').addEventListener('pointermove', inertPointer);
+$('inert').addEventListener('pointerdown', inertPointer);
+$('inert').addEventListener('pointerleave', () => { if (hoverN !== null) { hoverN = null; draw4b(); } });
 
 function draw4c() {
   const F = drawAskMain(state.D);
