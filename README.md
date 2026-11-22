@@ -39,6 +39,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 - `main.js`: the terrain (ζ, ξ or L(s, χ) computed per vertex in a shader, chosen with tabs and radio buttons), critical-line probe, and the critical-line curve.
 - `dirichlet.js`: Dirichlet characters, L(s, χ) via Hurwitz sums with Euler–Maclaurin, the completed Λ(s, χ), and its zeros (the L(s,χ) tab).
 - `proof.html`, `proof.js`, `proofMath.js`: a separate page that walks through the strategy of the announced proof in four interactive pictures (mirror, ceiling, one-sided windows, divisibility).
+- `step4.html`, `step4.js`: step 4 of the proof in six sub-steps (4a–4f), from divisibility at inert primes to the ½ + 9ε budget. `viz.js` holds the canvas helpers both pages share.
 - `primes.js`, `primesView.js`: ψ(x), the explicit formula, and the Primes tab chart (the zeros rebuilding the prime staircase).
 
 See [docs/riemann_graph_v1.md](docs/riemann_graph_v1.md) for how it works, with the math.

@@ -45,13 +45,17 @@
     .tab[aria-selected="true"] .num { color: var(--gold); }
     .tab[aria-selected="true"] .ttl { display: inline; }
     [hidden] { display: none !important; }
-    .s4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
-    .s4a { grid-column: 1 / -1; }
-    canvas.fill-a { height: calc(clamp(250px, calc(100vh - 470px), 500px) * 0.42); }
-    canvas.fill-b { height: calc(clamp(250px, calc(100vh - 470px), 500px) * 0.58 - 8px); }
-    .controls.c4 { grid-template-columns: 1fr 1fr; }
-    .controls select { margin-left: 4px; background: #1a1e28; color: var(--text); border: 1px solid var(--border);
-      border-radius: 5px; padding: 2px 4px; font: inherit; }
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+      min-height: clamp(250px, calc(100vh - 410px), 560px); align-content: center; }
+    .fbox { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); text-decoration: none; color: var(--text); }
+    .fbox:hover { border-color: var(--gold); background: rgba(245, 197, 66, 0.06); }
+    .fbox b { font-size: 15px; }
+    .fbox span:last-child { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .fbox:not(:nth-child(3n))::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%);
+      color: var(--gold); font-size: 14px; }
+    .fend { grid-column: 1 / -1; text-align: center; padding: 10px; border-radius: 9px; color: var(--gold);
+      border: 1px dashed rgba(245, 197, 66, 0.5); font-weight: 600; }
     canvas.fill { height: clamp(250px, calc(100vh - 410px), 560px); }
     .caption { padding: 8px 2px 0; font-size: 13.5px; color: #cfd3dc; }
     .caption p { margin: 0 0 6px; }
@@ -85,8 +89,8 @@
       .step { grid-template-columns: 1fr; gap: 14px; }
       .two { grid-template-columns: 1fr; }
       .lab { grid-template-columns: minmax(0, 1fr); }
-      .s4 { grid-template-columns: minmax(0, 1fr); }
-      canvas.fill-a, canvas.fill-b { height: 220px; }
+      .flow { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+      .fbox::after { display: none; }
       .controls { grid-template-columns: minmax(0, 1fr); }
       canvas.fill { height: 300px; }
       h1 { font-size: 25px; }
@@ -156,20 +160,16 @@
           </div>
 
           <div data-panel="step4" hidden>
-            <div class="s4">
-              <div class="s4a">
-                <canvas id="inert" class="fill-a" aria-label="Primes colored by whether they split or stay inert, with each inert prime's contribution to ASK"></canvas>
-              </div>
-              <div><canvas id="askmain" class="fill-b" aria-label="ASK and MAIN computed from the primes, and their difference divided by the square root of a"></canvas></div>
-              <div><canvas id="balance" class="fill-b" aria-label="The two costs x over m and m, with the proof's chain length near the square root of x"></canvas></div>
+            <div class="flow" id="flow4">
+              <a class="fbox" href="./step4.html#s4a"><span class="num">4a</span><b>Divisibility caps size</b><span>A number divisible by many primes is large, so a size limit caps the primes.</span></a>
+              <a class="fbox" href="./step4.html#s4b"><span class="num">4b</span><b>Inert primes</b><span>Numbers built in ℚ(√−d) are divisible at the primes that stay inert.</span></a>
+              <a class="fbox" href="./step4.html#s4c"><span class="num">4c</span><b>ASK − MAIN</b><span>Divisibility minus expected size is exactly a prime sum, capped from above.</span></a>
+              <a class="fbox" href="./step4.html#s4d"><span class="num">4d</span><b>The √x chain</b><span>Repeating it m ≈ √x times balances x/m against m.</span></a>
+              <a class="fbox" href="./step4.html#s4e"><span class="num">4e</span><b>Removing the twist</b><span>Averaging keeps the wanted characters, with positive weights.</span></a>
+              <a class="fbox" href="./step4.html#s4f"><span class="num">4f</span><b>Paying for losses</b><span>The losses add up to 9ε.</span></a>
+              <div class="fend">⇒ the ceiling x<sup>½ + 9ε</sup> on long windows, which step 3 needs</div>
             </div>
-            <div class="controls c4">
-              <label>Field <select id="field"></select></label>
-              <label>Ramp length a = <b id="aVal"></b><input id="a" type="range" min="10" max="200" step="1" value="60" /></label>
-              <label>x = 10<sup><b id="lxVal"></b></sup><input id="lx" type="range" min="2" max="12" step="0.1" value="6" /></label>
-              <label>ε = <b id="epsVal"></b><input id="eps" type="range" min="0.002" max="0.019" step="0.001" value="0.01" /></label>
-            </div>
-            <div class="readout" id="step4Readout"></div>
+            <div class="readout"><a href="./step4.html">Open step 4 in detail →</a> &nbsp;(six sub-steps, each with its own picture)</div>
           </div>
         </div>
 
@@ -206,39 +206,10 @@
         </div>
 
         <div class="caption" data-mode="step4" hidden>
-          <p><b>The ceiling comes from divisibility at inert primes.</b> The proof builds numbers that are divisible by
-            primes that stay <i>inert</i> in an imaginary quadratic field (left), and whose size it can bound. The divisibility
-            gained, ASK, is a sum over inert primes; its expected size is MAIN; and ASK − MAIN is exactly a prime sum
-            (middle). Since divisibility cannot exceed what the size allows, that prime sum is capped from above. Repeating
-            the construction m ≈ √x times balances two costs (right).</p>
-          <details>
-            <summary>Read more</summary>
-            <p><b>Divisibility against size.</b> A non-zero whole number divisible by many primes is at least their product.
-              The proof uses a lattice version, Bost's slope inequality: if an injective integral map from lattice A to
-              lattice B stretches nothing by more than a factor C, then slope(A) ≤ max slope(B) + log C. Divisibility makes
-              the slope high; the size of the map caps it.</p>
-            <p><b>Inert primes.</b> In K = ℚ(√−d) a prime p splits (χ(p) = +1), stays inert (χ(p) = −1) or ramifies
-              (p divides the discriminant). The numbers come from theta functions of fields with complex multiplication.
-              At an inert prime, a Frobenius congruence makes certain 2×2 determinants divisible by √p (the archive's
-              <code>key_minor_dvd</code>). The weight 1 − χ(n) is 2 at inert primes and 0 at split ones, so
-              ASK = Σ Λ(n)(1 − χ(n)) max(a/n − 1, 0) counts inert primes with a ramp weight.</p>
-            <p><b>The identity.</b> MAIN = a(log a − 1 − γ + L′/L(1, χ)) is the expected size, from the periods of the theta
-              functions (the Chowla–Selberg formula). With equal weights, ASK − MAIN = G(a) − g<sub>χ</sub>(a): the ζ prime sum
-              of step 2 minus its twist by χ. The middle panel computes both sides from the actual primes up to 10⁶: they
-              agree to about one part in a million, and the difference stays on the scale of √a.</p>
-            <p><b>The chain of theta lifts.</b> One application is too weak, so the construction is repeated m times, in a
-              chain of theta lifts between unitary groups. The error has a term like x/m and a term like m, smallest at
-              m = √x. The source takes m between √(x δ) and 2√(x δ), with δ = x<sup>−ε/8</sup>, inside the window
-              x<sup>½ − ε</sup> ≤ m ≤ x<sup>½ + ε/2</sup> that the comparison step requires (right panel).</p>
-            <p><b>Afterwards.</b> Fourier analysis on a finite abelian group removes the unwanted twist g<sub>χ</sub> and isolates
-              each Dirichlet character with positive weights; the fields have to be rebuilt at every scale. Divisibility
-              can fall slightly short, and Galois cohomology along cyclotomic towers (Iwasawa theory) bounds the shortfall.
-              The losses add up to 9ε, giving the ceiling x<sup>½ + 9ε</sup> of step 3.</p>
-            <p class="small">The theta functions and lattices themselves are not drawn. The primes, χ, ASK, MAIN and the
-              chain parameters are the actual ones. According to riemann-rev, the whole proof was accepted by two kernels,
-              the comparison step is checked on its own as an implication, and the local mechanisms are checked one at a
-              time; that they hold together on one family at every scale is what remains to be examined step by step.</p>
-          </details>
+          <p><b>The ceiling comes from divisibility.</b> The proof builds numbers that are divisible by many primes (those that
+            stay inert in an imaginary quadratic field) and whose size it can bound. Weighing divisibility against size caps a
+            prime sum from above. Repeated about √x times and cleaned of unwanted characters, that gives the ceiling
+            x<sup>½ + 9ε</sup> of step 3. Each box above opens that sub-step on <a href="./step4.html">its own page</a>.</p>
         </div>
       </div>
     </div>
