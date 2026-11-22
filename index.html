@@ -74,7 +74,7 @@
     html[data-mode=intro][data-sky] .hero-note { display: block; }
   }
   /* What the picture behind the intro is: under the roll call's counter, in the sky east of the land. */
-  .hero-note { display: none; position: fixed; z-index: 2; right: 1.5rem; top: 108px; width: min(26vw, 19rem); margin: 0; padding-top: 10px; border-top: 1px solid var(--hair-strong); text-align: right; font: 400 .72rem/1.6 var(--mono); color: var(--muted); }
+  .hero-note { display: none; position: fixed; z-index: 2; right: 1.5rem; top: 136px; width: min(26vw, 19rem); margin: 0; padding-top: 10px; border-top: 1px solid var(--hair-strong); text-align: right; font: 400 .72rem/1.6 var(--mono); color: var(--muted); }
   .hero-note .legend { display: block; margin-top: .4rem; color: var(--ink); } .hero-note .legend span { display: block; }
   .hero h1 .gold { text-shadow: 0 0 26px rgb(245 197 66 / .5); }
   /* The words arrive one after another. */
@@ -87,7 +87,8 @@
   .count { position: fixed; z-index: 2; top: 46px; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
   html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
   #passed { padding: .55rem .8rem .6rem; text-align: right; background: rgb(13 17 23 / .88); border: 1px solid var(--hair); }   /* the ride's readout, on a ground of its own: from the side view the road runs behind it */
-  #passed small { display: block; margin-top: .3rem; font-size: .8rem; line-height: 1.6; color: var(--muted); }
+  .count small { display: block; margin-top: .3rem; font-size: .8rem; line-height: 1.6; color: var(--muted); }   /* the second line: what was measured */
+  #count { text-align: right; }
   html #passed:empty { display: none; }   /* until the world is up there is nothing to read out */
 
   /* The step bar, on every screen but the intro: where you are in the climb, and a way to jump anywhere in it. */
@@ -254,7 +255,7 @@
 
   @media (max-width: 899px) {   /* no room beside the card: it scrolls, and always leaves a band of the world above it */
     html[data-mode=world] #panel { pointer-events: auto; max-height: 72dvh; } html[data-mode=world] #s-more { display: none; }
-    #passed { padding: 0; background: none; border: 0; } #passed small { display: none; }   /* the band of world above the card is small: the count alone, as before */
+    #passed { padding: 0; background: none; border: 0; } .count small { display: none; }   /* the band of world above the card is small: the count alone, as before */
   }
   @media (max-width: 30rem) {   /* phones: leave the scene some room above the card */
     body { font-size: 15px; } html[data-mode=world] #panel, html[data-mode=fly] #panel { padding: .7rem 1rem .8rem; }

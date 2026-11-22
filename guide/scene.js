@@ -61,7 +61,8 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
 
   // Baked north to south (t from T_MAX down to 0): that is PlaneGeometry's row order after rotateX(-90 deg),
   // so the grid index is the vertex index and the fill loop needs no arithmetic.
-  const { re, im } = zetaGrid(SIG0, SIG1, NS, T_MAX, 0, NT);
+  const t0 = performance.now(), { re, im } = zetaGrid(SIG0, SIG1, NS, T_MAX, 0, NT);
+  const BAKED = `${re.length.toLocaleString('en')} values of ζ, computed here in ${Math.round(performance.now() - t0)} ms`;   // measured: it goes under the roll call's count
 
   const terrain = new THREE.PlaneGeometry(WIDTH * (SIG1 - SIG0), LEN * T_MAX, NS, NT).rotateX(-Math.PI / 2);
   const pos = terrain.attributes.position, colors = new Float32Array(pos.count * 3), c = new THREE.Color();
@@ -203,7 +204,7 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     if (lit >= n) return;
     for (; lit < n; lit++) if (CHECKED[lit]) { passed++; const [stalk, knob, halo] = markers[lit].children; stalk.material = knob.material = glow; halo.material = star; }
     look.uniforms.uFront.value = zOf(ZEROS[lit - 1]);                         // the rings start at each zero as the roll call reaches it
-    if (count) count.textContent = `${passed} / ${ZEROS.length} zeros checked`;
+    if (count) count.innerHTML = `${passed} / ${ZEROS.length} zeros checked<small>${BAKED}</small>`;
   }
 
   // A word in the world: mono type on a clear canvas, on a sprite that faces the viewer. h is its height in world units.

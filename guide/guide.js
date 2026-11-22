@@ -39,7 +39,7 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=7').then(m => {
+  return opening ??= import('./scene.js?v=8').then(m => {
     scene = m;
     world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
     root.dataset.sky = '';                                           // the world is up: the intro may show it (index.html)
