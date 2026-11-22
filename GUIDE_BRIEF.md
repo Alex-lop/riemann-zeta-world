@@ -2,6 +2,12 @@
 
 Written Sunday 22 Nov 2026 by the session that set up the site, and revised about 3 PM after Alex read it. It is for an agent starting with no other context. Everything you need is in this file or in a file it names. Other agents read it cold and checked its claims against the repo, the teammate's page and the sources; their corrections are in.
 
+**Built, and where it departs from this brief (22 Nov, about 3:40 PM).** The guide is live as the home page. Read this before acting on anything below.
+
+- **The look is dark, not light.** After this brief was revised, Alex asked for the theme of his Nemisis site (https://alex-lop.github.io/Nemisis/): a near-black ground, light ink, hairlines, mono labels and one red, with the personal site's ticks still behind every screen. Section 4.2's paper palette and "nothing is dark" no longer apply. The meanings of the colours do: gold is the critical line and the band, blue the primes, red the hypothetical zero and what it causes. Do not move the page back to paper.
+- **Steps 7 and 8 run inside the 3D world,** as Alex asked next: the land morphs into the gamma-completed, mirror-symmetric one, the hypothetical zero is dragged in the scene, and the band chart docks beside it. Step 3 has a second variable, the real part, and a line where zeta is zero.
+- **The order of work changed too:** all ten steps have their interaction, and the swap is done. `PLAN.md`, "Where things stand", has the current state.
+
 **Deadlines.** The demo is at 8 PM tonight (Sundai Hack 150). Freeze features at 6:45 PM. `main` is the live site, so it must work at every moment between now and then.
 
 ## 1. The job
