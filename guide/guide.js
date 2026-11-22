@@ -387,13 +387,17 @@ const STEPS = [
         ctx.textAlign = 'left';
         ctx.fillText(`real part ${sigma.toFixed(2)}` + (w < 520 ? '' : settles ? ': the arrows settle on ζ(s)' : ': the sum only works above 1. The square is ζ’s one extension'), 12, 18);
         ctx.strokeStyle = settles ? C.ink : C.muted; ctx.lineWidth = settles ? 1.5 : 1; ctx.beginPath(); ctx.moveTo(ox, oy);
-        for (let n = 1, re = 0, im = 0; n < N; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length n^-sigma, turned by -t ln n
+        let endRe = 0, endIm = 0;                           // where the last arrow drawn ends
+        for (let n = 1; n < N; n++) { const a = t * Math.log(n), r = n ** -sigma; endRe += r * Math.cos(a); endIm -= r * Math.sin(a); ctx.lineTo(ox + endRe * unit, oy - endIm * unit); }   // arrow n: length n^-sigma, turned by -t ln n
         ctx.stroke(); ctx.lineWidth = 1; ctx.fillStyle = settles ? C.ink : C.muted;
         for (let n = 1, re = 0, im = 0; n <= 8; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.fillRect(ox + re * unit - 2.5, oy - im * unit - 2.5, 5, 5); }   // where the first eight arrows end
         const [re, im] = zeta(sigma, t).map(v => Math.abs(v) < 5e-5 ? 0 : v);   // so a zero reads 0.0000 + 0.0000i, never −0.0000
         ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(Math.round(ox + re * unit) - 6.5, Math.round(oy - im * unit) - 6.5, 13, 13); ctx.lineWidth = 1;
         ctx.fillStyle = C.ink; ctx.fillText('ζ(s)', ox + re * unit + 12, oy - im * unit - 9);
-        read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i` + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : '');
+        // The gap between the end of the arrows and the square: small above real part 1, where the sum settles, and large below it.
+        const gap = Math.hypot(endRe - re, endIm - im);
+        read.textContent = `s = ${sigma.toFixed(2)} + ${t.toFixed(2)}i: ζ(s) ≈ ${re.toFixed(4)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(4)}i` + (Math.hypot(re, im) < 1e-3 ? '. Its size is 0 here: a zero' : '')
+          + ` · ${N - 1} arrows end ${gap.toFixed(gap < 0.1 ? 4 : 2)} from it`;
       });
       // The size of zeta up the vertical line through the real part, over a line at 0. On the line through 1/2 it comes down to touch it.
       const strip = plot(stage, 'clamp(92px, 16vh, 128px)', (ctx, w, h) => {
