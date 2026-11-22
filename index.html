@@ -303,7 +303,7 @@
       <div class="hero-copy">
         <p class="eyebrow">Zeta World · the Riemann hypothesis, as a place you can look at</p>
         <h1>Ride <span class="gold">the line</span>.<br>Watch <span class="blue">the primes</span> appear.</h1>
-        <p class="lede">Helloooo. This is a ten-step climb from what a prime is to what was released in November 2026, through a 3D land of the zeta function that you can ride.</p>
+        <p class="lede">Helloooo. Ten steps from what a prime is to what was released in November 2026, through a 3D land of the zeta function you can ride.</p>
         <p class="actions">
           <a class="btn btn-go" href="#primes">Get started</a>
           <a class="btn" href="#suppose">What the paper actually proved</a>
@@ -311,9 +311,8 @@
         <dl class="rows">
           <!-- Filled in by guide.js from the steps themselves, so the list cannot fall out of step with the climb. -->
           <div><dt>The ten steps</dt><dd class="steps" id="steps"></dd></div>
-          <div><dt>No guide</dt><dd><a href="#fly">Just let me fly</a></dd></div>
-          <div><dt>Roam</dt><dd><a href="./landscape.html">The explorer</a><a href="./proof.html">The proof page</a></dd></div>
-          <div><dt>Read / source</dt><dd><a href="./learn.html">The long version</a><a href="https://github.com/Alex-lop/zeta-world/blob/main/PLAN.md">The plan</a><a href="https://github.com/Alex-lop/zeta-world">GitHub</a></dd></div>
+          <!-- The plan and the source are in the nav above. -->
+          <div><dt>Or roam</dt><dd><a href="#fly">Just let me fly</a><a href="./landscape.html">The explorer</a><a href="./proof.html">The proof page</a><a href="./learn.html">The long version</a></dd></div>
         </dl>
         <noscript><p class="small">The guided climb needs JavaScript. The long version does not.</p></noscript>
       </div>
@@ -343,7 +342,7 @@
     <p class="top">No guide</p>
     <h1>Zeta World</h1>
     <p>The Riemann hypothesis, as a place you can look at.</p>
-    <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each pin stands on a zero, where the land drops to height zero. These are the first 100 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
+    <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the primes are spread out. Each pin stands on a zero, the first 100 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
     <!-- The one place this page says anything about proof. Keep it dated and attributed. The last step of the climb shows a copy of this paragraph. -->
     <p class="long status" id="proof-status">Status, 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement of the Lean and Mathlib communities</a>. Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. This page shows what the statement says. It proves nothing.</p>
     <p class="small" id="fly-status">Loading the 3D view. It needs JavaScript and WebGL.</p>
@@ -351,8 +350,7 @@
       <summary>How to read it</summary>
       Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237, and the whole plane, when shown, Re(s) from −9.5 to 4.5 and Im(s) from −48 to 48. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The grey lines are the strip’s edges, and the numbers along the east side are heights, Im(s). The mound at the south end is the pole at s = 1, where ζ is infinite.
     </details>
-    <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
-    <p class="small">Built for Sundai Hack 150. <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
+    <p class="small"><a href="./landscape.html">The explorer</a> · <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">GitHub</a> · Built for Sundai Hack 150</p>
     <p class="small" id="fly-plane-says" aria-live="polite"></p>
     <p class="actions"><button type="button" class="btn" id="fly-plane" aria-pressed="false">Show the whole plane</button><a class="btn btn-go" href="#primes">Start the climb ›</a></p>
   </aside>
