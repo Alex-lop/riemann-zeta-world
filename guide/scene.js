@@ -33,7 +33,7 @@ export const xOf = sigma => WIDTH * (sigma - 0.5), zOf = t => LEN * (T_MAX / 2 -
 // floor to HIGH on top, and nothing is lit, so these are the colours on screen. The palette is the page's (index.html):
 // a near-black ground, light ink for what is real, gold for the critical line, red for the hypothetical zero.
 // The line is a beam of gold light drawn by the land's shader, with pulses running north along it.
-const GROUND = 0x0d1117, WELL = 0x05070b, HIGH = 0x566279, GOLD = 0xf5c542, INK = 0xecebe6, UNCHECKED = 0x364052, RED = 0xe6392d, MUTED = 0x9aa0aa, DIM = 0x7f8794, ACT = 0x4fd6be;
+const GROUND = 0x0d1117, WELL = 0x03040a, HIGH = 0x2e3a66, GOLD = 0xf5c542, INK = 0xecebe6, UNCHECKED = 0x364052, RED = 0xe6392d, MUTED = 0x9aa0aa, DIM = 0x7f8794, ACT = 0x4fd6be;
 const squash = size => RISE * (2 / Math.PI) * Math.atan(size);   // every height in the world: 0 at a zero, RISE at the pole
 
 // ln |Gamma(x + iy)| for x > 0: step x up until |z| is at least 9, then Stirling's series.
@@ -91,13 +91,9 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   }
   terrain.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   land.y0 = land.y1 = Float32Array.from(pos.array.subarray(0, pos.count), (_, v) => pos.getY(v)); land.s0 = land.s1 = shading();
-  // Painted on, so it lies on the land whatever its shape: the two edges of the critical strip, and a ruler.
+  // Painted on, so it lies on the land whatever its shape: a ruler. The line and the strip's two edges are drawn by the shader below.
   const fixed = new Uint8Array(pos.count), EDGE = NS * 0.5 / (SIG1 - SIG0);   // EDGE: how many columns from the line to Re(s) = 0 or 1
   const ink = (v, colour) => { c.set(colour).toArray(colors, v * 3); fixed[v] = 1; };
-  for (let v = 0; v < pos.count; v++) {
-    const col = Math.abs(v % W - ROAD);
-    if (col === EDGE) ink(v, DIM);                                            // Re(s) = 0 and Re(s) = 1. The line itself is drawn by the shader below
-  }
   // The ruler: a tick on the land's east edge at every 10 of Im(s), longer at every 50, with its number beside it (below).
   const RULER = Array.from({ length: Math.floor(T_MAX / 10) }, (_, k) => 10 * (k + 1));
   for (const t of RULER) for (let j = Math.round(NT * (1 - t / T_MAX)), i = NS - (t % 50 ? 2 : 5); i <= NS; i++) { ink(j * W + i, INK); ink((j + 1) * W + i, INK); }
@@ -108,8 +104,8 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     && Math.hypot(pos.getX(vPole) - xOf(1), pos.getZ(vPole) - zOf(0)) < 1e-3 && pos.getY(vPole) === RISE, 'terrain self-check failed: the mesh is flipped');
   // The land's surface. Its colours are the baked ones above, and the shader adds what moves. The line is a lane of light:
   // a dark bed so it reads on high land, a bright core, two faint rails, and a glow that falls on the land beside it, with
-  // pulses running north. Rings spread from every zero that the roll call has reached. Contour lines mark each eighth of the
-  // pole's height. The land thins to nothing with distance, so the sky shows through its far end, and the core carries on.
+  // pulses running north. Two thin grey lines are the strip's edges, Re(s) = 0 and 1. Rings spread from every zero that the
+  // roll call has reached. Contour lines mark each eighth of the pole's height. The land thins to nothing with distance, so the sky shows through its far end, and the core carries on.
   const nearest = new Float32Array(pos.count);       // how far each vertex is from the nearest zero, in world units
   for (let j = 0; j <= NT; j++) {
     const t = T_MAX * (1 - j / NT), dt = LEN * Math.min(...ZEROS.map(g => Math.abs(g - t)));
@@ -118,7 +114,7 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   terrain.setAttribute('aZero', new THREE.BufferAttribute(nearest, 1));
   const look = new THREE.ShaderMaterial({
     vertexColors: true, side: THREE.DoubleSide, transparent: true, forceSinglePass: true,
-    uniforms: { uTime: flow, uFog: { value: new THREE.Vector2(FOG0, FOG1) }, uFront: { value: 1e9 }, uGold: { value: new THREE.Color(GOLD) }, uInk: { value: new THREE.Color(INK) }, uGround: { value: new THREE.Color(GROUND) } },
+    uniforms: { uTime: flow, uFog: { value: new THREE.Vector2(FOG0, FOG1) }, uFront: { value: 1e9 }, uGold: { value: new THREE.Color(GOLD) }, uInk: { value: new THREE.Color(INK) }, uGround: { value: new THREE.Color(GROUND) }, uDim: { value: new THREE.Color(DIM) } },
     vertexShader: `
       attribute float aZero; varying vec3 vColor, vPos; varying float vZero, vDepth;
       void main() {
@@ -127,17 +123,19 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
         vDepth = -mv.z; gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
-      uniform float uTime, uFront; uniform vec2 uFog; uniform vec3 uGold, uInk, uGround;
+      uniform float uTime, uFront; uniform vec2 uFog; uniform vec3 uGold, uInk, uGround, uDim;
       varying vec3 vColor, vPos; varying float vZero, vDepth;
       void main() {
         vec3 col = vColor;
         float fog = smoothstep(uFog.x, uFog.y, vDepth);
         float g = vPos.y * 8.0;
-        col += vec3(0.05, 0.065, 0.11) * (1.0 - smoothstep(0.0, 1.3, abs(fract(g - 0.5) - 0.5) / max(fwidth(g), 1e-5)));
+        col += vec3(0.1, 0.14, 0.3) * (1.0 - smoothstep(0.0, 1.3, abs(fract(g - 0.5) - 0.5) / max(fwidth(g), 1e-5))) * (0.35 + 0.65 * vPos.y);
+        col += vec3(0.16, 0.2, 0.42) * smoothstep(${(WIDTH * (SIG1 - SIG0) / 2 - 0.09).toFixed(3)}, ${(WIDTH * (SIG1 - SIG0) / 2).toFixed(3)}, abs(vPos.x));   // a lit rim on the land's two long edges
         col += uInk * 0.16 * pow(0.5 + 0.5 * sin(vZero * 6.5 - uTime * 1.5), 8.0) * exp(-vZero * 0.9) * step(uFront - 1.5, vPos.z);
         float d = abs(vPos.x), aa = fwidth(vPos.x) + 1e-5;
         float lane = 1.0 - smoothstep(0.17 - aa, 0.17 + aa, d), core = 1.0 - smoothstep(0.045 - aa, 0.045 + aa, d);
-        float pulse = pow(1.0 - fract(vPos.z * 0.2 + uTime * 0.5), 5.0);     // one every 5 along the line, 2.5 a second northward
+        float run = fract(vPos.z * 0.2 + uTime * 0.5), pulse = smoothstep(0.0, 0.14, run) * pow(1.0 - run, 5.0) * 1.6;   // one every 5 along the line, 2.5 a second northward
+        col = mix(col, uDim, 0.8 * (1.0 - smoothstep(0.02 - aa, 0.02 + aa, abs(d - ${(WIDTH / 2).toFixed(1)}))));
         col = mix(col, uGround * 0.45, lane * 0.85);
         col += uGold * (exp(-d * d * 9.0) * (0.1 + 0.5 * pulse) + 0.3 * lane * smoothstep(0.1, 0.15, d));
         col = mix(col, mix(uGold, vec3(1.0, 0.95, 0.8), 0.25 + 0.75 * pulse), core);
@@ -406,6 +404,18 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   }));
   motes.frustumCulled = false; scene.add(motes);
 
+  // A ring of light that spreads from a zero's star as a ride passes it. burst(t) starts one at the zero at height t.
+  const hoop = new THREE.RingGeometry(0.965, 1, 72).rotateX(-Math.PI / 2);
+  const hoops = Array.from({ length: 6 }, () => scene.add(new THREE.Mesh(hoop, new THREE.MeshBasicMaterial({ color: INK, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }))).children.at(-1));
+  for (const h of hoops) h.visible = false;
+  let spent = 0;
+  world.burst = t => {
+    const k = ZEROS.indexOf(t);
+    if (k < 0 || quiet()) return;
+    const h = hoops[spent++ % hoops.length];
+    h.position.set(0, lift, zOf(t)); h.userData.born = markers[k].userData.kick = flow.value; h.visible = true;
+  };
+
   const start = performance.now();
   let lift = PIN, last = start;                      // lift: how tall the pins are now, PIN, or RAIL while the survey is up
   const frame = now => {
@@ -427,7 +437,11 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     const k = Math.max(camera.position.y / FOG_H, 1);                         // fog thins as the camera climbs: low down the road vanishes into it,
     scene.fog.near = FOG0 * k; scene.fog.far = FOG1 * k;                      // from high up the whole road is clear
     look.uniforms.uFog.value.set(scene.fog.near, scene.fog.far);
-    markers.forEach((m, i) => m.children[2].scale.setScalar(1.25 + 0.2 * Math.sin(flow.value * 2.3 + i * 1.7)));   // the stars twinkle
+    markers.forEach((m, i) => m.children[2].scale.setScalar(1.25 + 0.2 * Math.sin(flow.value * 2.3 + i * 1.7) + 2.2 * Math.exp(-4 * (flow.value - (m.userData.kick ?? -9)))));   // the stars twinkle, and flare when passed
+    for (const h of hoops) if (h.visible) {
+      const u = (flow.value - h.userData.born) / 1.2;
+      h.scale.setScalar(0.15 + 2.1 * (1 - (1 - u) ** 3)); h.material.opacity = 0.75 * (1 - u) ** 2; h.visible = u < 1;
+    }
     motes.material.uniforms.uZ.value = controls.target.z; motes.material.uniforms.uH.value = renderer.domElement.height;
     sky.update(flow.value, camera);
     renderer.render(scene, camera);
