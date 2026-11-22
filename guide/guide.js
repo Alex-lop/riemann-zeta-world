@@ -135,6 +135,11 @@ function lab(w, ahead = 2) {
   if (mirrored) w.mirror(true); else morph = setTimeout(() => w.mirror(true), still() ? 0 : 900);   // back on, if the last step's switch left it off
   mirrored = true;
 }
+// Over either red mark the pointer becomes a hand, to say it can be taken hold of.
+function hand(w, e) {
+  const near = sigma => [0, 1.5].some(y => { const [x, yy] = w.project(sigma, ghost.gamma, y); return Math.hypot(x - e.clientX, yy - e.clientY) < 44; });
+  $('world').style.cursor = w.holding() ? 'grabbing' : near(ghost.beta) || near(1 - ghost.beta) ? 'grab' : '';
+}
 function tags(w) {
   if (!w.holding()) { const dz = (scene.zOf(ghost.gamma + aim) - w.controls.target.z) * (still() ? 1 : 0.08); w.camera.position.z += dz; w.controls.target.z += dz; }
   const [ax, ay] = w.project(ghost.beta, ghost.gamma, 1.5), [bx, by] = w.project(1 - ghost.beta, ghost.gamma, 1.5);
@@ -402,7 +407,9 @@ const STEPS = [
           if (!own && now - t0 > 3000 && ghost.beta < 0.72) { ghost.beta = still() ? 0.72 : Math.min(0.72, ghost.beta + 0.002); sync(w); ui.done(); }
           tags(w);
         };
-        stop = () => { w.tick = w.onGhost = null; };
+        const point = e => hand(w, e);
+        $('world').addEventListener('pointermove', point);
+        stop = () => { w.tick = w.onGhost = null; $('world').removeEventListener('pointermove', point); $('world').style.cursor = ''; };
       });
       return () => stop();
     } },
@@ -468,7 +475,9 @@ const STEPS = [
         w.onGhost = (beta, gamma) => { own = true; ghost.beta = beta; ghost.gamma = gamma; sync(); };
         const t0 = performance.now();
         w.tick = now => { if (!own && !on && now - t0 > 4000) turnOn(w); tags(w); };   // nobody pressed: show the break anyway
-        stop = () => { w.tick = w.onGhost = null; };
+        const point = e => hand(w, e);
+        $('world').addEventListener('pointermove', point);
+        stop = () => { w.tick = w.onGhost = null; $('world').removeEventListener('pointermove', point); $('world').style.cursor = ''; };
       });
       return () => stop();
     } },
