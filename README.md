@@ -4,7 +4,20 @@ A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai 
 
 **Live: https://alex-lop.github.io/zeta-world/** · [From primes to the proof, in 28 steps](https://alex-lop.github.io/zeta-world/learn.html) · [The plan](PLAN.md) · [Brief for the interactive guide](GUIDE_BRIEF.md)
 
-The idea is still broad. The goal is a world you can fly through that lets you *see* the Riemann hypothesis, the most famous problem in math, and how it connects to the prime numbers.
+The home page is a guided climb in ten short steps, each with one thing to do:
+
+1. Split a number into its primes.
+2. Count the primes against x / ln x.
+3. Add the arrows of ζ(s).
+4. Look around the land of ζ, where every zero is a well.
+5. Ride north up the critical line past the first 100 zeros.
+6. Keep riding: each zero passed adds a wave, and spikes rise at the primes.
+7. Drag one hypothetical zero off the line, and its mirror twin appears.
+8. Add its wave to the primes and watch them leave the band they keep to if every zero is on the line.
+9. See where the announced proof's ceiling comes from.
+10. Read what was released, what was checked and what is still needed.
+
+"Just let me fly" (`#fly`) is the plain 3D world with free controls. The look follows Alex's [Nemisis](https://alex-lop.github.io/Nemisis/) site, with the ticks of his personal site behind every screen. The hypothetical zero is fiction and is labelled so wherever it shows.
 
 ## Status of the math
 
@@ -37,7 +50,7 @@ ES modules need a server, not `file://`:
 python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-- `index.html`: the home page, a self-contained terrain with the first 13 zeros.
+- `index.html`: the home page, the guided climb. Its modules are in `guide/`: `guide.js` (the steps), `scene.js` (the 3D world), `zeros.js` and `field.js` (the ticks).
 - `landscape.html`: the explorer, with ζ(s)/ξ(s), L(s, χ) and Primes tabs, a movable window up to t = 110, a critical-line probe, and the curve panel. Open http://localhost:8000/landscape.html.
 
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), the completed function ξ(s), Hardy's Z(t), and a zero finder.

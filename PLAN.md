@@ -8,11 +8,14 @@ Zeta landscapes and "zeros build the primes" sliders have been made many times, 
 
 ## Where things stand
 
-- **Live page:** https://alex-lop.github.io/zeta-world/ (GitHub Pages, served from `main` at the repo root). It is one `index.html`, no build step, with three.js 0.187.0 loaded from jsDelivr through an import map.
-- **What it shows:** the land from Re(s) = -0.5 to 1.5 for heights 0 to 237, coloured by phase, the gold line Re(s) = 1/2 with pins on the first 100 zeros, a roll-call counter, and the dated status line.
-- **What it lacks:** anything about primes, the walls and slabs, and a guided path.
-- **Build steps 1 and 2 are done and on `main`** (22 Nov, mid-afternoon). The work left starts at step 0, the card, and step 3, the primes panel.
-- **A second page is live:** `landscape.html`, a teammate's free explorer (PR #2, merged 22 Nov at 2:10 PM). See "Two pages" below.
+Brought up to date on 22 Nov at about 3:30 PM, after the interactive guide (`GUIDE_BRIEF.md`) became the home page. The rest of this plan is as written at 1:30 PM.
+
+- **Live page:** https://alex-lop.github.io/zeta-world/ (GitHub Pages, served from `main` at the repo root). It is `index.html` plus plain ES modules in `guide/`, no build step, with three.js 0.187.0 loaded from jsDelivr through an import map, and only when a step first needs the 3D world.
+- **What it shows:** an intro with five choices, then a climb of ten steps, each with one thing to do: factor a number, count the primes, add zeta's arrows, look around the land, ride north past the first 100 zeros, watch their waves pile into spikes at the primes, drag one hypothetical zero off the line, see its wave break the primes out of their band, see where the announced proof's ceiling comes from, and read what was released and checked. `#fly` is the plain world with free controls.
+- **The world has changed its look, not its shape.** The land, the line, the 100 pins, the roll call and the start view are as tuned under "The world" below. The land is now shaded by height on a transparent canvas, over a field of ticks, in the palette of Alex's Nemisis site. The phase colours are gone.
+- **What became of this plan's build steps.** Step 3, the primes panel, is the guide's step 6: the spikes only, with no staircase toggle. Step 4, the walls and slabs, is part of the guide's step 7: walls at 0 and 1 and stripes on the outer eighths stand with the hypothetical zero. Step 5, the tour, is the step shell: Next and Back, the step's name in the URL hash, arrow keys and Space, and rides that drive themselves if nobody does.
+- **Not built:** step 0 (the card is Alex's to post), the staircase toggle, and everything under "Stretch".
+- **Other pages, all live:** `landscape.html`, the teammate's explorer (PRs #2 and #6), `proof.html`, his page on how the announced proof works (PR #6), and `learn.html`, the long read in 28 steps.
 
 How the README's five steps map onto this plan:
 
@@ -30,7 +33,7 @@ One change to the README's wording: step 2 says "computed in a shader". This pla
 
 ## Two pages
 
-PR #2 merged on 22 Nov at 2:10 PM, after this section was written. It added `landscape.html` with `main.js` and `zeta.js`. The teammate has since opened PR #6, with more explorer tabs and a `proof.html`.
+PR #2 merged on 22 Nov at 2:10 PM, after this section was written. It added `landscape.html` with `main.js` and `zeta.js`. PR #6 merged at 3:08 PM and added the L-function and Primes tabs to the explorer, and `proof.html`. The split recommended below is what happened: `index.html` is the story, now the guided climb, and it links to the explorer and to the proof page. The table compares the two pages as they stood at 1 PM, before the whole road and before the guide.
 
 | | `index.html` (on `main`) | `landscape.html` (PR #2) |
 |---|---|---|
