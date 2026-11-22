@@ -78,13 +78,13 @@ function ride(stage, ui, each, pace = 11) {
   input.addEventListener('input', () => { own = true; ui.done(); });
   withWorld(w => {
     const tOf = z => (scene.zOf(0) - z) / (scene.zOf(0) - scene.zOf(1)), t0 = performance.now();
-    let last = t0, at2 = +input.value;
+    let last = t0, auto = +input.value, said = '';           // auto: where the unattended ride is. The slider rounds to tenths, so the place is kept here
     w.camera.position.set(-3.5, 6.5, scene.zOf(-3)); w.controls.target.set(0, 0, scene.zOf(12));   // the start view's offset, 10 further south
     w.controls.enableZoom = false;                           // in a ride the wheel moves you along the line
     const wheel = e => { input.value = +input.value + e.deltaY * 0.04; own = true; ui.done(); };
     canvas.addEventListener('wheel', wheel, { passive: true });
     // A click on a pin rides to its zero. A drag is the orbit controls', so a press that moved is not a click.
-    let down = [0, 0], said = '';
+    let down = [0, 0];
     const press = e => { down = [e.clientX, e.clientY]; };
     const hover = e => { const g = e.buttons ? undefined : w.pick(e.clientX, e.clientY); w.light(g); canvas.style.cursor = g ? 'pointer' : ''; };
     const click = e => {
@@ -103,7 +103,7 @@ function ride(stage, ui, each, pace = 11) {
       view.setAttribute('aria-pressed', side); view.textContent = side ? 'Road view' : 'Side view'; pose = POSES[+side];
     });
     w.tick = now => {
-      if (!own && !still() && now - t0 > 3000) { at2 += (now - last) * pace / 1000; input.value = at2; ui.done(); }   // nobody is driving: ride anyway. The slider rounds to tenths, so the place is kept here
+      if (!own && !still() && now - t0 > 3000) { auto += (now - last) * pace / 1000; input.value = auto; ui.done(); }   // nobody is driving: ride anyway
       last = now;
       const goal = w.zeros.find(g => Math.abs(g - input.value) < 0.051) ?? +input.value;   // the slider moves in tenths: beside a zero, it means the zero
       const dz = (scene.zOf(goal) - w.controls.target.z) * (still() ? 1 : 0.1);   // ponytail: eased per frame, not per second; fine at 60 or 120 Hz
@@ -117,8 +117,8 @@ function ride(stage, ui, each, pace = 11) {
       const passed = w.zeros.filter(g => g < T - 0.004).length;
       if (passed !== seen) { seen = passed; at = T; marks.paint(); }
       // The readout: where you are, zeta's value there (the arrow on the dial), and the zero you are on or coming to.
-      const [re, im] = w.probe(T), on = w.zeros.findIndex(g => Math.abs(g - T) < 0.004), next = w.zeros[passed];
-      const text = `${passed} of 100 zeros passed<small>s = ½ + ${T.toFixed(2)}i<br>ζ(s) ≈ ${re.toFixed(2)} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(2)}i<br>`
+      const [re, im] = w.probe(T).map(v => Math.abs(v) < 0.005 ? 0 : v), on = w.zeros.findIndex(g => Math.abs(g - T) < 0.004), next = w.zeros[passed];   // so a zero reads 0.00 + 0.00i, never −0.00
+      const text = `${passed} of 100 zeros passed<small>s = ½ + ${T.toFixed(2)}i<br>ζ(s) ≈ ${re.toFixed(2).replace('-', '−')} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(2)}i<br>`
         + (on >= 0 ? `on zero ${on + 1}: size 0.00` : `size ${Math.hypot(re, im).toFixed(2)}` + (next ? ` · zero ${passed + 1} in ${(next - T).toFixed(2)}` : '')) + '</small>';
       if (text !== said) $('passed').innerHTML = said = text;
       each(T, passed);
