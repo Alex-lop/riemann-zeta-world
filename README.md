@@ -2,11 +2,15 @@
 
 A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai Hack 150 (Building 3D Worlds).
 
-The idea is still broad. The goal is a world you can fly through that lets you *see* the most famous unsolved problem in math and how it connects to the prime numbers.
+**Live: https://alex-lop.github.io/zeta-world/** · [The plan](PLAN.md)
+
+The idea is still broad. The goal is a world you can fly through that lets you *see* the Riemann hypothesis, the most famous problem in math, and how it connects to the prime numbers.
 
 ## Status of the math
 
-The Riemann hypothesis is **not proven**. In October 2026 a proof of a weaker "quasi-Riemann hypothesis" was announced, with its first version checked in Lean. This project visualizes the conjecture; it does not claim anything about it.
+As of 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a [joint statement of the Lean and Mathlib communities](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/). Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. In October 2026 a proof of a weaker "quasi-Riemann hypothesis" (no zeros with real part above 7/8) was released, checked in Lean and also not peer reviewed.
+
+This project shows what the hypothesis says. It proves nothing.
 
 ## Getting started
 
