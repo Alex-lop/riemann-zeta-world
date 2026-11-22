@@ -83,6 +83,39 @@ function ride(stage, ui, each) {
   return () => stop();
 }
 
+// ---- figures -----------------------------------------------------------------------------------
+const C = { ink: '#ecebe6', muted: '#9aa0aa', hair: '#222937', strong: '#364052', red: '#e6392d', gold: '#f5c542', blue: '#6ea8ff' };
+const MONO = '11px ui-monospace, "SF Mono", Menlo, monospace';
+const isPrime = n => { for (let d = 2; d * d <= n; d++) if (n % d === 0) return false; return n > 1; };
+
+// A canvas figure drawn in CSS pixels. paint() calls draw(ctx, w, h) on a cleared canvas, and runs again when the canvas is resized.
+function plot(stage, height, draw) {
+  const canvas = el(`<canvas class="plot" style="height:${height}"></canvas>`), ctx = canvas.getContext('2d');
+  stage.append(canvas);
+  const paint = () => {
+    const w = canvas.clientWidth, h = canvas.clientHeight, d = Math.min(devicePixelRatio, 2);
+    if (!w) return;
+    if (canvas.width !== Math.round(w * d)) canvas.width = Math.round(w * d);
+    if (canvas.height !== Math.round(h * d)) canvas.height = Math.round(h * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0); ctx.clearRect(0, 0, w, h);
+    ctx.font = MONO; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    draw(ctx, w, h);
+  };
+  new ResizeObserver(paint).observe(canvas);
+  return { canvas, paint };
+}
+const line = (ctx, x0, y0, x1, y1, colour) => { ctx.strokeStyle = colour; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+
+// Prime spikes, from PLAN.md's appendix, where it was tested against mpmath. T is where the ride is: the zeros south of it are
+// in the sum, each fading in as it is passed. As T grows a prime tends to 1, a prime power p^m to 1/m and everything else to 0.
+// No prime is given to this sum.
+function spikes(x, T, zeros) {
+  if (!(T > 0)) return 0;
+  let s = 0;
+  for (const g of zeros) { if (g >= T) break; s -= (1 - g / T) * Math.cos(g * Math.log(x)); }
+  return s * (4 * Math.PI / T) * Math.sqrt(x) / Math.log(x);
+}
+
 // ---- the ten steps -----------------------------------------------------------------------------
 // id: the name in the URL hash. learn: the anchor of the long version in learn.html. world: the step runs over the 3D world.
 // mount(stage, ui) builds the interaction and may return a cleanup. ui.done() shows the payoff, ui.say(html) replaces the instruction.
@@ -127,7 +160,34 @@ const STEPS = [
     idea: 'Add the waves of the zeros you have passed, and spikes rise at 2, 3, 5, 7, 11.',
     todo: 'Ride north again.',
     payoff: 'No prime was given to the sum. The small bumps at 4, 8 and 9 are prime powers. Zeros and primes encode each other.',
-    fig: '2, 3, 5, 7, 11, …' },
+    legend: [['blue', '', 'the sum of the waves, over the numbers 1.5 to 50 (log scale)']],
+    mount(stage, ui) {
+      // The axis starts at 1.5: at x = 1, ln x is 0 and the sum is infinite. It is spaced evenly in ln x, so every spike is as wide as the next.
+      const X0 = 1.5, X1 = 50, SPAN = Math.log(X1 / X0), PRIMES = Array.from({ length: X1 - 1 }, (_, k) => k + 2).filter(isPrime);
+      let T = 0, named = false;                              // named: far enough north that every prime up to 50 has its spike
+      const fig = plot(stage, 'clamp(104px, 22vh, 190px)', (ctx, w, h) => {
+        const px = x => 8 + (w - 16) * Math.log(x / X0) / SPAN, base = h - 22, unit = (base - 20) / 1.4, zero = base - 0.3 * unit, py = v => zero - v * unit;   // room for dips below zero
+        line(ctx, 0, zero + 0.5, w, zero + 0.5, C.hair);
+        line(ctx, 0, base + 0.5, w, base + 0.5, C.strong);
+        ctx.fillStyle = C.muted; ctx.textAlign = 'center';
+        for (let n = 2, last = -99; n <= X1; n++) {            // every whole number has a tick, and its numeral wherever there is room
+          const x = px(n);
+          line(ctx, x, base, x, base + 4, C.strong);
+          if (x - last >= 17) { ctx.fillText(n, x, h - 6); last = x; }
+        }
+        ctx.strokeStyle = C.blue; ctx.lineWidth = 1.5; ctx.beginPath();
+        for (let i = 0, n = Math.round(w * 1.5); i <= n; i++) { const x = X0 * Math.exp(SPAN * i / n); ctx.lineTo(px(x), py(spikes(x, T, ZEROS))); }
+        ctx.stroke();
+        // The names come from a sieve, separately from the sum, and only once the spikes are standing.
+        if (named) { ctx.fillStyle = C.blue; let last = -99; for (const p of PRIMES) { const x = px(p); if (x - last >= 15) { ctx.fillText(p, x, py(spikes(p, T, ZEROS)) - 5); last = x; } } }
+        ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(`${ZEROS.filter(g => g < T).length} waves added`, w - 8, 14);
+      });
+      return ride(stage, ui, (t, passed) => {
+        $('passed').textContent = `${passed} of 100 zeros passed`;
+        if (Math.abs(t - T) < 0.02) return;
+        T = t; named ||= T >= 150; fig.paint();
+      });
+    } },
 
   { id: 'suppose', learn: 'strip', title: 'Suppose one zero were off the line',
     idea: 'A nontrivial zero at β + iγ has a twin at 1 − β + iγ, mirrored across the line.',
