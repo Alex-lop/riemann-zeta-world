@@ -188,7 +188,13 @@
   .meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--blue); transition: width .3s; }
   .meter b { position: absolute; top: -7px; bottom: -7px; width: 2px; background: var(--ink); }
   .costs { position: relative; display: flex; height: 26px; margin: 2.4rem 0 0; border: 1px solid var(--hair-strong); background: var(--bg-plot); }
-  .costs i { height: 100%; background: var(--ink); } .costs i + i { background: var(--muted); }
+  .costs i { height: 100%; padding-left: 6px; overflow: hidden; white-space: nowrap; background: var(--ink); color: var(--bg); font: 400 11px/24px var(--mono); } .costs i + i { background: var(--muted); }
+  /* A longer explanation beside a figure, its heading, and the table of a chart's points. */
+  .part { margin: 0 0 .6rem; color: var(--muted); font: 650 .7rem/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  .explain { margin: 0 0 1rem; font-size: .92rem; } .explain p { margin: 0 0 .6rem; }
+  .coords { margin-top: .8rem; border-collapse: collapse; font: 400 .74rem/1.75 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .coords th { padding: 0 1.4rem 0 0; font-weight: 400; text-align: left; letter-spacing: .06em; text-transform: uppercase; font-size: .66rem; } .coords td { padding: 0 1.4rem 0 0; } .coords td:first-child, .coords td:last-child { color: var(--ink); }
+  .coords tr:last-child td { border-top: 1px solid var(--hair); }
   .costs b { position: absolute; left: 19.8%; top: -7px; bottom: -7px; width: 2px; background: var(--ink); }
   .costs span { position: absolute; left: 19.8%; bottom: calc(100% + 9px); transform: translateX(-20%); font: 400 11px/1 var(--mono); color: var(--muted); white-space: nowrap; }
   .dim { color: var(--muted); }
@@ -319,6 +325,6 @@
 <button type="button" class="motion-dock" id="motion">Pause motion</button>
 
 <script src="./guide/field.js" defer></script>
-<script type="module" src="./guide/guide.js?v=12"></script>
+<script type="module" src="./guide/guide.js?v=13"></script>
 </body>
 </html>

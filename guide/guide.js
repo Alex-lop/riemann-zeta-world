@@ -229,12 +229,14 @@ const STEPS = [
       const input = box.querySelector('input'), read = el('<p class="readout"></p>');
       let px = v => v;
       const fig = plot(stage, 'clamp(200px, 42vh, 330px)', (ctx, w, h) => {
-        const x = +input.value, L = 30, base = h - 26, py = v => base - (base - 12) * v / TOP;
+        const x = +input.value, L = 46, base = h - 42, py = v => base - (base - 12) * v / TOP;
         px = v => L + (w - L - 12) * (v - X0) / (X1 - X0);
         ctx.fillStyle = C.muted; ctx.textAlign = 'right';
         for (let v = 10; v < TOP; v += 10) { line(ctx, L, py(v) + 0.5, w - 12, py(v) + 0.5, C.hair); ctx.fillText(v, L - 6, py(v) + 4); }
         ctx.textAlign = 'center';
-        for (const v of [2, 50, 100, 150, 200]) ctx.fillText(v, px(v), h - 6);
+        for (const v of [2, 50, 100, 150, 200]) ctx.fillText(v, px(v), h - 24);
+        ctx.fillText('x, the numbers so far', (L + w - 12) / 2, h - 7);
+        ctx.save(); ctx.translate(13, (12 + base) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('how many primes up to x', 0, 0); ctx.restore();
         line(ctx, L, base + 0.5, w - 12, base + 0.5, C.strong);
         for (const p of PRIMES) line(ctx, Math.round(px(p)) + 0.5, base - (p <= x ? 9 : 4), Math.round(px(p)) + 0.5, base, p <= x ? C.blue : C.strong);   // a tick on each prime
         ctx.strokeStyle = C.ink; ctx.beginPath();
@@ -492,16 +494,24 @@ const STEPS = [
     more: `<details><summary>Where groups come in</summary>As the guides describe it, one step of the argument averages over the characters of a finite abelian group. <a href="./learn.html#characters">The long version teaches them in six steps.</a></details>
       <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>` + FULL,
     mount(stage, ui) {
-      // Both pictures are schematic, as on proof.html: seven of these primes fit under the bound and the eighth does not.
-      const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19], CAP = 1e6, TOP = 8, X = 10000, on = new Set();
-      const one = el(`<div><p class="chips">${PRIMES.map(p => `<button type="button" class="btn chip" aria-pressed="false">${p}</button>`).join('')}</p>
+      // Two pictures of the shape of the argument, as on proof.html, and both schematic: seven of these primes fit under the bound
+      // and the eighth does not, and x is fixed at 10,000, the worked example of content y2026-shape. The explanations are cut from
+      // content y2026-size and y2026-shape.
+      const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19], CAP = 1e6, TOP = 8, X = 10000, on = new Set(), n = v => Math.round(v).toLocaleString('en');
+      const one = el(`<div><p class="part">1 · Divisibility forces size</p>
+        <p class="explain">If a nonzero whole number is divisible by several primes, and its size is known, the product of those primes is at most that size. Two facts about one number give an upper bound on primes.</p>
+        <p class="chips">${PRIMES.map(p => `<button type="button" class="btn chip" aria-pressed="false">${p}</button>`).join('')}</p>
         <div class="meter"><i></i><b></b><span>a bound on its size</span></div><p class="readout"></p>
         <p class="small">A metaphor: the shape of the argument, not its real objects. Those are theta lifts between unitary groups, named here and not taught.</p></div>`);
-      const two = el(`<div hidden><p class="small">The construction is repeated m times. One cost grows like x/m and the other like m. Their sum is least at m = √x, and that is where the ½ comes from.</p>
+      const two = el(`<div><p class="part">2 · Balancing two costs</p>
+        <div class="explain">
+          <p><b>x</b> is how far up the number line the count of prime powers runs: here, up to 10,000. <b>m</b> is how many times the argument repeats its construction.</p>
+          <p>As the guides describe it, a choice of m brings two errors. One shrinks as m grows, like <b>x/m</b>. The other grows with it, like <b>m</b>. What the argument pays is their sum, <b>x/m + m</b>.</p>
+          <p>With few repeats x/m is large, and with many, m is. The sum is least where the two are equal, at <b>m = √x</b>. That square root is the ½ of the hypothesis.</p>
+        </div>
         <label class="slide" style="text-transform:none">m = 10<input type="range" min="1" max="3" step="0.01" value="1" aria-label="The number of repeats, m">1,000</label>
         <div class="costs" aria-hidden="true"><i></i><i></i><b></b><span>the least their sum can be: 200</span></div>
-        <p class="legend"><span><i class="sw dot inked"></i>x/m</span><span><i class="sw dot dim"></i>m</span><span>the bar is their sum: slide m and one cost is traded for the other</span></p>
-        <p class="readout"></p></div>`);
+        <p class="legend"><span><i class="sw dot inked"></i>x/m</span><span><i class="sw dot dim"></i>m</span><span>the bar is their sum: slide m and one cost is traded for the other</span></p></div>`);
       stage.append(one, two);
       one.querySelector('b').style.left = one.querySelector('span').style.left = `${Math.log10(CAP) / TOP * 100}%`;
       const squeeze = () => {
@@ -511,28 +521,54 @@ const STEPS = [
           : `divisible by ${list.join(', ')}: at least <span class="blue">${list.join(' × ')}${list.length > 1 ? ' = ' + least.toLocaleString('en') : ''}</span>` + (least > CAP ? '. Over the bound: only so many primes fit.' : '');
       };
       const input = two.querySelector('input');
-      const fig = plot(two, '150px', (ctx, w, h) => {      // x/m, m and their sum against m, both axes logarithmic
-        const px = e => 12 + (w - 24) * (e - 1) / 2, py = v => h - 16 - (h - 34) * (Math.log10(v) - 1) / 2.1, m = 10 ** +input.value;
-        for (const [cost, colour, width] of [[e => X / 10 ** e, C.muted, 1], [e => 10 ** e, C.muted, 1], [e => X / 10 ** e + 10 ** e, C.ink, 1.5]]) {
+      // The chart: m across and cost up, both logarithmic, with numbers on both axes. Each curve's point at the chosen m is
+      // marked, and the table under the chart gives its coordinates.
+      const fig = plot(two, 'clamp(250px, 40vh, 330px)', (ctx, w, h) => {
+        const L = 60, R = 16, T = 18, B = 44, e0 = +input.value, m = 10 ** e0;
+        const px = e => L + (w - L - R) * (e - 1) / 2, py = v => h - B - (h - B - T) * (Math.log10(v) - 1) / 2.12;
+        ctx.fillStyle = C.muted;
+        for (const v of [10, 100, 1000]) {
+          line(ctx, L, Math.round(py(v)) + 0.5, w - R, Math.round(py(v)) + 0.5, C.hair); ctx.textAlign = 'right'; ctx.fillText(n(v), L - 8, py(v) + 4);
+          line(ctx, Math.round(px(Math.log10(v))) + 0.5, T, Math.round(px(Math.log10(v))) + 0.5, h - B, C.hair); ctx.textAlign = 'center'; ctx.fillText(n(v), px(Math.log10(v)), h - B + 16);
+        }
+        ctx.fillText('m, the number of repeats', (L + w - R) / 2, h - 8);
+        ctx.save(); ctx.translate(13, (T + h - B) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('cost', 0, 0); ctx.restore();
+        line(ctx, L + 0.5, T, L + 0.5, h - B, C.strong); line(ctx, L, h - B + 0.5, w - R, h - B + 0.5, C.strong);
+        const curves = [[e => X / 10 ** e, C.muted, 1], [e => 10 ** e, C.muted, 1], [e => X / 10 ** e + 10 ** e, C.ink, 1.5]];
+        for (const [cost, colour, width] of curves) {
           ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.beginPath();
           for (let e = 1; e <= 3.001; e += 0.02) ctx.lineTo(px(e), py(cost(e)));
           ctx.stroke();
         }
-        ctx.lineWidth = 1; line(ctx, px(2) + 0.5, py(200), px(2) + 0.5, h - 16, C.strong);
-        ctx.fillStyle = C.muted; ctx.fillText('x/m', px(1) + 4, py(1000) + 16); ctx.textAlign = 'right'; ctx.fillText('m', px(3) - 4, py(1000) + 16);
-        ctx.textAlign = 'center'; ctx.fillText('m = √x = 100', px(2), h - 4); ctx.fillStyle = C.ink; ctx.fillText('x/m + m', px(2), py(200) - 10);
-        ctx.fillRect(px(+input.value) - 4.5, py(X / m + m) - 4.5, 9, 9);
+        ctx.lineWidth = 1; ctx.fillStyle = C.muted;
+        ctx.textAlign = 'left'; ctx.fillText('x/m', px(1) + 8, py(1000) + 18); ctx.textAlign = 'right'; ctx.fillText('m', px(3) - 8, py(1000) + 18);
+        ctx.textAlign = 'center'; ctx.fillStyle = C.ink; ctx.fillText('x/m + m', px(1.5), py(X / 10 ** 1.5 + 10 ** 1.5) - 12);
+        ctx.strokeStyle = C.ink; ctx.strokeRect(Math.round(px(2)) - 6.5, Math.round(py(200)) - 6.5, 13, 13);   // the least point, where the two costs cross
+        ctx.fillStyle = C.muted; ctx.fillText('least: (100, 200)', px(2), py(200) - 14);
+        line(ctx, Math.round(px(e0)) + 0.5, T, Math.round(px(e0)) + 0.5, h - B, C.strong);                     // where m is now
+        for (const [cost, colour] of curves) { ctx.fillStyle = colour; ctx.fillRect(px(e0) - 4, py(cost(e0)) - 4, 8, 8); }
+        ctx.fillStyle = C.ink; ctx.textAlign = e0 > 2.5 ? 'right' : 'left'; ctx.fillText(`m = ${n(m)}`, px(e0) + (e0 > 2.5 ? -8 : 8), T + 10);
       });
-      const balance = () => { const m = Math.round(10 ** +input.value), [a, b] = two.querySelectorAll('.costs i'); a.style.width = `${X / m / 10.1}%`; b.style.width = `${m / 10.1}%`;   // of 1,010, the most the sum is here
-        two.querySelector('.readout').textContent = `x = 10,000 and m = ${m.toLocaleString('en')}: x/m + m = ${Math.round(X / m).toLocaleString('en')} + ${m.toLocaleString('en')} = ${Math.round(X / m + m).toLocaleString('en')}`; fig.paint(); };
+      two.append(el('<table class="coords" aria-live="polite"></table>'));   // under the chart: the coordinates of its marked points
+      const balance = () => {
+        const m = Math.round(10 ** +input.value), [a, b] = two.querySelectorAll('.costs i');
+        a.style.width = `${X / m / 10.1}%`; b.style.width = `${m / 10.1}%`;   // of 1,010, the most the sum is here
+        a.textContent = `x/m = ${n(X / m)}`; b.textContent = `m = ${n(m)}`;
+        two.querySelector('.coords').innerHTML = `<tr><th>curve</th><th>at m = ${n(m)}</th><th>point (m, cost)</th></tr>
+          <tr><td>x/m</td><td>10,000 / ${n(m)} = ${n(X / m)}</td><td>(${n(m)}, ${n(X / m)})</td></tr>
+          <tr><td>m</td><td>${n(m)}</td><td>(${n(m)}, ${n(m)})</td></tr>
+          <tr><td>x/m + m</td><td>${n(X / m)} + ${n(m)} = ${n(X / m + m)}</td><td>(${n(m)}, ${n(X / m + m)})</td></tr>
+          <tr><td>the least</td><td>100 + 100 = 200, at m = √x = 100</td><td>(100, 200)</td></tr>`;
+        fig.paint();
+      };
       one.addEventListener('click', e => {
         const chip = e.target.closest('.chip'); if (!chip) return;
         const p = +chip.textContent; on.has(p) ? on.delete(p) : on.add(p);
         chip.setAttribute('aria-pressed', on.has(p)); squeeze();
-        if (two.hidden) { two.hidden = false; ui.say('Now slide m.'); ui.done(); balance(); }   // the second thing to do, in place of the first
+        ui.say('Now slide m.'); ui.done();                   // the second thing to do, in place of the first
       });
-      input.addEventListener('input', balance);
-      squeeze();
+      input.addEventListener('input', () => { balance(); ui.done(); });
+      squeeze(); balance();
     } },
 
   { id: 'checked', tab: 'The record', learn: 'y2026-checks', title: 'Released, checked, still needed',
