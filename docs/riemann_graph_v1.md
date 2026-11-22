@@ -210,6 +210,57 @@ The curve passes through the origin once for each zero on the critical line. The
 
 ---
 
+## 5. The ξ tab
+
+The tab bar at the top of the controls switches the terrain between $`\zeta(s)`$ and Riemann's completed function
+
+```math
+\xi(s) = \tfrac12\, s(s-1)\, \pi^{-s/2}\, \Gamma\!\left(\tfrac s2\right) \zeta(s).
+```
+
+The choice is kept in the URL (`#xi`), and switching only flips the `uMode` uniform.
+
+### Why ξ
+
+- $`s-1`$ cancels the pole of $`\zeta`$ at $`s = 1`$.
+- $`\Gamma(s/2)`$ has poles at $`s = 0, -2, -4, \dots`$. They cancel the trivial zeros of $`\zeta`$, and the factor $`s`$ cancels the pole at $`0`$.
+- The result is entire, its zeros are exactly the nontrivial zeros of $`\zeta`$, and it satisfies $`\xi(s) = \xi(1-s)`$ and $`\xi(\bar s) = \overline{\xi(s)}`$. Together these give $`\xi(1-\bar s) = \overline{\xi(s)}`$, so $`|\xi|`$ is mirror-symmetric across $`\sigma = \tfrac12`$ and $`\xi`$ is real on that line.
+
+### Computing it
+
+Using $`\tfrac s2\,\Gamma(\tfrac s2) = \Gamma(\tfrac s2 + 1)`$:
+
+```math
+\xi(s) = (s-1)\zeta(s)\cdot e^{G(s)}, \qquad G(s) = \log\!\left(\pi^{-s/2}\,\Gamma\!\left(\tfrac s2 + 1\right)\right).
+```
+
+- $`(s-1)\zeta(s) = \eta(s)\,\dfrac{s-1}{1-2^{1-s}}`$ (`sm1Zeta`). The fraction tends to $`1/\ln 2`$ at $`s = 1`$, which is used directly there.
+- $`\log\Gamma(z)`$ (`logGamma`) uses the shift $`\Gamma(z) = \Gamma(z+8)/\bigl(z(z+1)\cdots(z+7)\bigr)`$ and then Stirling's series up to $`1/(1260 w^5)`$. Here $`\operatorname{Re} z = \sigma/2 + 1 \ge \tfrac12`$, so the shift keeps $`|w| \ge 8.5`$.
+
+### Scaling
+
+$`|\xi(\tfrac12 + it)|`$ decays like $`e^{-\pi t/4}`$, which is about $`10^{-31}`$ at $`t = 100`$. The terrain therefore plots
+
+```math
+\tilde\xi(s) = \frac{\xi(s)}{N(t)}, \qquad N(t) = \bigl|(s-1)\,e^{G(s)}\bigr|_{s = \frac12 + it}.
+```
+
+$`N(t)`$ is positive and does not depend on $`\sigma`$, so it changes neither the zeros, the phase, nor the mirror symmetry. On the critical line $`|\tilde\xi| = |\zeta|`$, so the white line has the same height in both tabs. In fact $`\tilde\xi(\tfrac12 + it) = -Z(t)`$.
+
+The output-plane panel becomes a graph of $`\tilde\xi(\tfrac12 + it)`$ against $`t`$, since a real-valued curve would only slide along the real axis.
+
+**Checks** (`xi`, `xiScaled` in double precision):
+
+| Quantity | Computed | Expected |
+| --- | --- | --- |
+| $`\xi(0)`$, $`\xi(1)`$ | 0.50000000006, 0.50000000004 | $`\tfrac12`$ |
+| $`\xi(2)`$ | 0.52359877563 | $`\pi/6 = 0.52359877560`$ |
+| $`\xi(\tfrac12)`$ | 0.49712077824 | 0.49712077818 |
+| $`\tilde\xi(\sigma+it)`$ vs $`\overline{\tilde\xi(1-\sigma+it)}`$, $`\sigma \in [-1, \tfrac12]`$, $`t \le 110`$ | max relative difference $`10^{-9}`$ | equal |
+| $`\tilde\xi(\tfrac12 + it) + Z(t)`$ | $`< 10^{-8}`$ | 0 |
+
+---
+
 ## Known limits
 
 - **Height.** The view stops at $`t = 110`$ because of the shader's precision and its 128-term limit. Going higher would need either the Riemann–Siegel formula in the shader, or computing on the CPU and uploading the result as a texture.
