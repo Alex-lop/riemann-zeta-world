@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Step 4 in Detail · Zeta World</title>
+  <meta name="description" content="Where the ceiling on the primes comes from in the announced proof: six sub-steps, 4a to 4f." />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #12151d;
+      --text: #e6e8ee;
+      --muted: #9aa1b2;
+      --border: rgba(255, 255, 255, 0.12);
+      --gold: #f5c542;
+      --green: #7dffb2;
+      --red: #ff6b6b;
+      --cyan: #6fd6ff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: var(--cyan); }
+    header, section, footer { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+    header { padding-top: 16px; }
+    .back { font-size: 13px; text-decoration: none; margin-right: 14px; }
+    h1 { font-size: 24px; line-height: 1.2; margin: 8px 0 4px; }
+    .lede { color: var(--muted); max-width: 900px; margin: 0 0 8px; font-size: 14px; }
+    nav.sub { position: sticky; top: 0; z-index: 5; background: rgba(11, 13, 18, 0.92); backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border); margin-top: 10px; }
+    nav.sub div { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+    nav.sub a { text-decoration: none; color: var(--muted); font-size: 13px; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border); }
+    nav.sub a b { color: var(--gold); font-weight: 600; margin-right: 4px; }
+    nav.sub a:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+    section { padding-top: 34px; scroll-margin-top: 52px; }
+    .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 26px; align-items: start; }
+    .num { color: var(--gold); font: 600 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
+    h2 { font-size: 20px; line-height: 1.25; margin: 4px 0 8px; }
+    .text p { margin: 0 0 9px; color: #cfd3dc; font-size: 14.5px; }
+    .text p.small { font-size: 13px; color: var(--muted); }
+    .text details { color: #cfd3dc; font-size: 14px; }
+    .text summary { cursor: pointer; color: var(--cyan); font-size: 13px; margin-bottom: 4px; }
+    .text code { font-size: 12.5px; color: var(--muted); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+    canvas { display: block; width: 100%; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .controls label { display: block; }
+    .controls b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .controls input[type=range] { width: 100%; }
+    .controls select { margin-left: 4px; background: #1a1e28; color: var(--text); border: 1px solid var(--border);
+      border-radius: 5px; padding: 2px 4px; font: inherit; }
+    .readout { margin-top: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); min-height: 3em; }
+    .readout .bad { color: var(--red); }
+    .tag { display: inline-block; font-size: 11px; border-radius: 999px; padding: 0 8px; margin-left: 6px; vertical-align: 2px;
+      border: 1px solid var(--border); color: var(--muted); }
+    .tag.real { color: var(--green); border-color: rgba(125, 255, 178, 0.4); }
+    .tag.schem { color: var(--gold); border-color: rgba(245, 197, 66, 0.4); }
+    footer { padding-top: 40px; padding-bottom: 48px; color: var(--muted); font-size: 13.5px; max-width: 1120px; }
+    @media (max-width: 860px) {
+      .step { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .controls { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" href="./proof.html">← The proof in four pictures</a>
+    <a class="back" href="./landscape.html">Zeta World explorer</a>
+    <h1>Step 4 in detail: where the ceiling comes from</h1>
+    <p class="lede">Step 3 needs a ceiling: a weighted count of primes that never rises above about x<sup>½ + 9ε</sup> on
+      long windows. The announced proof gets it from arithmetic, in six moves. Panels marked <span class="tag real">real data</span>
+      use actual primes and the proof's actual parameters; <span class="tag schem">schematic</span> panels show the shape of an idea.
+      This follows the account in <a href="https://github.com/nasqret/riemann-rev">riemann-rev</a>; the proof is
+      machine-checked but not yet refereed.</p>
+  </header>
+
+  <nav class="sub" aria-label="Sub-steps">
+    <div>
+      <a href="#s4a"><b>4a</b>Divisibility caps size</a>
+      <a href="#s4b"><b>4b</b>Inert primes</a>
+      <a href="#s4c"><b>4c</b>ASK − MAIN</a>
+      <a href="#s4d"><b>4d</b>The √x chain</a>
+      <a href="#s4e"><b>4e</b>Removing the twist</a>
+      <a href="#s4f"><b>4f</b>Paying for losses</a>
+    </div>
+  </nav>
+
+  <section id="s4a">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4a <span class="tag schem">schematic</span></div>
+        <h2>Divisibility caps size</h2>
+        <p>A whole number that is not zero and is divisible by many primes cannot be small: it is at least their
+          product. Flip that around: if you know a number is small, only so many primes can divide it.</p>
+        <p>That is the only source of an <i>upper</i> bound in the whole argument.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>The proof uses a lattice version, Bost's slope inequality. Picture a lattice as a grid of points with
+            integer coordinates; its slope measures how finely its points are packed. If an injective integral map sends
+            lattice A into lattice B and stretches nothing by more than a factor C, then
+            slope(A) ≤ max slope(B) + log C. Divisibility by many primes pushes the slope of A up; the size of the map
+            caps it. (Archive: <code>slopeInequality_of</code>, checked on its own.)</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="squeeze" aria-label="A stacked bar of prime factors against a size limit"></canvas>
+        <div class="controls" style="grid-template-columns:1fr">
+          <label>Primes dividing the number: k = <b id="kVal"></b><input id="k" type="range" min="1" max="15" step="1" value="6" /></label>
+        </div>
+        <div class="readout" id="r4a"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4b">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4b <span class="tag real">real data</span></div>
+        <h2>Inert primes supply the divisibility</h2>
+        <p>The proof works in an imaginary quadratic field ℚ(√−d). Every prime either <b>splits</b> there, stays
+          <b>inert</b>, or ramifies; the quadratic character χ tells which (+1, −1, 0).</p>
+        <p>The numbers it builds are divisible at the inert primes. Adding up what each one contributes gives ASK, a ramp-weighted
+          sum over inert primes.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>The numbers come from theta functions of fields with complex multiplication. At an inert prime, a Frobenius
+            congruence makes certain 2×2 determinants divisible by √p (archive: <code>key_minor_dvd</code>, checked on its own).</p>
+          <p>The weight 1 − χ(n) is 2 at inert primes, 0 at split ones and 1 at ramified ones, so
+            ASK(a) = Σ Λ(n)(1 − χ(n)) max(a/n − 1, 0). Prime powers count too: an inert prime squared has χ = +1 and adds nothing.</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="inert" aria-label="Primes colored by split, inert or ramified, with each prime power's contribution to ASK"></canvas>
+        <div class="controls">
+          <label>Field <select id="field4b"></select></label>
+          <label>Ramp length a = <b id="aVal"></b><input id="a" type="range" min="10" max="200" step="1" value="60" /></label>
+        </div>
+        <div class="readout" id="r4b"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4c">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4c <span class="tag real">real data</span></div>
+        <h2>Size gives MAIN, and ASK − MAIN is a prime sum</h2>
+        <p>The size of the numbers can be bounded from above. Its expected value is MAIN. Subtract, and everything large
+          cancels:</p>
+        <p style="text-align:center;font-family:ui-monospace,Menlo,monospace">ASK − MAIN = G(a) − g<sub>χ</sub>(a)</p>
+        <p>the ζ prime sum of step 2 minus its twist by χ. Divisibility cannot exceed what the size allows, so this prime
+          sum is capped from above. That is the one-sided bound step 3 needs.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>MAIN(a) = a(log a − 1 − γ + L′/L(1, χ)), with equal weights. The constant L′/L(1, χ) comes from the periods of
+            the theta functions (the Chowla–Selberg formula). The chart computes both ASK and MAIN from every prime up to
+            10⁶: they agree to about one part in a million, and their difference stays on the scale of √a.</p>
+          <p class="small">The comparison that turns the geometric data into this prime-sum bound is checked in the archive as
+            an implication (<code>core_gm</code>), with its geometric inputs stated as hypotheses.</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="askmain" aria-label="ASK and MAIN from the primes up to a million, and their difference divided by the square root of a"></canvas>
+        <div class="controls" style="grid-template-columns:1fr">
+          <label>Field <select id="field4c"></select></label>
+        </div>
+        <div class="readout" id="r4c"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4d">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4d <span class="tag real">real parameters</span></div>
+        <h2>A chain of about √x theta lifts</h2>
+        <p>One application of 4b–4c gives a bound that is too weak. The proof repeats the construction m times, in a
+          chain of theta lifts between unitary groups.</p>
+        <p>The error then has two terms, one like x/m and one like m. Their sum is smallest at m = √x, and that is where the
+          square root in the Riemann hypothesis comes from in this argument.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>The source takes m between √(xδ) and 2√(xδ) with δ = x<sup>−ε/8</sup>, so m ≈ x<sup>½ − ε/16</sup>, slightly
+            under √x. The comparison step demands x<sup>½ − ε</sup> ≤ m ≤ x<sup>½ + ε/2</sup> (the shaded window), and the
+            source's m always lies inside it. Denominators are tracked along the chain (archive: <code>ChainInt</code>).</p>
+          <p class="small">riemann-rev reports the two cost terms but does not give an intuitive reason for each one's shape.</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="balance" aria-label="The costs x over m and m, with the source's chain length and the allowed window"></canvas>
+        <div class="controls">
+          <label>x = 10<sup><b id="lxVal"></b></sup><input id="lx" type="range" min="2" max="12" step="0.1" value="6" /></label>
+          <label>ε = <b id="epsVal"></b><input id="eps" type="range" min="0.002" max="0.019" step="0.001" value="0.01" /></label>
+        </div>
+        <div class="readout" id="r4d"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4e">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4e <span class="tag schem">schematic</span></div>
+        <h2>Removing the twist: averaging keeps only some characters</h2>
+        <p>The bound from 4c mixes the wanted prime sum with an unwanted twist. The proof removes it with Fourier
+          analysis on a finite abelian group: average over a subgroup, and every character that is not identically 1 on
+          that subgroup cancels out exactly.</p>
+        <p>What survives gets positive weights, which is what step 3's "no cancellation" condition needs.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>The picture uses the cyclic group ℤ/12. Each row is a character χ<sub>k</sub>; the hands show its values on the
+            subgroup, and the bar shows their average, which is either 1 or exactly 0.</p>
+          <p>In the proof the group is (ℤ/2)² × A with a translation subgroup A₀. The kept characters that belong to the
+            target carry the weights of the level; the other survivors ("discarded survivors") are bounded separately by
+            4o·x<sup>½+ε</sup>, using a square-root bound for finitely many specific characters. The fields have to be rebuilt at
+            every scale x, with auxiliary primes and Behrend sets.</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="average" aria-label="Characters of the group of order 12 and their averages over a subgroup"></canvas>
+        <div class="controls" style="grid-template-columns:1fr">
+          <label>Size of the subgroup
+            <select id="sub">
+              <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
+              <option value="4">4</option><option value="6">6</option><option value="12">12</option>
+            </select>
+          </label>
+        </div>
+        <div class="readout" id="r4e"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s4f">
+    <div class="step">
+      <div class="text">
+        <div class="num">STEP 4f <span class="tag real">real budget</span></div>
+        <h2>Paying for the losses: ½ + 9ε</h2>
+        <p>Every step above loses a little: each loss is a factor x<sup>(something)·ε</sup>. Added up, they cost exactly
+          9ε, so the ceiling is x<sup>½ + 9ε</sup>.</p>
+        <p>The proof picks ε <i>after</i> the hypothetical zero, small enough that the ceiling stays below the zero's growth
+          x<sup>β</sup>. Then step 3 applies.</p>
+        <details>
+          <summary>Read more</summary>
+          <p>The staircase, from riemann-rev's exact bookkeeping: 13/8 for the worst cost term of the √x balance, 5 for the
+            geometric error (C* = e_D + e_L + 3 with e_D = 2, e_L = 0), 1 for the density of the averaging set, 3/8 to absorb
+            a constant 26, and 1 to restore the discarded characters.</p>
+          <p>Divisibility can also fall slightly short of the ideal. Galois cohomology along cyclotomic towers (Iwasawa theory,
+            with Ferrero–Washington and Poitou–Tate duality) bounds that shortfall uniformly over a whole window; it enters the
+            geometric error.</p>
+          <p>For a zero with real part β, the proof takes θ = ½ + ½·min(β − ½, ½) and any ε ≤ (θ − ½)/9.</p>
+        </details>
+      </div>
+      <div class="card">
+        <canvas id="budget" aria-label="The losses in units of epsilon adding up to 9, and the resulting ceiling below the zero's growth"></canvas>
+        <div class="controls" style="grid-template-columns:1fr">
+          <label>Real part of the hypothetical zero β = <b id="beta4Val"></b><input id="beta4" type="range" min="0.51" max="0.99" step="0.005" value="0.65" /></label>
+        </div>
+        <div class="readout" id="r4f"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Putting 4a–4f together: divisibility at inert primes (4b), weighed against size (4a, 4c), repeated about √x times (4d),
+    cleaned of unwanted characters (4e) and paid for in ε (4f), caps the weighted prime count at x<sup>½ + 9ε</sup> on
+    long windows. That is the ceiling of step 3.
+    <br /><br /><a href="./proof.html">← Back to the proof in four pictures</a>
+  </footer>
+
+  <script type="module" src="./step4.js"></script>
+</body>
+</html>

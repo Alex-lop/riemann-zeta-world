@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { zeta, xiScaled, termsFor, borweinWeights, criticalZeros } from './zeta.js';
+import { createPrimesView } from './primesView.js';
+import { primitiveCharacters, moduliWithPrimitive, lChi, lambdaScaled, lZeros, EM_COEF } from './dirichlet.js';
 
 // ---- Layout: how math units map to world units --------------------------------
 const SIGMA_MIN = -1, SIGMA_MAX = 2; // real part of s shown
@@ -12,9 +14,16 @@ const SX = 4;                         // world units per unit of sigma
 const SZ = 0.6;                       // world units per unit of t
 const H = 1.6;                        // world units per unit of log(1 + |zeta|)
 const LOG_CAP = 3.0;                  // clip the pole at s = 1
+const L_T_MAX = 60;                   // the L(s, chi) tab covers -60 <= t <= 60
+const L_Q_MAX = 13;                   // largest modulus offered (shader term budget)
+const MAX_CHI = 16;                   // size of the character array in the shader
+const MAX_D = L_Q_MAX * (Math.ceil(L_T_MAX / Math.PI) + 4); // direct terms of the L sum
 
 let tStart = 10;
-let mode = location.hash === '#xi' ? 'xi' : 'zeta'; // which function the terrain shows
+const MODES = ['zeta', 'xi', 'dirichlet', 'primes'];
+const tStarts = { zeta: 10, dirichlet: -20 }; // each 3D family keeps its own window
+const group = (m) => (m === 'dirichlet' ? 'dirichlet' : 'zeta');
+let mode = MODES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'zeta'; // the open tab
 const tCenter = () => tStart + WINDOW / 2;
 const xOf = (sigma) => (sigma - 0.5) * SX;
 const zOf = (t) => -(t - tCenter()) * SZ;
@@ -48,7 +57,11 @@ const vertexShader = /* glsl */ `
   uniform vec2 uSigma;   // (min, max)
   uniform vec2 uT;       // (min, max)
   uniform float uTc, uSX, uSZ, uH, uCap;
-  uniform int uMode;     // 0: zeta(s), 1: xi(s) scaled by a positive function of t (see zeta.js)
+  uniform int uMode;     // 0: zeta, 1: xi (scaled), 2: L(s, chi), 3: Lambda(s, chi) (scaled; see dirichlet.js)
+  uniform vec2 uChi[${MAX_CHI}];  // chi(0), ..., chi(q-1)
+  uniform int uQ, uNd;   // modulus, direct terms per residue class
+  uniform float uParity, uLogQPi, uEpsHalf; // a, log(q/pi), arg(eps)/2
+  uniform float uEM[6];  // Euler–Maclaurin coefficients B_2k/(2k)!
   varying vec2 vZ;       // the plotted value
   varying vec3 vPos;
 
@@ -111,10 +124,64 @@ const vertexShader = /* glsl */ `
     return cmul(p, m * vec2(cos(g.y), sin(g.y)));
   }
 
+  vec2 npow(float x, float s, float t) { float L = log(x); return exp(-s * L) * vec2(cos(t * L), -sin(t * L)); }
+
+  // L(s, chi): q*N direct terms plus the Hurwitz tails zeta(s, N + a/q) by Euler–Maclaurin (lChi in dirichlet.js)
+  vec2 dirL(float s, float t) {
+    vec2 acc = vec2(0.0);
+    int total = uQ * uNd;
+    for (int n = 1; n <= ${MAX_D}; n++) {
+      if (n > total) break;
+      vec2 c = uChi[n - (n / uQ) * uQ];
+      if (c.x == 0.0 && c.y == 0.0) continue;
+      acc += cmul(c, npow(float(n), s, t));
+    }
+    vec2 tail = vec2(0.0);
+    for (int a = 1; a < ${MAX_CHI}; a++) {
+      if (a >= uQ) break;
+      vec2 c = uChi[a];
+      if (c.x == 0.0 && c.y == 0.0) continue;
+      float x = float(uNd) + float(a) / float(uQ);
+      float L = log(x);
+      vec2 xs = npow(x, s, t);
+      vec2 r = 0.5 * xs;
+      vec2 p = vec2(s, t);             // Pochhammer (s)_{2k+1}
+      float xp = 1.0 / x;
+      for (int k = 0; k < 6; k++) {
+        r += uEM[k] * xp * cmul(p, xs);
+        p = cmul(p, cmul(vec2(s + float(2 * k + 1), t), vec2(s + float(2 * k + 2), t)));
+        xp /= x * x;
+      }
+      // pole part, using sum chi(a) = 0: (x^(1-s) - 1)/(s-1) = -L (e^w - 1)/w, w = (1-s) L
+      vec2 w = vec2((1.0 - s) * L, -t * L);
+      vec2 fw = dot(w, w) < 1e-6
+        ? vec2(1.0, 0.0) + w / 2.0 + cmul(w, w) / 6.0
+        : cdiv(exp(w.x) * vec2(cos(w.y), sin(w.y)) - vec2(1.0, 0.0), w);
+      r -= L * fw;
+      tail += cmul(c, r);
+    }
+    return acc + cmul(npow(float(uQ), s, t), tail);
+  }
+
+  // Lambda(s, chi) / N(t), rotated by eps^(-1/2) so it is real on the critical line (lambdaScaled in dirichlet.js)
+  vec2 lambdaScaled(float s, float t) {
+    if (abs(s + uParity) < 1e-4 && abs(t) < 1e-4) s += 1e-3; // Gamma pole meets the trivial zero
+    vec2 l = dirL(s, t);
+    vec2 z = vec2(s + uParity, t) * 0.5;
+    vec2 g = logGamma(z) + z * uLogQPi;
+    vec2 z0 = vec2(0.5 + uParity, t) * 0.5;
+    float g0 = logGamma(z0).x + z0.x * uLogQPi;
+    float ph = g.y - uEpsHalf;
+    return cmul(l, exp(g.x - g0) * vec2(cos(ph), sin(ph)));
+  }
+
   void main() {
     float sigma = mix(uSigma.x, uSigma.y, uv.x);
     float t = mix(uT.x, uT.y, uv.y);
-    vZ = uMode == 1 ? xiScaled(sigma, t) : zeta(sigma, t);
+    vZ = uMode == 1 ? xiScaled(sigma, t)
+       : uMode == 2 ? dirL(sigma, t)
+       : uMode == 3 ? lambdaScaled(sigma, t)
+       : zeta(sigma, t);
     float y = uH * min(log(1.0 + length(vZ)), uCap);
     vPos = vec3((sigma - 0.5) * uSX, y, -(t - uTc) * uSZ);
     gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0);
@@ -155,6 +222,13 @@ const uniforms = {
   uH: { value: H },
   uCap: { value: LOG_CAP },
   uMode: { value: 0 },
+  uChi: { value: Array.from({ length: MAX_CHI }, () => new THREE.Vector2()) },
+  uQ: { value: 4 },
+  uNd: { value: 4 },
+  uParity: { value: 0 },
+  uLogQPi: { value: 0 },
+  uEpsHalf: { value: 0 },
+  uEM: { value: new Float32Array(EM_COEF.slice(0, 6)) },
 };
 
 const terrain = new THREE.Mesh(
@@ -188,6 +262,13 @@ function lineAlongT(sigma, color, opacity, y = 0.01) {
 
 const zeroGeom = new THREE.SphereGeometry(0.09, 16, 12);
 const zeroMat = new THREE.MeshBasicMaterial({ color: 0x7dffb2 });
+const trivialMat = new THREE.MeshBasicMaterial({ color: 0x9aa1b2 });
+
+// ---- The L(s, chi) tab state -------------------------------------------------------
+const L = { q: 4, index: 1, fn: 'L', ch: null, zeros: [] };
+const charCache = new Map();
+const charsOf = (q) => { if (!charCache.has(q)) charCache.set(q, primitiveCharacters(q)); return charCache.get(q); };
+const currentZeros = () => (mode === 'dirichlet' ? L.zeros : zeros);
 
 function rebuildOverlay() {
   overlay.clear();
@@ -204,13 +285,30 @@ function rebuildOverlay() {
     overlay.add(label(`t = ${t}`, '', new THREE.Vector3(xOf(SIGMA_MIN) - 0.9, 0, zOf(t))));
   }
 
-  zeros.forEach((t, i) => {
+  const dir = mode === 'dirichlet';
+  currentZeros().forEach((t, i) => {
     if (t < tStart || t > tStart + WINDOW) return;
     const m = new THREE.Mesh(zeroGeom, zeroMat);
     m.position.set(xOf(0.5), 0.02, zOf(t));
     overlay.add(m);
-    overlay.add(label(`#${i + 1}  ${t.toFixed(3)}`, 'zero', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(t))));
+    overlay.add(label(dir ? t.toFixed(3) : `#${i + 1}  ${t.toFixed(3)}`, 'zero', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(t))));
   });
+
+  // the real axis, and the trivial zero of L (Lambda has none: the Gamma factor cancels it)
+  if (dir && tStart <= 0 && tStart + WINDOW >= 0) {
+    const g = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(xOf(SIGMA_MIN), 0.01, zOf(0)), new THREE.Vector3(xOf(SIGMA_MAX), 0.01, zOf(0)),
+    ]);
+    overlay.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x9aa1b2, transparent: true, opacity: 0.6 })));
+    overlay.add(label('t = 0  (real axis)', '', new THREE.Vector3(xOf(SIGMA_MAX) + 1.6, 0, zOf(0) + 0.5)));
+    if (L.fn === 'L') {
+      const s0 = -L.ch.parity;
+      const m = new THREE.Mesh(zeroGeom, trivialMat);
+      m.position.set(xOf(s0), 0.02, zOf(0));
+      overlay.add(m);
+      overlay.add(label(`trivial zero s = ${s0 === 0 ? '0' : '−1'}`, '', new THREE.Vector3(xOf(s0), 0, zOf(0) - 0.6)));
+    }
+  }
 }
 
 // ---- Probe: a marker that rides the critical line -------------------------------
@@ -231,20 +329,34 @@ const curveCanvas = document.getElementById('curve');
 const ctx = curveCanvas.getContext('2d');
 
 const probeT = () => tStart + Number(probeInput.value) * WINDOW;
-const f = () => (mode === 'xi' ? xiScaled : zeta);
+const f = () => {
+  if (mode === 'xi') return xiScaled;
+  if (mode === 'dirichlet') return L.fn === 'L' ? (s, t) => lChi(L.ch.values, s, t) : (s, t) => lambdaScaled(L.ch, s, t);
+  return zeta;
+};
+const realOnLine = () => mode === 'xi' || (mode === 'dirichlet' && L.fn === 'Lambda');
 const fmt = (x) => (x >= 0 ? ' ' : '') + x.toFixed(4);
 
 let curve = []; // samples of the current function at 1/2 + it across the window
 
 function setWindow(start) {
-  tStart = Math.min(Math.max(start, 0), T_START_MAX);
+  const [lo, hi] = mode === 'dirichlet' ? [-L_T_MAX, L_T_MAX - WINDOW] : [0, T_START_MAX];
+  tStart = Math.min(Math.max(start, lo), hi);
+  tStarts[group(mode)] = tStart;
+  tStartInput.min = lo;
+  tStartInput.max = hi;
   tStartInput.value = tStart;
   document.getElementById('tStartVal').textContent = tStart.toFixed(1);
 
-  const n = Math.min(termsFor(tStart + WINDOW), MAX_TERMS);
-  uniforms.uW.value.fill(0);
-  uniforms.uW.value.set(borweinWeights(n));
-  uniforms.uN.value = n;
+  if (mode === 'dirichlet') {
+    const tAbs = Math.max(Math.abs(tStart), Math.abs(tStart + WINDOW));
+    uniforms.uNd.value = Math.ceil(tAbs / Math.PI) + 4;
+  } else {
+    const n = Math.min(termsFor(tStart + WINDOW), MAX_TERMS);
+    uniforms.uW.value.fill(0);
+    uniforms.uW.value.set(borweinWeights(n));
+    uniforms.uN.value = n;
+  }
   uniforms.uT.value.set(tStart, tStart + WINDOW);
   uniforms.uTc.value = tCenter();
 
@@ -267,19 +379,25 @@ function updateProbe() {
   probeBall.position.y = y;
   probeStem.scale.y = Math.max(y, 1e-3);
 
+  const zs = currentZeros();
   let nearest = -1;
-  zeros.forEach((zt, i) => { if (nearest < 0 || Math.abs(zt - t) < Math.abs(zeros[nearest] - t)) nearest = i; });
-  const dist = Math.abs(zeros[nearest] - t);
-  const sym = mode === 'xi' ? 'ξ̃' : 'ζ';
+  zs.forEach((zt, i) => { if (nearest < 0 || Math.abs(zt - t) < Math.abs(zs[nearest] - t)) nearest = i; });
+  const dist = nearest < 0 ? Infinity : Math.abs(zs[nearest] - t);
+  const sym = { xi: 'ξ̃', zeta: 'ζ', dirichlet: L.fn === 'L' ? 'L' : 'Λ̃' }[mode];
+  const sArg = t < 0 ? `½ − ${(-t).toFixed(3)}i` : `½ + ${t.toFixed(3)}i`;
+  const arg = mode === 'dirichlet' ? `(${sArg}, χ)` : `(${sArg})`;
+  const tag = mode === 'dirichlet' ? '' : `#${nearest + 1} `;
   readout.innerHTML =
-    (mode === 'xi'
-      ? `ξ̃(½ + ${t.toFixed(3)}i) =${fmt(z.re)} &nbsp;(real)<br>`
-      : `ζ(½ + ${t.toFixed(3)}i) =${fmt(z.re)} ${z.im < 0 ? '−' : '+'} ${Math.abs(z.im).toFixed(4)}i<br>`) +
+    (realOnLine()
+      ? `${sym}${arg} =${fmt(z.re)} &nbsp;(real)<br>`
+      : `${sym}${arg} =${fmt(z.re)} ${z.im < 0 ? '−' : '+'} ${Math.abs(z.im).toFixed(4)}i<br>`) +
     `|${sym}| = ${mag.toFixed(4)}<br>` +
-    (dist < 0.02
-      ? `<span class="zero">at zero #${nearest + 1} (t = ${zeros[nearest].toFixed(6)})</span>`
-      : `nearest zero: #${nearest + 1} at t = ${zeros[nearest].toFixed(3)}`);
-  if (mode === 'xi') drawGraph(t, z.re); else drawCurve(z);
+    (nearest < 0
+      ? 'no zeros in range'
+      : dist < 0.02
+        ? `<span class="zero">at zero ${tag}(t = ${zs[nearest].toFixed(6)})</span>`
+        : `nearest zero: ${tag}at t = ${zs[nearest].toFixed(3)}`);
+  if (realOnLine()) drawGraph(t, z.re); else drawCurve(z);
 }
 
 function drawCurve(current) {
@@ -352,7 +470,7 @@ function drawGraph(tNow, current) {
   }
 
   ctx.fillStyle = '#7dffb2';
-  for (const zt of zeros) {
+  for (const zt of currentZeros()) {
     if (zt < tStart || zt > tStart + WINDOW) continue;
     ctx.beginPath(); ctx.arc(px(zt), Hc / 2, 6, 0, 2 * Math.PI); ctx.fill();
   }
@@ -360,20 +478,139 @@ function drawGraph(tNow, current) {
   ctx.beginPath(); ctx.arc(px(tNow), py(current), 9, 0, 2 * Math.PI); ctx.fill();
 }
 
-// ---- Tabs: zeta or xi -------------------------------------------------------------
+// ---- Tabs: zeta (with the xi view), L(s, chi) or primes ----------------------------
+const primesView = createPrimesView({
+  canvas: document.getElementById('primesView'),
+  nInput: document.getElementById('nZeros'),
+  nVal: document.getElementById('nZerosVal'),
+  playBtn: document.getElementById('play'),
+  xMaxInput: document.getElementById('xMax'),
+  errInput: document.getElementById('errView'),
+  readout: document.getElementById('primesReadout'),
+});
+
+// ---- The L(s, chi) controls ---------------------------------------------------------
+const lqSelect = document.getElementById('lq');
+const lcharSelect = document.getElementById('lchar');
+const chiStrip = document.getElementById('chiStrip');
+const chiInfo = document.getElementById('chiInfo');
+
+for (const q of moduliWithPrimitive(L_Q_MAX)) lqSelect.add(new Option(`q = ${q}`, q));
+
+function fillCharSelect() {
+  lcharSelect.length = 0;
+  for (const c of charsOf(L.q)) lcharSelect.add(new Option(c.label, c.index));
+}
+
+function drawChiStrip() {
+  const g = chiStrip.getContext('2d');
+  const dpr = Math.min(devicePixelRatio, 2);
+  const w = chiStrip.clientWidth || 300, h = 44;
+  chiStrip.width = w * dpr; chiStrip.height = h * dpr;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  const q = L.q, step = w / q, r = Math.min(9, step * 0.36);
+  g.font = '10px ui-monospace, Menlo, monospace';
+  g.textAlign = 'center';
+  for (let a = 1; a <= q; a++) {
+    const z = L.ch.values[a % q], x = (a - 0.5) * step, y = 14;
+    g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI);
+    if (!z.re && !z.im) {
+      g.strokeStyle = 'rgba(154,161,178,0.6)'; g.lineWidth = 1; g.stroke();
+    } else {
+      const hue = (Math.atan2(z.im, z.re) / (2 * Math.PI) + 0.5) * 360;
+      g.fillStyle = `hsl(${hue} 75% 58%)`; g.fill();
+      g.strokeStyle = 'rgba(11,13,18,0.9)'; g.lineWidth = 1.5;   // a hand showing the angle
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + r * z.re, y - r * z.im); g.stroke();
+    }
+    g.fillStyle = 'rgba(154,161,178,0.95)';
+    g.fillText(String(a), x, 38);
+  }
+}
+
+const cfmt = (z) => `${z.re.toFixed(3)} ${z.im < 0 ? '−' : '+'} ${Math.abs(z.im).toFixed(3)}i`;
+
+let filledQ = 0;
+function setCharacter(q, index) {
+  L.q = q;
+  if (filledQ !== q) { lqSelect.value = q; fillCharSelect(); filledQ = q; }
+  L.index = Math.min(index, charsOf(q).length);
+  lcharSelect.value = L.index;
+  L.ch = charsOf(q)[L.index - 1];
+  L.zeros = lZeros(L.ch, -L_T_MAX, L_T_MAX);
+
+  const vals = L.ch.values;
+  uniforms.uChi.value.forEach((v, a) => v.set(a < q ? vals[a].re : 0, a < q ? vals[a].im : 0));
+  uniforms.uQ.value = q;
+  uniforms.uParity.value = L.ch.parity;
+  uniforms.uLogQPi.value = Math.log(q / Math.PI);
+  uniforms.uEpsHalf.value = Math.atan2(L.ch.eps.im, L.ch.eps.re) / 2;
+
+  const pos = L.zeros.filter((t) => t > 0).length, neg = L.zeros.filter((t) => t < 0).length;
+  chiInfo.innerHTML =
+    `order ${L.ch.order} · ${L.ch.odd ? 'odd, 𝔞 = 1' : 'even, 𝔞 = 0'} · ${L.ch.real ? 'real' : 'complex'}<br>` +
+    `root number ε = ${cfmt(L.ch.eps)}<br>` +
+    `conjugate χ̄: ${L.ch.real ? 'χ itself' : `#${L.ch.conjIndex}`}<br>` +
+    `zeros with |t| ≤ ${L_T_MAX}: ${pos} above the axis, ${neg} below`;
+  drawChiStrip();
+  if (mode === 'dirichlet') setWindow(tStart);
+}
+
+function setLFunction(fn) {
+  L.fn = fn;
+  uniforms.uMode.value = fn === 'L' ? 2 : 3;
+  for (const r of document.querySelectorAll('input[name=lfn]')) r.checked = r.value === fn;
+  document.getElementById('lCurveTitle').textContent = fn === 'L' ? 'L(½ + it, χ) in the output plane' : 'Λ̃(½ + it, χ) against t';
+  document.getElementById('lCurveText').textContent = fn === 'L'
+    ? 'This curve passes through the origin at every zero on the critical line. For a complex χ it is not symmetric under t → −t.'
+    : 'Rotated by ε^(−1/2), Λ is real on the critical line, so it is plotted against t. It crosses zero at every zero on the line.';
+  if (mode === 'dirichlet') setWindow(tStart);
+}
+
+lqSelect.addEventListener('change', () => setCharacter(Number(lqSelect.value), 1));
+lcharSelect.addEventListener('change', () => setCharacter(L.q, Number(lcharSelect.value)));
+for (const r of document.querySelectorAll('input[name=lfn]')) r.addEventListener('change', () => setLFunction(r.value));
+for (const b of document.querySelectorAll('[data-preset]')) {
+  b.addEventListener('click', () => { const [q, i] = b.dataset.preset.split(':').map(Number); setCharacter(q, i); });
+}
+addEventListener('resize', () => { if (L.ch) drawChiStrip(); });
+
+// ζ and ξ share one tab; the radio buttons switch between the two modes
+let zetaFn = mode === 'xi' ? 'xi' : 'zeta';
+const tabOf = (m) => (m === 'xi' ? 'zeta' : m);
+for (const r of document.querySelectorAll('input[name=zfn]')) r.addEventListener('change', () => setMode(r.value));
+
 function setMode(m) {
+  const prev = mode;
   mode = m;
-  uniforms.uMode.value = m === 'xi' ? 1 : 0;
-  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
-  for (const el of document.querySelectorAll('[data-for]')) el.hidden = el.dataset.for !== m;
-  history.replaceState(null, '', m === 'xi' ? '#xi' : location.pathname + location.search);
+  if (m === 'zeta' || m === 'xi') zetaFn = m;
+  for (const r of document.querySelectorAll('input[name=zfn]')) r.checked = r.value === zetaFn;
+  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === tabOf(m)));
+  // data-for lists the tabs (space-separated) an element belongs to
+  for (const el of document.querySelectorAll('[data-for]')) el.hidden = !el.dataset.for.split(' ').includes(m);
+  history.replaceState(null, '', m === 'zeta' ? location.pathname + location.search : `#${m}`);
+  if (m === 'primes') {
+    primesView.show();
+    return;
+  }
+  primesView.hide();
+  if (m === 'dirichlet') {
+    drawChiStrip(); // the canvas had no width while hidden
+    uniforms.uMode.value = L.fn === 'L' ? 2 : 3;
+  } else {
+    uniforms.uMode.value = m === 'xi' ? 1 : 0;
+  }
+  if (group(prev) !== group(m) || prev === 'primes') tStart = tStarts[group(m)];
   setWindow(tStart);
 }
-for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => setMode(b.dataset.mode));
+for (const b of document.querySelectorAll('.tab')) {
+  b.addEventListener('click', () => setMode(b.dataset.mode === 'zeta' ? zetaFn : b.dataset.mode));
+}
 
 tStartInput.addEventListener('input', () => setWindow(Number(tStartInput.value)));
 probeInput.addEventListener('input', updateProbe);
 addEventListener('keydown', (e) => {
+  if (mode === 'primes') return;
   if (e.key === 'w' || e.key === 'W') setWindow(tStart + 0.5);
   if (e.key === 's' || e.key === 'S') setWindow(tStart - 0.5);
 });
@@ -384,8 +621,12 @@ addEventListener('resize', () => {
   labelRenderer.setSize(innerWidth, innerHeight);
 });
 
+tStart = tStarts[group(mode)];
+setCharacter(4, 1);
+setLFunction('L');
 setMode(mode);
 renderer.setAnimationLoop(() => {
+  if (mode === 'primes') return; // the 3D scene is hidden
   controls.update();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);

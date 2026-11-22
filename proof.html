@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proof Strategy · Zeta World</title>
+  <meta name="description" content="The strategy of the announced proof of the Riemann hypothesis, in four interactive pictures." />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #12151d;
+      --text: #e6e8ee;
+      --muted: #9aa1b2;
+      --border: rgba(255, 255, 255, 0.12);
+      --gold: #f5c542;
+      --green: #7dffb2;
+      --red: #ff6b6b;
+      --cyan: #6fd6ff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: var(--cyan); }
+    header, section, footer { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+    header { padding-top: 16px; }
+    .back { font-size: 13px; text-decoration: none; }
+    h1 { font-size: 24px; line-height: 1.2; margin: 8px 0 4px; }
+    .lede { color: var(--muted); max-width: 900px; margin: 0 0 8px; font-size: 14px; }
+    .status { border-left: 3px solid var(--gold); background: var(--panel); border-radius: 6px; padding: 5px 12px;
+      font-size: 13px; color: var(--muted); max-width: 900px; }
+    .status summary { cursor: pointer; }
+    .status b { color: var(--text); }
+    .lab { display: grid; grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr); gap: 14px; align-items: start; }
+    .cardhead { font-weight: 600; font-size: 14px; margin: 0 0 6px; }
+    .cardhead .num { margin-right: 4px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; padding: 3px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05); }
+    .tab { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border: 0; border-radius: 6px;
+      background: transparent; color: var(--muted); font: 600 13px system-ui, sans-serif; cursor: pointer; }
+    .tab:hover { color: var(--text); }
+    .tab .num { color: inherit; }
+    .tab .ttl { display: none; }
+    .tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.13); color: var(--text); }
+    .tab[aria-selected="true"] .num { color: var(--gold); }
+    .tab[aria-selected="true"] .ttl { display: inline; }
+    [hidden] { display: none !important; }
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+      min-height: clamp(250px, calc(100vh - 410px), 560px); align-content: center; }
+    .fbox { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 9px;
+      border: 1px solid var(--border); background: rgba(255, 255, 255, 0.03); text-decoration: none; color: var(--text); }
+    .fbox:hover { border-color: var(--gold); background: rgba(245, 197, 66, 0.06); }
+    .fbox b { font-size: 15px; }
+    .fbox span:last-child { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .fbox:not(:nth-child(3n))::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%);
+      color: var(--gold); font-size: 14px; }
+    .fend { grid-column: 1 / -1; text-align: center; padding: 10px; border-radius: 9px; color: var(--gold);
+      border: 1px dashed rgba(245, 197, 66, 0.5); font-weight: 600; }
+    canvas.fill { height: clamp(250px, calc(100vh - 410px), 560px); }
+    .caption { padding: 8px 2px 0; font-size: 13.5px; color: #cfd3dc; }
+    .caption p { margin: 0 0 6px; }
+    .caption p.small { font-size: 12.5px; color: var(--muted); }
+    .caption details { color: #cfd3dc; }
+    .caption summary { cursor: pointer; color: var(--cyan); font-size: 13px; }
+    .caption details p { margin: 6px 0; }
+    section { padding-top: 14px; scroll-margin-top: 12px; }
+    .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 28px; align-items: start; }
+    .num { color: var(--gold); font: 600 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
+    h2 { font-size: 21px; line-height: 1.25; margin: 4px 0 10px; }
+    .text p { margin: 0 0 10px; color: #cfd3dc; }
+    .text p.small { font-size: 13px; color: var(--muted); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+    canvas { display: block; width: 100%; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .controls label { display: block; }
+    .controls b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .controls input[type=range] { width: 100%; }
+    .check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .readout { margin-top: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text); min-height: 3em; }
+    .readout .bad { color: var(--red); }
+    .readout .ok { color: var(--green); }
+    .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .sw { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metaphor { display: inline-block; font-size: 11px; color: var(--gold); border: 1px solid rgba(245, 197, 66, 0.4);
+      border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+    footer { padding-top: 40px; padding-bottom: 48px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 860px) {
+      .step { grid-template-columns: 1fr; gap: 14px; }
+      .two { grid-template-columns: 1fr; }
+      .lab { grid-template-columns: minmax(0, 1fr); }
+      .flow { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+      .fbox::after { display: none; }
+      .controls { grid-template-columns: minmax(0, 1fr); }
+      canvas.fill { height: 300px; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" href="./landscape.html">← Zeta World explorer</a>
+    <h1>How the announced proof works, in four pictures</h1>
+    <p class="lede">If a zero of ζ sat off the critical line, the primes would show it. The announced proof caps the
+      primes from above, using arithmetic. Drag the hypothetical zero on the left and watch its effect on the right.
+      Steps 2 to 4 are tabs.</p>
+    <details class="status">
+      <summary><b>Status:</b> announced 20 November 2026, machine-checked, not yet refereed</summary>
+      Levent Alpöge announced a proof of the Riemann hypothesis and of its generalization to Dirichlet L-functions,
+      as a formal proof in Lean. It has been machine-checked by independent kernels, but it has not been refereed,
+      and no human-readable write-up exists. This page follows the account in
+      <a href="https://github.com/nasqret/riemann-rev">riemann-rev</a>. The prime data in the chart are computed here
+      and match riemann-rev's figures. Step 4 is a metaphor, not the actual construction.
+    </details>
+  </header>
+
+  <section id="lab">
+    <div class="lab">
+      <div>
+        <div class="card">
+          <div class="cardhead"><span class="num">STEP 1</span> The mirror</div>
+          <canvas id="strip" class="fill" aria-label="The critical strip with the first zeros and a draggable hypothetical zero and its mirror twin"></canvas>
+          <div class="readout" id="stripReadout"></div>
+        </div>
+        <div class="caption">
+          <p><b>A zero off the line has a mirror twin.</b> So it is enough to show that no zero lies right of the line,
+            in the shaded half. Drag the red point; the green points are the actual first zeros.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>The functional equation pairs every zero at β + iγ with one at 1 − β + iγ, its reflection across the
+              white line (the symmetry you can see in the ξ(s) view of the explorer).</p>
+            <p>So a zero left of the line forces one to the right of it. To prove the Riemann hypothesis it is
+              therefore enough to show that <b>no zero lies to the right of the line</b>.</p>
+            <p class="small">The red point is hypothetical: no zero off the line has ever been found.</p>
+          </details>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="tabs" role="tablist" aria-label="Steps 2 to 4">
+            <button class="tab" role="tab" data-tab="band" aria-selected="true"><span class="num">STEP 2</span><span class="ttl">The ceiling</span></button>
+            <button class="tab" role="tab" data-tab="windows" aria-selected="false"><span class="num">STEP 3</span><span class="ttl">One side, some windows</span></button>
+            <button class="tab" role="tab" data-tab="step4" aria-selected="false"><span class="num">STEP 4</span><span class="ttl">Divisibility</span></button>
+          </div>
+
+          <div data-panel="chart">
+            <canvas id="chart" class="fill" aria-label="The normalized prime sum and the wave of the hypothetical zero"></canvas>
+            <div class="legend">
+              <span><i class="sw" style="background:#c9ced8"></i>actual primes (G(x) − log 2π)/√x</span>
+              <span><i class="sw" style="background:var(--red)"></i>with the hypothetical zero</span>
+              <span><i class="sw" style="background:var(--gold)"></i><span id="bandLabel">band ±0.0462 forced by RH</span></span>
+            </div>
+            <div class="controls">
+              <label>Real part β = <b id="betaVal"></b><input id="beta" type="range" min="0.5" max="0.95" step="0.005" /></label>
+              <label>Height γ = <b id="gammaVal"></b><input id="gamma" type="range" min="10" max="60" step="0.1" /></label>
+              <label class="check"><input id="rogueOn" type="checkbox" checked /> add the hypothetical zero</label>
+            </div>
+            <div class="readout" id="chartReadout"></div>
+          </div>
+
+          <div data-panel="step4" hidden>
+            <div class="flow" id="flow4">
+              <a class="fbox" href="./step4.html#s4a"><span class="num">4a</span><b>Divisibility caps size</b><span>A number divisible by many primes is large, so a size limit caps the primes.</span></a>
+              <a class="fbox" href="./step4.html#s4b"><span class="num">4b</span><b>Inert primes</b><span>Numbers built in ℚ(√−d) are divisible at the primes that stay inert.</span></a>
+              <a class="fbox" href="./step4.html#s4c"><span class="num">4c</span><b>ASK − MAIN</b><span>Divisibility minus expected size is exactly a prime sum, capped from above.</span></a>
+              <a class="fbox" href="./step4.html#s4d"><span class="num">4d</span><b>The √x chain</b><span>Repeating it m ≈ √x times balances x/m against m.</span></a>
+              <a class="fbox" href="./step4.html#s4e"><span class="num">4e</span><b>Removing the twist</b><span>Averaging keeps the wanted characters, with positive weights.</span></a>
+              <a class="fbox" href="./step4.html#s4f"><span class="num">4f</span><b>Paying for losses</b><span>The losses add up to 9ε.</span></a>
+              <div class="fend">⇒ the ceiling x<sup>½ + 9ε</sup> on long windows, which step 3 needs</div>
+            </div>
+            <div class="readout"><a href="./step4.html">Open step 4 in detail →</a> &nbsp;(six sub-steps, each with its own picture)</div>
+          </div>
+        </div>
+
+        <div class="caption" data-mode="band">
+          <p><b>An off-line zero would break a ceiling in the primes.</b> Divided by √x, the prime sum must stay inside
+            the gold band if every zero is on the line, and the actual primes do. The hypothetical zero's wave grows like
+            x<sup>β − ½</sup> and eventually breaks out.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>The proof works with a weighted count of primes, G(x). Each zero ρ adds a wave to it, and the wave's size
+              grows like x<sup>β</sup>, where β is the zero's real part. Divided by √x, G must stay inside a fixed band,
+              ±0.0462, if every zero is on the line. The gray curve is the actual value, computed from every prime up to
+              10 million; it stays well inside. The hypothetical zero's wave grows like x<sup>β − ½</sup>: however small
+              it starts, it eventually breaks through. Move β toward ½ and the breakthrough moves later, but it never
+              goes away.</p>
+            <p class="small">Beyond 10⁷ only the hypothetical wave is drawn; the primes there are not computed on this page.</p>
+          </details>
+        </div>
+
+        <div class="caption" data-mode="windows" hidden>
+          <p><b>Only the upward swings, and only on some windows.</b> The proof needs just one side: no swing above a
+            ceiling of about √x on infinitely many long windows [Y, Y<sup>3/2</sup>]. A growing off-line wave must push
+            through one of them.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>This is the analytic heart of the proof, a "localized Landau theorem". You do not need to show the prime
+              count stays in the band everywhere. It is enough to show it never goes <b>above</b> a ceiling of about √x,
+              on infinitely many long windows from Y to Y<sup>3/2</sup>. An off-line zero's wave swings up as well as
+              down, and grows, so sooner or later it must push above the ceiling inside one of those windows. Weights
+              that are all positive keep the waves of different zeros from cancelling each other out.</p>
+            <p class="small">In the proof the ceiling is x<sup>½ + ε</sup> for any small ε, and the windows can be chosen
+              as far out as needed; the three windows here are only an illustration.</p>
+          </details>
+        </div>
+
+        <div class="caption" data-mode="step4" hidden>
+          <p><b>The ceiling comes from divisibility.</b> The proof builds numbers that are divisible by many primes (those that
+            stay inert in an imaginary quadratic field) and whose size it can bound. Weighing divisibility against size caps a
+            prime sum from above. Repeated about √x times and cleaned of unwanted characters, that gives the ceiling
+            x<sup>½ + 9ε</sup> of step 3. Each box above opens that sub-step on <a href="./step4.html">its own page</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Putting it together: the arithmetic of step 4 caps the upward swings (step 3); an off-line zero would break
+    that cap (step 2); so no zero lies right of the line, and by the mirror (step 1) none lies left of it.
+    Running the same argument with Dirichlet characters gives the generalized hypothesis.
+    <br /><br /><a href="./landscape.html">← Back to the Zeta World explorer</a>
+  </footer>
+
+  <script type="module" src="./proof.js"></script>
+</body>
+</html>
