@@ -60,7 +60,7 @@
     .chip:hover { background: rgba(255, 255, 255, 0.14); }
     #chiStrip { display: block; width: 100%; height: 44px; margin-top: 10px; }
     .caption { color: var(--muted); font-size: 11px; margin-top: 2px; }
-    .seg { display: flex; gap: 14px; margin-top: 10px; }
+    .seg { display: flex; gap: 14px; margin: 10px 0; }
     .seg label { display: flex; align-items: center; gap: 5px; margin: 0; color: var(--text); cursor: pointer; }
     .mono { margin: 10px 0; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 4.5em; }
     #curvePanel { right: 16px; bottom: 16px; width: 300px; }
@@ -89,9 +89,13 @@
     <h1>Zeta World</h1>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="zeta" aria-selected="true">ζ(s) &nbsp;zeta</button>
-      <button class="tab" role="tab" data-mode="xi" aria-selected="false">ξ(s) &nbsp;xi</button>
       <button class="tab" role="tab" data-mode="dirichlet" aria-selected="false">L(s,χ)</button>
       <button class="tab" role="tab" data-mode="primes" aria-selected="false">Primes</button>
+    </div>
+
+    <div class="seg" role="radiogroup" data-for="zeta xi">
+      <label><input type="radio" name="zfn" value="zeta" checked /> ζ(s)</label>
+      <label><input type="radio" name="zfn" value="xi" /> completed ξ(s)</label>
     </div>
 
     <p data-for="zeta">Ground: s = σ + it. Height: log(1 + |ζ(s)|). Color: the phase (angle) of ζ(s).
@@ -106,7 +110,7 @@
       <span class="math">ξ(s) = ½ · s(s−1) · π<sup>−s/2</sup> · Γ(s/2) · ζ(s)</span>
       <p>Each extra factor cancels something in ζ:</p>
       <ul>
-        <li><b>s − 1</b> cancels the pole of ζ at s = 1 (the spike in the ζ tab).</li>
+        <li><b>s − 1</b> cancels the pole of ζ at s = 1 (the spike in the ζ(s) view).</li>
         <li><b>Γ(s/2)</b> has poles at s = 0, −2, −4, … They cancel the trivial zeros
           of ζ at −2, −4, …, and the factor <b>s</b> cancels the pole at 0.</li>
         <li><b>π<sup>−s/2</sup>Γ(s/2)</b> is the factor that turns
@@ -121,7 +125,7 @@
       <p><b>Scaling.</b> |ξ(½+it)| shrinks like e<sup>−πt/4</sup> (about 10<sup>−31</sup> at t = 100),
         so the terrain plots ξ̃ = ξ(s) / N(t), where N(t) is the size of the extra factors at ½ + it.
         N(t) is positive and does not depend on σ, so the zeros, the colors and the mirror symmetry
-        are unchanged. Along the white line |ξ̃| = |ζ|, so both tabs show the same height there.
+        are unchanged. Along the white line |ξ̃| = |ζ|, so the ζ(s) and ξ(s) views have the same height there.
         In fact ξ̃(½ + it) = −Z(t), Hardy's function.</p>
     </details>
 

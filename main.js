@@ -478,7 +478,7 @@ function drawGraph(tNow, current) {
   ctx.beginPath(); ctx.arc(px(tNow), py(current), 9, 0, 2 * Math.PI); ctx.fill();
 }
 
-// ---- Tabs: zeta, xi or primes ------------------------------------------------------
+// ---- Tabs: zeta (with the xi view), L(s, chi) or primes ----------------------------
 const primesView = createPrimesView({
   canvas: document.getElementById('primesView'),
   nInput: document.getElementById('nZeros'),
@@ -575,10 +575,17 @@ for (const b of document.querySelectorAll('[data-preset]')) {
 }
 addEventListener('resize', () => { if (L.ch) drawChiStrip(); });
 
+// ζ and ξ share one tab; the radio buttons switch between the two modes
+let zetaFn = mode === 'xi' ? 'xi' : 'zeta';
+const tabOf = (m) => (m === 'xi' ? 'zeta' : m);
+for (const r of document.querySelectorAll('input[name=zfn]')) r.addEventListener('change', () => setMode(r.value));
+
 function setMode(m) {
   const prev = mode;
   mode = m;
-  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === m));
+  if (m === 'zeta' || m === 'xi') zetaFn = m;
+  for (const r of document.querySelectorAll('input[name=zfn]')) r.checked = r.value === zetaFn;
+  for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.mode === tabOf(m)));
   // data-for lists the tabs (space-separated) an element belongs to
   for (const el of document.querySelectorAll('[data-for]')) el.hidden = !el.dataset.for.split(' ').includes(m);
   history.replaceState(null, '', m === 'zeta' ? location.pathname + location.search : `#${m}`);
@@ -596,7 +603,9 @@ function setMode(m) {
   if (group(prev) !== group(m) || prev === 'primes') tStart = tStarts[group(m)];
   setWindow(tStart);
 }
-for (const b of document.querySelectorAll('.tab')) b.addEventListener('click', () => setMode(b.dataset.mode));
+for (const b of document.querySelectorAll('.tab')) {
+  b.addEventListener('click', () => setMode(b.dataset.mode === 'zeta' ? zetaFn : b.dataset.mode));
+}
 
 tStartInput.addEventListener('input', () => setWindow(Number(tStartInput.value)));
 probeInput.addEventListener('input', updateProbe);

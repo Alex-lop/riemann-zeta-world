@@ -210,9 +210,9 @@ The curve passes through the origin once for each zero on the critical line. The
 
 ---
 
-## 5. The ξ tab
+## 5. The ξ view
 
-The tab bar at the top of the controls switches the terrain between $`\zeta(s)`$ and Riemann's completed function
+On the ζ tab, a pair of radio buttons switches the terrain between $`\zeta(s)`$ and Riemann's completed function
 
 ```math
 \xi(s) = \tfrac12\, s(s-1)\, \pi^{-s/2}\, \Gamma\!\left(\tfrac s2\right) \zeta(s).
@@ -245,7 +245,7 @@ $`|\xi(\tfrac12 + it)|`$ decays like $`e^{-\pi t/4}`$, which is about $`10^{-31}
 \tilde\xi(s) = \frac{\xi(s)}{N(t)}, \qquad N(t) = \bigl|(s-1)\,e^{G(s)}\bigr|_{s = \frac12 + it}.
 ```
 
-$`N(t)`$ is positive and does not depend on $`\sigma`$, so it changes neither the zeros, the phase, nor the mirror symmetry. On the critical line $`|\tilde\xi| = |\zeta|`$, so the white line has the same height in both tabs. In fact $`\tilde\xi(\tfrac12 + it) = -Z(t)`$.
+$`N(t)`$ is positive and does not depend on $`\sigma`$, so it changes neither the zeros, the phase, nor the mirror symmetry. On the critical line $`|\tilde\xi| = |\zeta|`$, so the white line has the same height in both views. In fact $`\tilde\xi(\tfrac12 + it) = -Z(t)`$.
 
 The output-plane panel becomes a graph of $`\tilde\xi(\tfrac12 + it)`$ against $`t`$, since a real-valued curve would only slide along the real axis.
 
