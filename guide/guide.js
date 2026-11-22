@@ -39,9 +39,9 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=2').then(m => {
+  return opening ??= import('./scene.js?v=3').then(m => {
     scene = m;
-    world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), wash: true });
+    world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), wash: true, quiet: still });
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step
     return world;
   }).catch(() => null);
@@ -116,8 +116,61 @@ function spikes(x, T, zeros) {
   return s * (4 * Math.PI / T) * Math.sqrt(x) / Math.log(x);
 }
 
+// ---- the second half: one hypothetical zero ----------------------------------------------------
+// The view for it: low over the line just south of the zero, looking straight north so the two sides are seen to mirror each other.
+// A moment after the view settles the land becomes the completed function's, which is its own mirror image. Then every frame
+// the view follows the zero north or south, except while it is being dragged, and the two red tags follow it and its twin.
+let mirrored = false, morph = 0, aim = 2;           // aim: how far north of the zero the view looks. Less lifts the zero clear of a tall chart
+function lab(w, ahead = 2) {
+  aim = ahead;
+  w.camera.position.set(0, 6.5, scene.zOf(ghost.gamma - 11)); w.controls.target.set(0, 0, scene.zOf(ghost.gamma + aim));
+  if (!mirrored) morph = setTimeout(() => w.mirror(true), still() ? 0 : 900);
+  mirrored = true;
+}
+function tags(w) {
+  if (!w.holding()) { const dz = (scene.zOf(ghost.gamma + aim) - w.controls.target.z) * (still() ? 1 : 0.08); w.camera.position.z += dz; w.controls.target.z += dz; }
+  const [ax, ay] = w.project(ghost.beta, ghost.gamma, 1.5), [bx, by] = w.project(1 - ghost.beta, ghost.gamma, 1.5);
+  $('tag-a').style.transform = `translate(${ax + 16}px, ${ay - 8}px)`;
+  $('tag-b').style.transform = `translate(calc(${bx - 16}px - 100%), ${by - 8}px)`; $('tag-b').hidden = ghost.beta <= 0.5;
+}
+
+// r(x) = (G(x) - ln 2 pi) / sqrt(x) for the real primes up to 10^6, where G(x) = sum over n <= x of Lambda(n) (x / n - 1) - x (ln x - 1 - gamma)
+// is the centred count of prime powers the announced proof works with. If every zero is on the line, |r| stays within BAND.
+// G, BAND and wave() are restated from the teammate's proofMath.js (PR #6), which follows the riemann-rev guide. Keep them in agreement.
+// ponytail: primes to 10^6, which a phone sieves at once; his page goes to 10^7.
+const EULER = 0.5772156649015329, BAND = 2 + EULER - Math.log(4 * Math.PI), DATA = 1e6;
+let curve = null;
+function primeCurve() {
+  if (curve) return curve;
+  const lam = new Float32Array(DATA + 1), sieve = new Uint8Array(DATA + 1);      // lam[n] is ln p if n is a power of the prime p, else 0
+  for (let p = 2; p <= DATA; p++) {
+    if (sieve[p]) continue;
+    for (let m = 2 * p; m <= DATA; m += p) sieve[m] = 1;
+    for (let q = p, L = Math.log(p); q <= DATA; q *= p) lam[q] = L;
+  }
+  const N = 6000, lx = new Float32Array(N), r = new Float32Array(N);
+  for (let k = 0, n = 1, s0 = 0, s1 = 0; k < N; k++) {
+    const x = 10 ** (1 + 5 * k / (N - 1));
+    while (n + 1 <= x) { n++; if (lam[n]) { s0 += lam[n]; s1 += lam[n] / n; } }
+    lx[k] = Math.log10(x); r[k] = (x * s1 - s0 - x * Math.log(x) + (1 + EULER) * x - Math.log(2 * Math.PI)) / Math.sqrt(x);
+  }
+  console.assert(r.every(v => Math.abs(v) <= BAND), 'prime curve self-check failed: the real primes left the band');
+  return curve = { lx, r };
+}
+// What a zero pair at beta ± i gamma adds to r(x): -2 Re(x^rho / (rho (rho - 1))) / sqrt(x). Its swings grow like x^(beta - 1/2).
+const rho2 = (beta, gamma) => Math.hypot(beta * (beta - 1) - gamma * gamma, gamma * (2 * beta - 1));   // |rho (rho - 1)|
+function wave(x, beta, gamma) {
+  const L = Math.log(x), dr = beta * (beta - 1) - gamma * gamma, di = gamma * (2 * beta - 1);
+  return -2 * Math.exp((beta - 0.5) * L) * (Math.cos(gamma * L) * dr + Math.sin(gamma * L) * di) / (dr * dr + di * di);
+}
+// Where those swings first reach the band, as a power of ten. Finite for every beta above 1/2, however close to the line.
+const breakExp = (beta, gamma) => Math.log(BAND * rho2(beta, gamma) / 2) / ((beta - 0.5) * Math.LN10);
+const sup = n => String(n).replace(/./g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d] ?? '⁻');
+const pow10 = e => { if (e >= 15) return `10${sup(Math.round(e))}`; let k = Math.floor(e), m = Math.round(10 ** (e - k)); if (m === 10) { m = 1; k++; } return `${m} × 10${sup(k)}`; };
+
 // ---- the ten steps -----------------------------------------------------------------------------
 // id: the name in the URL hash. learn: the anchor of the long version in learn.html. world: the step runs over the 3D world.
+// lab: the step keeps the mirror land and the hypothetical zero up.
 // mount(stage, ui) builds the interaction and may return a cleanup. ui.done() shows the payoff, ui.say(html) replaces the instruction.
 // A step with no mount yet shows fig, a static figure, and no instruction.
 const STEPS = [
@@ -189,19 +242,106 @@ const STEPS = [
       });
     } },
 
-  { id: 'suppose', learn: 'strip', title: 'Suppose one zero were off the line',
-    idea: 'A nontrivial zero at β + iγ has a twin at 1 − β + iγ, mirrored across the line.',
+  { id: 'suppose', learn: 'strip', world: true, lab: true, title: 'Suppose one zero were off the line',
+    idea: 'Completed with its gamma factor, ζ’s land is a mirror image of itself across the line. So a zero off the line needs a twin.',
     todo: 'Drag the red zero off the line.',
     payoff: 'A zero left of the line forces one to its right. So it is enough to show that no zero lies to the right.',
-    legend: [['red', 'open', 'hypothetical: no nontrivial zero off the line has ever been found']],
-    fig: '<span class="red">0.7 + 20i &nbsp;⟷&nbsp; 0.3 + 20i</span>' },
+    legend: [['red', 'open', HYPOTHETICAL]],
+    more: `<details><summary>What the land, the walls and the stripes are</summary>
+      The land here is the size of ξ(s) = ½ s(s − 1) π<sup>−s/2</sup> Γ(s/2) ζ(s), divided at each height by its size on the line. It has the same nontrivial zeros as ζ.
+      The walls: proved 1896, every nontrivial zero lies between these walls.
+      The stripes: a machine-written paper released on 6 Oct 2026 states that no zero lies in here. Its repository says this is formalized in Lean. Not peer reviewed.
+      The red zero stops at the stripes. That is this guide’s rule for the fiction, not a theorem.</details>`,
+    mount(stage, ui) {
+      const box = el('<label class="slide">on the line<input type="range" min="0.5" max="0.875" step="0.005" aria-label="Real part of the hypothetical zero">7/8</label>');
+      const input = box.querySelector('input'), read = el('<p class="readout"></p>');
+      stage.append(box, read);
+      ghost.beta = 0.5;                                      // it starts on the line: taking it off is the visitor's act
+      let own = false, stop = () => {};
+      const sync = w => {
+        input.value = ghost.beta; w?.ghost(ghost.beta, ghost.gamma);
+        const g = ghost.gamma.toFixed(1);
+        read.innerHTML = ghost.beta > 0.5 ? `<span class="red">hypothetical zero at ${ghost.beta.toFixed(3)} + ${g}i</span> · its twin at ${(1 - ghost.beta).toFixed(3)} + ${g}i` : `on the line at 0.500 + ${g}i: no twin needed`;
+      };
+      sync();
+      withWorld(w => {
+        lab(w); sync(w);
+        input.addEventListener('input', () => { own = true; ghost.beta = +input.value; sync(w); ui.done(); });
+        w.onGhost = (beta, gamma) => { own = true; ghost.beta = beta; ghost.gamma = gamma; sync(); ui.done(); };
+        const t0 = performance.now();
+        w.tick = now => {                                    // nobody has moved it: it leaves the line by itself
+          if (!own && now - t0 > 3000 && ghost.beta < 0.72) { ghost.beta = still() ? 0.72 : Math.min(0.72, ghost.beta + 0.002); sync(w); ui.done(); }
+          tags(w);
+        };
+        stop = () => { w.tick = w.onGhost = null; };
+      });
+      return () => stop();
+    } },
 
-  { id: 'band', learn: 'y2026-shape', title: 'The primes would show it',
+  { id: 'band', learn: 'y2026-shape', world: true, lab: true, title: 'The primes would show it',
     idea: 'If every zero is on the line, a centred count of prime powers, divided by √x, stays inside the gold band.',
-    todo: 'Switch on the hypothetical zero’s wave.',
+    todo: 'Add the hypothetical zero’s wave.',
     payoff: 'Its wave grows faster than √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
-    legend: [['gold', 'band', 'the band, if every zero is on the line'], ['red', 'dash', 'hypothetical: no nontrivial zero off the line has ever been found']],
-    fig: '<span class="gold">±0.0462 · √x</span>' },
+    legend: [['gold', 'band', 'the band, if every zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
+    mount(stage, ui) {
+      const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
+      ghost.beta = 0.85;                                     // far enough off the line that the break falls inside the real data
+      let on = false, own = false, stop = () => {};
+      const fig = plot(stage, 'clamp(150px, 27vh, 240px)', (ctx, w, h) => {
+        const L = 62, R = 10, T = 8, B = 22, px = e => L + (w - L - R) * (e - LX0) / (LX1 - LX0), mid = (T + h - B) / 2, py = v => mid - v / TOP * (mid - T);
+        ctx.fillStyle = C.muted;
+        for (let e = LX0; e <= LX1; e++) {
+          line(ctx, px(e) + 0.5, T, px(e) + 0.5, h - B, C.hair);
+          if (w > 600 || e % 2 === 0) { ctx.textAlign = e === LX1 ? 'right' : 'center'; ctx.fillText(`10${sup(e)}`, px(e), h - 7); }
+        }
+        ctx.textAlign = 'right';
+        for (const v of [BAND, 0, -BAND]) ctx.fillText(v ? (v > 0 ? '+' : '−') + BAND.toFixed(4) : '0', L - 6, py(v) + 4);
+        ctx.fillStyle = 'rgb(245 197 66 / .13)'; ctx.fillRect(L, py(BAND), w - L - R, py(-BAND) - py(BAND));   // the band: a pale fill and two solid edges
+        ctx.lineWidth = 1.5; line(ctx, L, py(BAND), w - R, py(BAND), C.gold); line(ctx, L, py(-BAND), w - R, py(-BAND), C.gold); ctx.lineWidth = 1;
+        line(ctx, L, mid + 0.5, w - R, mid + 0.5, C.strong);
+        line(ctx, px(6) + 0.5, T, px(6) + 0.5, h - B, C.strong);
+        ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(w > 600 ? 'real primes, every one up to 10⁶' : 'real primes to 10⁶', px(6) - 6, h - B - 6);
+        ctx.save(); ctx.beginPath(); ctx.rect(L, T, w - L - R, h - T - B); ctx.clip();
+        if (on) {
+          const { beta, gamma } = ghost, amp = e => 2 * 10 ** ((beta - 0.5) * e) / rho2(beta, gamma);
+          ctx.strokeStyle = C.red; ctx.globalAlpha = 0.45; ctx.beginPath();                // the curve with the wave added; past the data, the wave alone
+          for (let k = 0; k < lx.length; k++) ctx.lineTo(px(lx[k]), py(r[k] + wave(10 ** lx[k], beta, gamma)));
+          for (let k = 1, n = 5000; k <= n; k++) { const e = 6 + (LX1 - 6) * k / n; ctx.lineTo(px(e), py(wave(10 ** e, beta, gamma))); }
+          ctx.stroke(); ctx.globalAlpha = 1;
+          ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5;                                    // how far it swings: dashed, like its stalk
+          for (const side of [1, -1]) { ctx.beginPath(); for (let e = LX0; e <= LX1; e += 0.05) ctx.lineTo(px(e), py(side * amp(e))); ctx.stroke(); }
+          ctx.setLineDash([]); ctx.lineWidth = 1;
+          const e = beta > 0.5 ? breakExp(beta, gamma) : Infinity;
+          if (e < LX1) { ctx.strokeRect(px(e) - 5, py(BAND) - 5, 10, 10); ctx.fillStyle = C.red; ctx.textAlign = e > 9 ? 'right' : 'left'; ctx.fillText('leaves the band', px(e) + (e > 9 ? -10 : 10), py(BAND) - 9); }
+          ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText(w > 600 ? 'past 10⁶: the hypothetical wave alone' : 'the wave alone', px(6) + 6, h - B - 6);
+        }
+        ctx.strokeStyle = C.blue; ctx.beginPath();
+        for (let k = 0; k < lx.length; k++) ctx.lineTo(px(lx[k]), py(r[k]));
+        ctx.stroke(); ctx.restore();
+      });
+      const bar = el('<div class="bar"><button type="button" class="btn" aria-pressed="false">Add its wave</button><label class="slide" hidden>on the line<input type="range" min="0.5" max="0.875" step="0.005" aria-label="Real part of the hypothetical zero">7/8</label></div>');
+      const button = bar.querySelector('button'), slide = bar.querySelector('label'), input = bar.querySelector('input'), read = el('<p class="readout"></p>');
+      stage.append(bar, read);
+      const sync = w => {
+        input.value = ghost.beta; w?.ghost(ghost.beta, ghost.gamma); fig.paint();
+        const at = `${ghost.beta.toFixed(3)} + ${ghost.gamma.toFixed(1)}i`;
+        read.innerHTML = !on ? 'the real primes alone: inside the band all the way to 10⁶'
+          : ghost.beta <= 0.5 ? `hypothetical zero back on the line at ${at}: its wave never grows`
+          : `<span class="red">hypothetical zero at ${at}: its swings reach the band near ${pow10(breakExp(ghost.beta, ghost.gamma))}</span>${breakExp(ghost.beta, ghost.gamma) >= LX1 ? ', far off this chart' : ''}`;
+      };
+      const turnOn = w => { on = true; button.setAttribute('aria-pressed', 'true'); button.hidden = true; slide.hidden = false; ui.say('Slide the zero back toward the line.'); ui.done(); sync(w); };
+      sync();
+      withWorld(w => {
+        lab(w, innerWidth >= 900 ? -3 : 2); sync(w);
+        button.addEventListener('click', () => { own = true; turnOn(w); });
+        input.addEventListener('input', () => { own = true; ghost.beta = +input.value; sync(w); });
+        w.onGhost = (beta, gamma) => { own = true; ghost.beta = beta; ghost.gamma = gamma; sync(); };
+        const t0 = performance.now();
+        w.tick = now => { if (!own && !on && now - t0 > 4000) turnOn(w); tags(w); };   // nobody pressed: show the break anyway
+        stop = () => { w.tick = w.onGhost = null; };
+      });
+      return () => stop();
+    } },
 
   { id: 'ceiling', learn: 'y2026-size', title: 'Where the ceiling comes from',
     idea: 'A nonzero whole number divisible by many primes is at least their product.',
@@ -243,6 +383,7 @@ function show() {
   root.dataset.mode = mode; root.dataset.step = step ? id : '';
   document.title = step ? `${step.title} · Zeta World` : TITLE;
   world?.run(mode === 'world' || mode === 'fly');             // no drawing while the land is off screen
+  if (!step?.lab) { clearTimeout(morph); mirrored = false; if (world) { world.ghost(); world.mirror(false); } }   // the fiction never leaves its two steps
   if (mode === 'fly') withWorld(() => { $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
   if (!step) return;
 
