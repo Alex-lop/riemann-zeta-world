@@ -42,27 +42,74 @@ function openWorld() {
   return opening ??= import('./scene.js?v=7').then(m => {
     scene = m;
     world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
+    root.dataset.sky = '';                                           // the world is up: the intro may show it (index.html)
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step
     return world;
   }).catch(() => null);
 }
-// The view the world was tuned for: west of the line near its south end, looking north up it (PLAN.md, "The world").
-// Step 4 and the open world begin here, wherever a ride or the hypothetical zero left the camera.
-function startView(w) { w.camera.position.set(-3.5, 6.5, scene.zOf(7)); w.controls.target.set(0, 0, scene.zOf(22)); }
-// The way in: from high over the whole line, down to the start view in about three seconds. The visitor's first drag takes the
-// view from it. Returns what stops it. With motion paused it is the start view at once.
-function arrive(w) {
-  const HIGH = [[-70, 95, scene.zOf(-45)], [0, 0, scene.zOf(100)]], LOW = [[-3.5, 6.5, scene.zOf(7)], [0, 0, scene.zOf(22)]], t0 = performance.now();
-  const stop = () => { w.tick = null; w.controls.removeEventListener('start', stop); };
-  startView(w);
-  if (still()) return stop;
-  w.controls.addEventListener('start', stop);
-  w.tick = now => {
-    const u = Math.min(1, (now - t0) / 3400), e = u < 0.5 ? 4 * u ** 3 : 1 - (2 - 2 * u) ** 3 / 2;
-    w.camera.position.set(...HIGH[0].map((a, k) => a + (LOW[0][k] - a) * e)); w.controls.target.set(...HIGH[1].map((a, k) => a + (LOW[1][k] - a) * e));
+// The view the world was tuned for, as [camera, target]: west of the line near its south end, looking north up it (PLAN.md,
+// "The world"). Step 4 and the open world come to rest here, wherever a ride or the hypothetical zero left the camera.
+const startPose = () => [[-3.5, 6.5, scene.zOf(7)], [0, 0, scene.zOf(22)]];
+// Moves the view to a pose, [camera, target], in about ms, from wherever it is. The visitor's first drag takes the view from it.
+// Whatever the step was doing every frame goes on meanwhile, and after. Returns what stops it. With motion paused it is there at once.
+function glide(w, to, ms = 2800) {
+  const from = [w.camera.position.toArray(), w.controls.target.toArray()], t0 = performance.now(), before = w.tick;
+  const stop = () => { if (w.tick === step) w.tick = before; w.controls.removeEventListener('start', stop); };
+  const step = now => {
+    const u = still() ? 1 : Math.min(1, (now - t0) / ms), e = u < 0.5 ? 4 * u ** 3 : 1 - (2 - 2 * u) ** 3 / 2;
+    w.camera.position.set(...from[0].map((a, k) => a + (to[0][k] - a) * e)); w.controls.target.set(...from[1].map((a, k) => a + (to[1][k] - a) * e));
+    before?.(now);
     if (u === 1) stop();
   };
+  w.controls.addEventListener('start', stop); w.tick = step;
   return stop;
+}
+// The way in: from high over the whole line, down to the start view in about three seconds, as the roll call lights the stars.
+function arrive(w) {
+  w.roll(); w.camera.position.set(-70, 95, scene.zOf(-45)); w.controls.target.set(0, 0, scene.zOf(100));
+  return glide(w, startPose(), 3400);
+}
+// The switch for the whole plane, in step 4, step 7 and the open world: the wider land around the strip's south end (scene.js,
+// plane), seen from high in the south-east, and back to `home`. says() is what to say under it while it is on. The words are
+// cut from the long version's steps on the zeros and on the strip. Returns what puts it all away, and refresh() to say it again.
+const TRIVIAL_SAYS = 'ζ is zero at −2, −4, −6 and every other negative even number. They are called the trivial zeros.', BELOW_SAYS = 'Zeros also match above and below the real number line.';
+let roaming = false;                                 // the whole plane is up: the view is not following the hypothetical zero
+function planeSwitch(w, button, read, { home = startPose, says = () => `${TRIVIAL_SAYS} ${BELOW_SAYS}`, used = () => {} } = {}) {
+  let stop = () => {};
+  const set = on => {
+    roaming = on; w.plane(on);
+    button.setAttribute('aria-pressed', on); button.textContent = on ? 'Back to the strip' : 'Show the whole plane';
+    read.textContent = on ? says() : '';
+  };
+  const click = () => {
+    const on = !roaming;
+    set(on); stop(); stop = glide(w, on ? [[16, 41, scene.zOf(-82)], [-30, 0, scene.zOf(-12)]] : home()); used();
+  };
+  button.addEventListener('click', click); set(false);
+  const off = () => { stop(); button.removeEventListener('click', click); set(false); };
+  off.refresh = () => { if (roaming) read.textContent = says(); };
+  return off;
+}
+// Behind the intro, on a screen wide enough to have room beside the words: the world itself. The view comes down from high
+// over the line while the roll call lights the stars, then flies north at V a second, and at the north end glides back.
+// It looks west of the line, so the line runs up the right of the screen, and it leans a little after the pointer.
+const wide = matchMedia('(min-width: 900px)');
+function backdrop(w) {
+  const t0 = performance.now(), V = 1.4, T0 = 14, T1 = 212, OUT = (T1 - T0) / V, BACK = 12, DIVE = 4.5;
+  const HIGH = [[-46, 64, scene.zOf(-34)], [-6.4, 0.2, scene.zOf(70)]];
+  let aim = [0, 0], sway = [0, 0];
+  const point = e => { aim = [e.clientX / innerWidth - 0.5, e.clientY / innerHeight - 0.5]; };
+  addEventListener('pointermove', point, { passive: true });
+  w.roll();
+  w.tick = now => {
+    const s = still() ? 0 : (now - t0) / 1000, c = s % (OUT + BACK), back = Math.max(0, c - OUT) / BACK;
+    const T = c < OUT ? T0 + V * c : T1 - (T1 - T0) * back * back * (3 - 2 * back);
+    const u = still() ? 1 : Math.min(1, s / DIVE), e = u < 0.5 ? 4 * u ** 3 : 1 - (2 - 2 * u) ** 3 / 2;
+    sway = sway.map((v, k) => v + (aim[k] - v) * 0.04);
+    const low = [[-2.4 + 1.4 * sway[0], 5.2 - 0.9 * sway[1], scene.zOf(T - 13)], [-6.4, 0.2, scene.zOf(T + 9)]];
+    w.camera.position.set(...HIGH[0].map((a, k) => a + (low[0][k] - a) * e)); w.controls.target.set(...HIGH[1].map((a, k) => a + (low[1][k] - a) * e));
+  };
+  return () => { w.tick = null; removeEventListener('pointermove', point); };
 }
 // Runs fn(world) once the world is up, unless the visitor has moved on to another screen by then.
 function withWorld(fn) {
@@ -196,7 +243,7 @@ function hand(w, e) {
   $('world').style.cursor = w.holding() ? 'grabbing' : near(ghost.beta) || near(1 - ghost.beta) ? 'grab' : '';
 }
 function tags(w) {
-  if (!w.holding()) { const dz = (scene.zOf(ghost.gamma + aim) - w.controls.target.z) * (still() ? 1 : 0.08); w.camera.position.z += dz; w.controls.target.z += dz; }
+  if (!w.holding() && !roaming) { const dz = (scene.zOf(ghost.gamma + aim) - w.controls.target.z) * (still() ? 1 : 0.08); w.camera.position.z += dz; w.controls.target.z += dz; }
   const [ax, ay] = w.project(ghost.beta, ghost.gamma, 1.5), [bx, by] = w.project(1 - ghost.beta, ghost.gamma, 1.5);
   $('tag-a').style.transform = `translate(${ax + 16}px, ${ay - 8}px)`;
   $('tag-b').style.transform = `translate(calc(${bx - 16}px - 100%), ${by - 8}px)`; $('tag-b').hidden = ghost.beta <= 0.5;
@@ -381,8 +428,14 @@ const STEPS = [
     payoff: 'Each pin stands on a nontrivial zero, at the bottom of a dark well. Height is squashed so the pole at s = 1 fits.',
     legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['dim', '', 'the edges of the critical strip, Re(s) = 0 and 1']],
     mount(stage, ui) {
+      const button = el('<button type="button" class="btn" aria-pressed="false">Show the whole plane</button>'), read = el('<p class="readout"></p>');
+      stage.append(button, read);
       let stop = () => {};
-      withWorld(w => { const land = arrive(w); w.controls.addEventListener('start', ui.done); stop = () => { land(); w.controls.removeEventListener('start', ui.done); }; });
+      withWorld(w => {
+        const land = arrive(w), off = planeSwitch(w, button, read, { used() { land(); ui.done(); } });
+        w.controls.addEventListener('start', ui.done);
+        stop = () => { land(); off(); w.controls.removeEventListener('start', ui.done); };
+      });
       return () => stop();
     } },
 
@@ -446,8 +499,9 @@ const STEPS = [
       const input = box.querySelector('input'), read = el('<p class="readout"></p>');
       // A switch for seeing what the gamma factor does: zeta's own land is lopsided, and the completed one is a mirror image.
       const flip = el('<button type="button" class="btn" aria-pressed="true">Show ζ without its gamma factor</button>');
+      const whole = el('<button type="button" class="btn" aria-pressed="false">Show the whole plane</button>'), wholeSays = el('<p class="readout"></p>');
       const bar = el('<div class="bar"></div>');
-      bar.append(flip, box); stage.append(bar, read);
+      bar.append(flip, whole, box); stage.append(bar, read, wholeSays);
       ghost.beta = 0.5;                                      // it starts on the line: taking it off is the visitor's act
       let own = false, stop = () => {};
       const sync = w => {
@@ -459,10 +513,16 @@ const STEPS = [
       withWorld(w => {
         lab(w); sync(w);
         input.addEventListener('input', () => { own = true; ghost.beta = +input.value; sync(w); ui.done(); });
+        // On the whole plane the gamma factor's work shows: with it the land is a mirror image both ways, and without it the trivial zeros are back.
+        const off = planeSwitch(w, whole, wholeSays, {
+          home: () => [[0, 6.5, scene.zOf(ghost.gamma - 11)], [0, 0, scene.zOf(ghost.gamma + aim)]], used: ui.done,
+          says: () => flip.getAttribute('aria-pressed') === 'true' ? BELOW_SAYS : `${TRIVIAL_SAYS} ${BELOW_SAYS}`,
+        });
         flip.addEventListener('click', () => {
           const completed = flip.getAttribute('aria-pressed') !== 'true';
           clearTimeout(morph); w.mirror(completed); flip.setAttribute('aria-pressed', completed);
           flip.textContent = completed ? 'Show ζ without its gamma factor' : 'Put the gamma factor back';
+          off.refresh();
         });
         w.onGhost = (beta, gamma) => { own = true; ghost.beta = beta; ghost.gamma = gamma; sync(); ui.done(); };
         const t0 = performance.now();
@@ -472,7 +532,7 @@ const STEPS = [
         };
         const point = e => hand(w, e);
         $('world').addEventListener('pointermove', point);
-        stop = () => { w.tick = w.onGhost = null; $('world').removeEventListener('pointermove', point); $('world').style.cursor = ''; };
+        stop = () => { off(); w.tick = w.onGhost = null; $('world').removeEventListener('pointermove', point); $('world').style.cursor = ''; };
       });
       return () => stop();
     } },
@@ -669,9 +729,14 @@ function show() {
   root.dataset.mode = mode; root.dataset.step = step ? id : '';
   document.title = step ? `${step.title} · Zeta World` : TITLE;
   for (const tab of $('tabs').children) if (mode !== 'intro' && tab.hash === location.hash) { tab.setAttribute('aria-current', 'step'); tab.scrollIntoView({ block: 'nearest', inline: 'center' }); } else tab.removeAttribute('aria-current');
-  world?.run(mode === 'world' || mode === 'fly');             // no drawing while the land is off screen
+  world?.run(mode === 'world' || mode === 'fly' || mode === 'intro' && wide.matches);   // no drawing while the land is off screen
   if (!step?.lab) { clearTimeout(morph); mirrored = false; if (world) { world.ghost(); world.mirror(false); } }   // the fiction never leaves its two steps
-  if (mode === 'fly') withWorld(w => { leave = arrive(w); $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
+  if (mode === 'fly') withWorld(w => {
+    const land = arrive(w), off = planeSwitch(w, $('fly-plane'), $('fly-plane-says'), { used: land });
+    leave = () => { land(); off(); }; $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.';
+  });
+  // The intro gets the world once the page has painted and gone idle, so the first paint never waits for three.js.
+  if (mode === 'intro' && wide.matches) (window.requestIdleCallback || setTimeout)(() => { if (root.dataset.mode === 'intro') withWorld(w => { leave = backdrop(w); }); });
   if (!step) return;
 
   const stage = $('s-stage'), payoff = $('s-payoff');

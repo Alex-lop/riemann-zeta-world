@@ -63,6 +63,27 @@
   #field { z-index: 0; pointer-events: none; }
   #world { z-index: 1; opacity: 0; visibility: hidden; transition: opacity .9s, visibility 0s .9s; touch-action: none; }
   html[data-mode=world] #world, html[data-mode=fly] #world { opacity: 1; visibility: visible; transition: opacity .9s; }
+  /* Behind the intro too, on a wide screen, once guide.js has the world up (data-sky). It is a picture there: no dragging,
+     and a scrim under the words. The ticks go over it, and the flat strip gives way to the real line. */
+  @media (min-width: 900px) {
+    html[data-mode=intro][data-sky] #world { opacity: 1; visibility: visible; transition: opacity 1.6s; pointer-events: none; }
+    html[data-mode=intro][data-sky] .strip { display: none; }
+    html[data-mode=intro][data-sky] .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(13 17 23 / .88), rgb(13 17 23 / .7) 40%, rgb(13 17 23 / 0) 66%); }
+    html[data-mode=intro][data-sky] .nav { background: rgb(13 17 23 / .6); }
+    html[data-mode=intro][data-sky] #count { display: block; top: 60px; }   /* the roll call counts up as the stars light */
+    html[data-mode=intro][data-sky] .hero-note { display: block; }
+  }
+  /* What the picture behind the intro is: under the roll call's counter, in the sky east of the land. */
+  .hero-note { display: none; position: fixed; z-index: 2; right: 1.5rem; top: 108px; width: min(26vw, 19rem); margin: 0; padding-top: 10px; border-top: 1px solid var(--hair-strong); text-align: right; font: 400 .72rem/1.6 var(--mono); color: var(--muted); }
+  .hero-note .legend { display: block; margin-top: .4rem; color: var(--ink); } .hero-note .legend span { display: block; }
+  .hero h1 .gold { text-shadow: 0 0 26px rgb(245 197 66 / .5); }
+  /* The words arrive one after another. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-copy > * { animation: rise .9s cubic-bezier(.2, .8, .2, 1) both; }
+    .hero-copy > :nth-child(2) { animation-delay: .1s; } .hero-copy > :nth-child(3) { animation-delay: .22s; }
+    .hero-copy > :nth-child(4) { animation-delay: .34s; } .hero-copy > :nth-child(n + 5) { animation-delay: .46s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+  }
   .count { position: fixed; z-index: 2; top: 46px; right: 0; margin: 1rem 1.5rem; display: none; font: 400 1.05rem/1.4 var(--mono); font-variant-numeric: tabular-nums; pointer-events: none; }
   html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
   #passed { padding: .55rem .8rem .6rem; text-align: right; background: rgb(13 17 23 / .88); border: 1px solid var(--hair); }   /* the ride's readout, on a ground of its own: from the side view the road runs behind it */
@@ -268,10 +289,13 @@
   <header class="hero">
     <!-- Filled in by guide.js: the critical line, the first zeros, and one open red square that follows the pointer. -->
     <div class="strip" id="strip" aria-hidden="true"></div>
+    <!-- Shown with the 3D world behind the intro. The sentences are the open world's, and the two marks are step 4's legend. -->
+    <p class="hero-note">Each pin stands on a zero. The Riemann hypothesis says they all sit on the gold line.
+      <span class="legend"><span><i class="sw gold"></i>the critical line, Re(s) = ½</span><span><i class="sw dot inked"></i>a zero</span></span></p>
     <div class="wrap">
       <div class="hero-copy">
         <p class="eyebrow">Zeta World · the Riemann hypothesis, as a place you can look at</p>
-        <h1>Ride the line.<br>Watch the primes appear.</h1>
+        <h1>Ride <span class="gold">the line</span>.<br>Watch <span class="blue">the primes</span> appear.</h1>
         <p class="lede">Helloooo. This is a ten-step climb from what a prime is to what was released in November 2026, through a 3D land of the zeta function that you can ride.</p>
         <p class="actions">
           <a class="btn btn-go" href="#primes">Get started</a>
@@ -318,11 +342,12 @@
     <p class="small" id="fly-status">Loading the 3D view. It needs JavaScript and WebGL.</p>
     <details class="small">
       <summary>How to read it</summary>
-      Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The grey lines are the strip’s edges, and the numbers along the east side are heights, Im(s). The mound at the south end is the pole at s = 1, where ζ is infinite.
+      Height is the size of ζ(s), squashed so the infinite pole fits: (2/π) atan |ζ(s)|. The land covers Re(s) from −0.5 to 1.5 and Im(s) from 0 to 237, and the whole plane, when shown, Re(s) from −9.5 to 4.5 and Im(s) from −48 to 48. Shade is height too: the darker the land, the lower it is. The gold line is Re(s) = ½, the middle of the critical strip (Re(s) from 0 to 1), which holds every nontrivial zero. The grey lines are the strip’s edges, and the numbers along the east side are heights, Im(s). The mound at the south end is the pole at s = 1, where ζ is infinite.
     </details>
     <p class="small"><a href="./landscape.html">Explore further: ζ(s) and ξ(s), with a probe along the critical line →</a></p>
     <p class="small">Built for Sundai Hack 150. <a href="./learn.html">The long version</a> · <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
-    <p class="actions"><a class="btn btn-go" href="#primes">Start the climb ›</a></p>
+    <p class="small" id="fly-plane-says" aria-live="polite"></p>
+    <p class="actions"><button type="button" class="btn" id="fly-plane" aria-pressed="false">Show the whole plane</button><a class="btn btn-go" href="#primes">Start the climb ›</a></p>
   </aside>
 </main>
 
