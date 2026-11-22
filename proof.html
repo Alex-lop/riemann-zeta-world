@@ -23,20 +23,36 @@
       font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
     a { color: var(--cyan); }
     header, section, footer { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
-    header { padding-top: 28px; }
+    header { padding-top: 16px; }
     .back { font-size: 13px; text-decoration: none; }
-    h1 { font-size: 30px; line-height: 1.2; margin: 14px 0 8px; }
-    .lede { color: var(--muted); max-width: 760px; margin: 0 0 16px; }
-    .status { border: 1px solid var(--border); border-left: 3px solid var(--gold); background: var(--panel);
-      border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--muted); max-width: 860px; }
+    h1 { font-size: 24px; line-height: 1.2; margin: 8px 0 4px; }
+    .lede { color: var(--muted); max-width: 900px; margin: 0 0 8px; font-size: 14px; }
+    .status { border-left: 3px solid var(--gold); background: var(--panel); border-radius: 6px; padding: 5px 12px;
+      font-size: 13px; color: var(--muted); max-width: 900px; }
+    .status summary { cursor: pointer; }
     .status b { color: var(--text); }
-    nav.steps { position: sticky; top: 0; z-index: 5; background: rgba(11, 13, 18, 0.92); backdrop-filter: blur(6px);
-      border-bottom: 1px solid var(--border); margin-top: 22px; }
-    nav.steps div { max-width: 1120px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; }
-    nav.steps a { text-decoration: none; color: var(--muted); font-size: 13px; padding: 4px 10px; border-radius: 999px;
-      border: 1px solid var(--border); }
-    nav.steps a:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
-    section { padding-top: 40px; scroll-margin-top: 48px; }
+    .lab { display: grid; grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.6fr); gap: 14px; align-items: start; }
+    .cardhead { font-weight: 600; font-size: 14px; margin: 0 0 6px; }
+    .cardhead .num { margin-right: 4px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 8px; padding: 3px; border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05); }
+    .tab { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border: 0; border-radius: 6px;
+      background: transparent; color: var(--muted); font: 600 13px system-ui, sans-serif; cursor: pointer; }
+    .tab:hover { color: var(--text); }
+    .tab .num { color: inherit; }
+    .tab .ttl { display: none; }
+    .tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.13); color: var(--text); }
+    .tab[aria-selected="true"] .num { color: var(--gold); }
+    .tab[aria-selected="true"] .ttl { display: inline; }
+    [hidden] { display: none !important; }
+    canvas.fill { height: clamp(250px, calc(100vh - 410px), 560px); }
+    .caption { padding: 8px 2px 0; font-size: 13.5px; color: #cfd3dc; }
+    .caption p { margin: 0 0 6px; }
+    .caption p.small { font-size: 12.5px; color: var(--muted); }
+    .caption details { color: #cfd3dc; }
+    .caption summary { cursor: pointer; color: var(--cyan); font-size: 13px; }
+    .caption details p { margin: 6px 0; }
+    section { padding-top: 14px; scroll-margin-top: 12px; }
     .step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 28px; align-items: start; }
     .num { color: var(--gold); font: 600 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
     h2 { font-size: 21px; line-height: 1.25; margin: 4px 0 10px; }
@@ -61,6 +77,9 @@
     @media (max-width: 860px) {
       .step { grid-template-columns: 1fr; gap: 14px; }
       .two { grid-template-columns: 1fr; }
+      .lab { grid-template-columns: minmax(0, 1fr); }
+      .controls { grid-template-columns: minmax(0, 1fr); }
+      canvas.fill { height: 300px; }
       h1 { font-size: 25px; }
     }
   </style>
@@ -69,127 +88,131 @@
   <header>
     <a class="back" href="./index.html">← Zeta World explorer</a>
     <h1>How the announced proof works, in four pictures</h1>
-    <p class="lede">If a zero of ζ sat off the critical line, the primes would show it: their count would swing too far
-      from its expected value. The announced proof caps those swings from above, using arithmetic. These pictures
-      walk through that strategy one step at a time. One hypothetical zero, which you can move, carries through
-      the steps.</p>
-    <div class="status"><b>Status.</b> On 20 November 2026 Levent Alpöge announced a proof of the Riemann hypothesis
-      and of its generalization to Dirichlet L-functions, as a formal proof in Lean. It has been machine-checked
-      by independent kernels but not yet refereed, and no human-readable write-up exists. This page follows the
-      account in <a href="https://github.com/nasqret/riemann-rev">riemann-rev</a>. The prime data in steps 2 and 3 are
-      computed here and match riemann-rev's figures. Step 4 is a metaphor, not the actual construction.</div>
+    <p class="lede">If a zero of ζ sat off the critical line, the primes would show it. The announced proof caps the
+      primes from above, using arithmetic. Drag the hypothetical zero on the left and watch its effect on the right.
+      Steps 2 to 4 are tabs.</p>
+    <details class="status">
+      <summary><b>Status:</b> announced 20 November 2026, machine-checked, not yet refereed</summary>
+      Levent Alpöge announced a proof of the Riemann hypothesis and of its generalization to Dirichlet L-functions,
+      as a formal proof in Lean. It has been machine-checked by independent kernels, but it has not been refereed,
+      and no human-readable write-up exists. This page follows the account in
+      <a href="https://github.com/nasqret/riemann-rev">riemann-rev</a>. The prime data in the chart are computed here
+      and match riemann-rev's figures. Step 4 is a metaphor, not the actual construction.
+    </details>
   </header>
 
-  <nav class="steps" aria-label="Steps">
-    <div>
-      <a href="#step1">1 · The mirror</a>
-      <a href="#step2">2 · The ceiling</a>
-      <a href="#step3">3 · One side, some windows</a>
-      <a href="#step4">4 · Divisibility</a>
-    </div>
-  </nav>
-
-  <section id="step1">
-    <div class="step">
-      <div class="text">
-        <div class="num">STEP 1</div>
-        <h2>A zero off the line has a mirror twin</h2>
-        <p>The functional equation pairs every zero at β + iγ with one at 1 − β + iγ, its reflection across the
-          white line (the symmetry you can see in the ξ(s) view of the explorer).</p>
-        <p>So a zero left of the line forces one to the right of it. To prove the Riemann hypothesis it is
-          therefore enough to show that <b>no zero lies to the right of the line</b>, in the shaded half.</p>
-        <p class="small">Drag the red point. It is hypothetical: no zero off the line has ever been found. The green
-          points are the actual first zeros, all on the line.</p>
-      </div>
-      <div class="card">
-        <canvas id="strip" aria-label="The critical strip with the first zeros and a draggable hypothetical zero and its mirror twin"></canvas>
-        <div class="readout" id="stripReadout"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step2">
-    <div class="step">
-      <div class="text">
-        <div class="num">STEP 2</div>
-        <h2>An off-line zero would break a ceiling in the primes</h2>
-        <p>The proof works with a weighted count of primes, G(x). Each zero ρ adds a wave to it, and the wave's size
-          grows like x<sup>β</sup>, where β is the zero's real part.</p>
-        <p>Divided by √x, G must stay inside a fixed band if every zero is on the line: ±0.0462. The gray curve is the
-          actual value, computed from every prime up to 10 million. It stays well inside the band.</p>
-        <p>Add the hypothetical zero, and its wave grows like x<sup>β − ½</sup>. However small it starts, it
-          eventually breaks through the band. Move β toward ½ and the breakthrough moves later, but it never goes away.</p>
-        <p class="small">Beyond 10⁷ only the hypothetical wave is drawn; the primes there are not computed on this page.</p>
-      </div>
-      <div class="card">
-        <canvas id="ceiling" aria-label="The normalized prime sum inside the band, with the wave of a hypothetical zero breaking out"></canvas>
-        <div class="legend">
-          <span><i class="sw" style="background:#c9ced8"></i>actual primes (G(x) − log 2π)/√x</span>
-          <span><i class="sw" style="background:var(--red)"></i>with the hypothetical zero</span>
-          <span><i class="sw" style="background:var(--gold)"></i>band ±0.0462 forced by RH</span>
+  <section id="lab">
+    <div class="lab">
+      <div>
+        <div class="card">
+          <div class="cardhead"><span class="num">STEP 1</span> The mirror</div>
+          <canvas id="strip" class="fill" aria-label="The critical strip with the first zeros and a draggable hypothetical zero and its mirror twin"></canvas>
+          <div class="readout" id="stripReadout"></div>
         </div>
-        <div class="controls">
-          <label>Real part β = <b id="betaVal"></b><input id="beta" type="range" min="0.5" max="0.95" step="0.005" /></label>
-          <label>Height γ = <b id="gammaVal"></b><input id="gamma" type="range" min="10" max="60" step="0.1" /></label>
-          <label class="check"><input id="rogueOn" type="checkbox" checked /> add the hypothetical zero</label>
+        <div class="caption">
+          <p><b>A zero off the line has a mirror twin.</b> So it is enough to show that no zero lies right of the line,
+            in the shaded half. Drag the red point; the green points are the actual first zeros.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>The functional equation pairs every zero at β + iγ with one at 1 − β + iγ, its reflection across the
+              white line (the symmetry you can see in the ξ(s) view of the explorer).</p>
+            <p>So a zero left of the line forces one to the right of it. To prove the Riemann hypothesis it is
+              therefore enough to show that <b>no zero lies to the right of the line</b>.</p>
+            <p class="small">The red point is hypothetical: no zero off the line has ever been found.</p>
+          </details>
         </div>
-        <div class="readout" id="ceilingReadout"></div>
       </div>
-    </div>
-  </section>
 
-  <section id="step3">
-    <div class="step">
-      <div class="text">
-        <div class="num">STEP 3</div>
-        <h2>Only the upward swings, and only on some windows</h2>
-        <p>This is the analytic heart of the proof, a "localized Landau theorem". You do not need to show the prime
-          count stays in the band everywhere. It is enough to show it never goes <b>above</b> a ceiling of about
-          √x, on infinitely many long windows from Y to Y<sup>3/2</sup>.</p>
-        <p>The reason: an off-line zero's wave swings up as well as down, and grows. Sooner or later it must push
-          above the ceiling inside one of those windows. Weights that are all positive keep the waves of different
-          zeros from cancelling each other out.</p>
-        <p>So the lower half is grayed out here, and the ceiling is a wall only over the windows.</p>
-        <p class="small">In the proof the ceiling is x<sup>½ + ε</sup> for any small ε, and the windows can be chosen
-          as far out as needed. The three windows here are only an illustration.</p>
-      </div>
-      <div class="card">
-        <canvas id="windows" aria-label="The same chart with only the upper ceiling over three windows"></canvas>
-        <div class="readout" id="windowsReadout"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="step4">
-    <div class="step">
-      <div class="text">
-        <div class="num">STEP 4 <span class="metaphor">metaphor</span></div>
-        <h2>The ceiling comes from divisibility, and the balance gives √x</h2>
-        <p>Where can an <i>upper</i> bound on a prime count come from? From a basic fact: a whole number that is not
-          zero and is divisible by many primes cannot be small. It is at least their product.</p>
-        <p>The proof builds special numbers out of arithmetic geometry (theta functions and a chain of "theta lifts")
-          that are divisible by many primes, and it also bounds their size from above. Squeezed between the two,
-          only so many primes can divide them. That limit turns into the ceiling of step 3.</p>
-        <p>The construction is repeated m times. One cost grows like x/m, the other like m. Their sum is smallest
-          at m = √x, and that is where the square root in the Riemann hypothesis comes from.</p>
-        <p class="small">Both pictures are schematic: they show the shape of the argument, not the actual objects.</p>
-      </div>
-      <div class="card">
-        <div class="two">
-          <div>
-            <canvas id="squeeze" aria-label="Divisibility forces the size up, an upper estimate pushes it down"></canvas>
-            <div class="controls" style="grid-template-columns:1fr">
-              <label>Primes dividing the number: k = <b id="kVal"></b><input id="k" type="range" min="1" max="15" step="1" value="6" /></label>
-            </div>
+      <div>
+        <div class="card">
+          <div class="tabs" role="tablist" aria-label="Steps 2 to 4">
+            <button class="tab" role="tab" data-tab="band" aria-selected="true"><span class="num">STEP 2</span><span class="ttl">The ceiling</span></button>
+            <button class="tab" role="tab" data-tab="windows" aria-selected="false"><span class="num">STEP 3</span><span class="ttl">One side, some windows</span></button>
+            <button class="tab" role="tab" data-tab="step4" aria-selected="false"><span class="num">STEP 4</span><span class="ttl">Divisibility <span class="metaphor">metaphor</span></span></button>
           </div>
-          <div>
-            <canvas id="balance" aria-label="The costs x over m and m, with their minimum at m equal to the square root of x"></canvas>
-            <div class="controls" style="grid-template-columns:1fr">
-              <label>x = 10<sup><b id="lxVal"></b></sup><input id="lx" type="range" min="2" max="12" step="0.1" value="6" /></label>
+
+          <div data-panel="chart">
+            <canvas id="chart" class="fill" aria-label="The normalized prime sum and the wave of the hypothetical zero"></canvas>
+            <div class="legend">
+              <span><i class="sw" style="background:#c9ced8"></i>actual primes (G(x) − log 2π)/√x</span>
+              <span><i class="sw" style="background:var(--red)"></i>with the hypothetical zero</span>
+              <span><i class="sw" style="background:var(--gold)"></i><span id="bandLabel">band ±0.0462 forced by RH</span></span>
             </div>
+            <div class="controls">
+              <label>Real part β = <b id="betaVal"></b><input id="beta" type="range" min="0.5" max="0.95" step="0.005" /></label>
+              <label>Height γ = <b id="gammaVal"></b><input id="gamma" type="range" min="10" max="60" step="0.1" /></label>
+              <label class="check"><input id="rogueOn" type="checkbox" checked /> add the hypothetical zero</label>
+            </div>
+            <div class="readout" id="chartReadout"></div>
+          </div>
+
+          <div data-panel="step4" hidden>
+            <div class="two">
+              <div>
+                <canvas id="squeeze" class="fill" aria-label="Divisibility forces the size up, an upper estimate pushes it down"></canvas>
+                <div class="controls" style="grid-template-columns:1fr">
+                  <label>Primes dividing the number: k = <b id="kVal"></b><input id="k" type="range" min="1" max="15" step="1" value="6" /></label>
+                </div>
+              </div>
+              <div>
+                <canvas id="balance" class="fill" aria-label="The costs x over m and m, with their minimum at m equal to the square root of x"></canvas>
+                <div class="controls" style="grid-template-columns:1fr">
+                  <label>x = 10<sup><b id="lxVal"></b></sup><input id="lx" type="range" min="2" max="12" step="0.1" value="6" /></label>
+                </div>
+              </div>
+            </div>
+            <div class="readout" id="step4Readout"></div>
           </div>
         </div>
-        <div class="readout" id="step4Readout"></div>
+
+        <div class="caption" data-mode="band">
+          <p><b>An off-line zero would break a ceiling in the primes.</b> Divided by √x, the prime sum must stay inside
+            the gold band if every zero is on the line, and the actual primes do. The hypothetical zero's wave grows like
+            x<sup>β − ½</sup> and eventually breaks out.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>The proof works with a weighted count of primes, G(x). Each zero ρ adds a wave to it, and the wave's size
+              grows like x<sup>β</sup>, where β is the zero's real part. Divided by √x, G must stay inside a fixed band,
+              ±0.0462, if every zero is on the line. The gray curve is the actual value, computed from every prime up to
+              10 million; it stays well inside. The hypothetical zero's wave grows like x<sup>β − ½</sup>: however small
+              it starts, it eventually breaks through. Move β toward ½ and the breakthrough moves later, but it never
+              goes away.</p>
+            <p class="small">Beyond 10⁷ only the hypothetical wave is drawn; the primes there are not computed on this page.</p>
+          </details>
+        </div>
+
+        <div class="caption" data-mode="windows" hidden>
+          <p><b>Only the upward swings, and only on some windows.</b> The proof needs just one side: no swing above a
+            ceiling of about √x on infinitely many long windows [Y, Y<sup>3/2</sup>]. A growing off-line wave must push
+            through one of them.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>This is the analytic heart of the proof, a "localized Landau theorem". You do not need to show the prime
+              count stays in the band everywhere. It is enough to show it never goes <b>above</b> a ceiling of about √x,
+              on infinitely many long windows from Y to Y<sup>3/2</sup>. An off-line zero's wave swings up as well as
+              down, and grows, so sooner or later it must push above the ceiling inside one of those windows. Weights
+              that are all positive keep the waves of different zeros from cancelling each other out.</p>
+            <p class="small">In the proof the ceiling is x<sup>½ + ε</sup> for any small ε, and the windows can be chosen
+              as far out as needed; the three windows here are only an illustration.</p>
+          </details>
+        </div>
+
+        <div class="caption" data-mode="step4" hidden>
+          <p><b>The ceiling comes from divisibility, and the balance gives √x.</b> A whole number that is not zero and is
+            divisible by many primes is at least their product. Weighing that against an upper estimate of its size
+            caps the prime count, and balancing two costs, x/m and m, puts the cap at √x.</p>
+          <details>
+            <summary>Read more</summary>
+            <p>Where can an <i>upper</i> bound on a prime count come from? From a basic fact: a whole number that is not
+              zero and is divisible by many primes cannot be small. It is at least their product.</p>
+            <p>The proof builds special numbers out of arithmetic geometry (theta functions and a chain of "theta lifts")
+              that are divisible by many primes, and it also bounds their size from above. Squeezed between the two,
+              only so many primes can divide them. That limit turns into the ceiling of step 3.</p>
+            <p>The construction is repeated m times. One cost grows like x/m, the other like m. Their sum is smallest at
+              m = √x, and that is where the square root in the Riemann hypothesis comes from.</p>
+            <p class="small">Both pictures are schematic: they show the shape of the argument, not the actual objects.</p>
+          </details>
+        </div>
       </div>
     </div>
   </section>

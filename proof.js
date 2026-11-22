@@ -11,7 +11,7 @@ const LX_MIN = 1, LX_MAX = 14;    // chart range: x from 10 to 10^14
 const R_MAX = 0.14;               // vertical range of the chart: +-R_MAX
 const WINDOWS = [[2, 3], [4, 6], [8, 12]]; // [log10 Y, log10 Y^(3/2)]
 
-const state = { sigma: 0.65, gamma: 40, on: true };
+const state = { sigma: 0.65, gamma: 40, on: true, mode: 'band' };
 const beta = () => Math.max(state.sigma, 1 - state.sigma);
 const $ = (id) => document.getElementById(id);
 
@@ -23,10 +23,13 @@ for (let i = 1; i < r.length; i++) { if (r[i] < r[iMin]) iMin = i; if (r[i] > r[
 const zeros = criticalZeros(62);
 
 // ---- helpers -----------------------------------------------------------------------
+// Canvases with class "fill" take their height from CSS (sized to the screen); others use an aspect ratio.
 function setup(canvas, aspect) {
   const dpr = Math.min(devicePixelRatio, 2);
-  const w = canvas.clientWidth || 600, h = Math.round(w * aspect);
-  canvas.style.height = `${h}px`;
+  const w = canvas.clientWidth || 600;
+  let h;
+  if (canvas.classList.contains('fill')) h = canvas.clientHeight || Math.round(w * aspect);
+  else { h = Math.round(w * aspect); canvas.style.height = `${h}px`; }
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   const g = canvas.getContext('2d');
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -184,11 +187,11 @@ function drawChart(canvas, { windows = false } = {}) {
 }
 
 // ---- step 1: the strip ---------------------------------------------------------------
-const S_MIN = -0.3, S_MAX = 1.3, T_MAX = 62;
+const S_MIN = -0.15, S_MAX = 1.15, T_MAX = 62;
 let stripGeom = null;
 function drawStrip() {
   const canvas = $('strip');
-  const { g, w, h } = setup(canvas, 0.78);
+  const { g, w, h } = setup(canvas, 1.2);
   const L = 30, R = w - 10, T = 10, B = h - 24;
   const px = (s) => L + ((s - S_MIN) / (S_MAX - S_MIN)) * (R - L);
   const py = (t) => B - (t / T_MAX) * (B - T);
@@ -197,7 +200,8 @@ function drawStrip() {
   g.fillStyle = 'rgba(245,197,66,0.09)';
   g.fillRect(px(0.5), T, px(1) - px(0.5), B - T);
   g.fillStyle = C.gold;
-  g.fillText('the proof: no zeros here', px(0.5) + 6, T + 14);
+  g.fillText('the proof:', px(0.5) + 6, T + 14);
+  g.fillText('no zeros here', px(0.5) + 6, T + 28);
 
   g.fillStyle = C.text;
   for (let t = 0; t <= 60; t += 10) {
@@ -228,8 +232,8 @@ function drawStrip() {
   const on = Math.abs(state.sigma - 0.5) < 0.003;
   $('stripReadout').innerHTML = on
     ? `Hypothetical zero at ½ + ${state.gamma.toFixed(2)}i: <span class="ok">on the line, it is its own twin</span>.`
-    : `Hypothetical zero at ${state.sigma.toFixed(3)} + ${state.gamma.toFixed(2)}i, twin at ${(1 - state.sigma).toFixed(3)} + ${state.gamma.toFixed(2)}i.<br>` +
-      `One of the pair is always right of the line (β = ${beta().toFixed(3)}); steps 2 and 3 follow that one.`;
+    : `Zero ${state.sigma.toFixed(3)} + ${state.gamma.toFixed(2)}i, twin ${(1 - state.sigma).toFixed(3)} + ${state.gamma.toFixed(2)}i.<br>` +
+      `The one right of the line (β = ${beta().toFixed(3)}) drives the chart.`;
 }
 
 function stripPointer(e) {
@@ -341,27 +345,27 @@ function syncSliders() {
 
 function drawAll() {
   drawStrip();
-  const br = drawChart($('ceiling'));
+  if (state.mode === 'step4') { drawStep4(); return; }
+  const windows = state.mode === 'windows';
+  const br = drawChart($('chart'), { windows });
   const actual = `Actual primes: between ${r[iMin].toFixed(4)} (x ≈ ${sci(ys[iMin])}) and +${r[iMax].toFixed(4)} (x ≈ ${sci(ys[iMax])}), inside ±${RH_BAND.toFixed(4)}.`;
   let msg;
   if (!state.on) msg = `${actual}<br>Turn on the hypothetical zero to see what an off-line zero would do.`;
   else if (beta() <= 0.5) msg = `${actual}<br><span class="ok">β = ½: the zero is on the line, its wave grows like √x, and nothing breaks out.</span>`;
-  else {
-    const est = breachPoint(beta(), state.gamma);
+  else if (!windows) {
     msg = `${actual}<br>The zero's wave grows like x<sup>${(beta() - 0.5).toFixed(3)}</sup>. ` +
       (br ? `<span class="bad">It leaves the band near x ≈ ${sci(br.x)}.</span>`
-          : `Its swings reach the band only around x ≈ ${sci(est)}, beyond this chart, but they get there.`);
-  }
-  $('ceilingReadout').innerHTML = msg;
-
-  const bw = drawChart($('windows'), { windows: true });
-  $('windowsReadout').innerHTML = !state.on || beta() <= 0.5
-    ? '<span class="ok">The actual primes stay below the ceiling in every window: no contradiction.</span>'
-    : bw
-      ? `<span class="bad">The hypothetical zero pushes above the ceiling inside a window, at x ≈ ${sci(bw.x)}.</span> ` +
+          : `Its swings reach the band only around x ≈ ${sci(breachPoint(beta(), state.gamma))}, beyond this chart, but they get there.`);
+  } else {
+    msg = br
+      ? `<span class="bad">The hypothetical zero pushes above the ceiling inside a window, at x ≈ ${sci(br.x)}.</span><br>` +
         'If the ceiling is proved, this zero cannot exist.'
-      : `Within these three windows it stays below the ceiling. Its growth still forces a breach in a later window (its swings reach the ceiling around x ≈ ${sci(breachPoint(beta(), state.gamma))}).`;
+      : `Within these three windows it stays below the ceiling.<br>Its growth still forces a breach in a later window (its swings reach the ceiling around x ≈ ${sci(breachPoint(beta(), state.gamma))}).`;
+  }
+  $('chartReadout').innerHTML = msg;
+}
 
+function drawStep4() {
   const sq = drawSqueeze(), bl = drawBalance();
   const prod = PRIMES.slice(0, sq.k).reduce((a, p) => a * p, 1);
   let maxK = 0;
@@ -379,6 +383,17 @@ $('beta').addEventListener('input', () => {
   syncSliders(); drawAll();
 });
 $('gamma').addEventListener('input', () => { state.gamma = Number($('gamma').value); syncSliders(); drawAll(); });
+for (const tab of document.querySelectorAll('.tab')) {
+  tab.addEventListener('click', () => {
+    state.mode = tab.dataset.tab;
+    for (const t of document.querySelectorAll('.tab')) t.setAttribute('aria-selected', String(t === tab));
+    for (const p of document.querySelectorAll('[data-mode]')) p.hidden = p.dataset.mode !== state.mode;
+    $('chart').closest('[data-panel]').hidden = state.mode === 'step4';
+    $('squeeze').closest('[data-panel]').hidden = state.mode !== 'step4';
+    $('bandLabel').textContent = state.mode === 'windows' ? 'ceiling +0.0462, walls over the windows' : 'band ±0.0462 forced by RH';
+    drawAll();
+  });
+}
 $('rogueOn').addEventListener('change', () => { state.on = $('rogueOn').checked; drawAll(); });
 $('k').addEventListener('input', drawAll);
 $('lx').addEventListener('input', drawAll);
