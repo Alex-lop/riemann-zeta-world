@@ -183,7 +183,9 @@ const STEPS = [
     legend: [['blue', 'open', 'a prime']],
     mount(stage, ui) {
       const MAX = 999999999;
-      const box = el(`<div><label class="slide" style="grid-template-columns:auto 1fr">a whole number<input class="num" type="number" min="2" max="${MAX}" value="360" inputmode="numeric"></label><p class="atoms"></p><p class="readout"></p></div>`);
+      const box = el(`<div><label class="slide" style="grid-template-columns:auto 1fr">a whole number<input class="num" type="number" min="2" max="${MAX}" value="360" inputmode="numeric"></label><p class="atoms"></p><p class="readout"></p>
+        <div class="hundred" aria-hidden="true">${Array.from({ length: 100 }, (_, k) => `<i${isPrime(k + 1) ? ' class="p"' : ''}>${k + 1}</i>`).join('')}</div>
+        <p class="small">The first hundred numbers. The primes are outlined, and filled where they divide yours.</p></div>`);
       const input = box.querySelector('input'), [atoms, read] = box.querySelectorAll('p');
       const split = () => {
         const n = +input.value, parts = [];
@@ -192,6 +194,7 @@ const STEPS = [
         for (let d = 2; d * d <= m; d++) while (m % d === 0) { parts.push(d); m /= d; }
         if (m > 1) parts.push(m);
         atoms.innerHTML = parts.map(p => `<span>${p}</span>`).join('<i>×</i>');
+        for (const cell of box.querySelectorAll('.hundred .p')) cell.classList.toggle('on', n % +cell.textContent === 0);
         const powers = [...new Set(parts)].map(p => { const k = parts.filter(q => q === p).length; return k > 1 ? `${p}<sup>${k}</sup>` : p; });
         read.innerHTML = parts.length === 1 ? `${n.toLocaleString('en')} is a prime: one atom` : `${n.toLocaleString('en')} = ${powers.join(' × ')}`;
       };
