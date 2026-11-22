@@ -62,6 +62,12 @@ function ride(stage, ui, each) {
   const input = box.querySelector('input'), canvas = $('world');
   stage.append(box);
   let own = false, stop = () => {};                          // own: the visitor has taken the slider, so the ride stops driving itself
+  // Under the slider, a mark for each of the 100 zeros where it stands along the line. A mark is tall and solid once passed.
+  let at = 12, seen = -1;
+  const marks = plot(box, '14px', (ctx, w, h) => {
+    for (const g of ZEROS) { const x = Math.round(8 + (w - 16) * (g - 12) / 225), done = g < at; ctx.fillStyle = done ? C.ink : C.strong; ctx.fillRect(x, done ? 0 : 4, done ? 2 : 1, done ? h : h - 8); }
+  });
+  marks.canvas.classList.add('bare'); marks.canvas.style.gridColumn = '2';
   input.addEventListener('input', () => { own = true; ui.done(); });
   withWorld(w => {
     const tOf = z => (scene.zOf(0) - z) / (scene.zOf(0) - scene.zOf(1)), t0 = performance.now();
@@ -76,7 +82,9 @@ function ride(stage, ui, each) {
       const dz = (scene.zOf(+input.value) - w.controls.target.z) * (still() ? 1 : 0.1);   // ponytail: eased per frame, not per second; fine at 60 or 120 Hz
       w.camera.position.z += dz; w.controls.target.z += dz;
       const T = tOf(w.controls.target.z);
-      each(T, w.zeros.filter(g => g < T).length);
+      const passed = w.zeros.filter(g => g < T).length;
+      if (passed !== seen) { seen = passed; at = T; marks.paint(); }
+      each(T, passed);
     };
     stop = () => { w.tick = null; w.controls.enableZoom = true; canvas.removeEventListener('wheel', wheel); };
   });
