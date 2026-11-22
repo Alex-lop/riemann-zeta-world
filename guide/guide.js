@@ -39,7 +39,7 @@ let world = null, scene = null, opening = null, turn = 0;
 const NO_WEBGL = 'This browser could not start WebGL, so the 3D view is off.';
 
 function openWorld() {
-  return opening ??= import('./scene.js?v=6').then(m => {
+  return opening ??= import('./scene.js?v=7').then(m => {
     scene = m;
     world = m.startWorld($('world'), { panel: $('panel'), count: $('count'), quiet: still });
     new ResizeObserver(() => world.resize()).observe($('panel'));   // portrait frames the scene above the card, whose height changes with the step

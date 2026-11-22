@@ -4,6 +4,7 @@ import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { ZEROS, CHECKED, zetaGrid } from './zeros.js?v=2';
+import { makeSky } from './astral.js?v=1';
 
 export { ZEROS };
 
@@ -28,9 +29,10 @@ const RAIL = 2.6 * RISE, DIAL = 1.5;               // the survey: the rail's hei
 // y = RISE * (2 / pi) * atan|zeta(s)|: a zero is a pit to the floor and the pole s = 1 is a spire of height RISE.
 export const xOf = sigma => WIDTH * (sigma - 0.5), zOf = t => LEN * (T_MAX / 2 - t);
 
-// The look: the canvas is transparent, so the page's ground and ticks show around the land. The land is shaded by height,
-// from WELL at the floor to HIGH on top, and nothing is lit, so these are the colours on screen. The palette is the page's
-// (index.html): a near-black ground, light ink for what is real, gold for the critical line, red for the hypothetical zero.
+// The look: the land floats in a night sky (astral.js) that fills the canvas. The land is shaded by height, from WELL at the
+// floor to HIGH on top, and nothing is lit, so these are the colours on screen. The palette is the page's (index.html):
+// a near-black ground, light ink for what is real, gold for the critical line, red for the hypothetical zero.
+// The line is a beam of gold light drawn by the land's shader, with pulses running north along it.
 const GROUND = 0x0d1117, WELL = 0x05070b, HIGH = 0x566279, GOLD = 0xf5c542, INK = 0xecebe6, UNCHECKED = 0x364052, RED = 0xe6392d, MUTED = 0x9aa0aa, DIM = 0x7f8794, ACT = 0x4fd6be;
 const squash = size => RISE * (2 / Math.PI) * Math.atan(size);   // every height in the world: 0 at a zero, RISE at the pole
 
@@ -49,11 +51,13 @@ console.assert(Math.abs(lnAbsGamma(0.5, 0) - 0.5 * Math.log(Math.PI)) < 1e-7 && 
 // count: the element the roll call writes to. quiet: a function that says whether motion is paused.
 // Set tick to a function of the frame timestamp to move the camera. run(false) stops drawing and run(true) resumes.
 export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });   // the canvas stays clear. Never setClearColor: its alpha defaults to 1
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });   // the sky fills the canvas, so nothing shows through it
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(GROUND, FOG0, FOG1);     // the far end of the land fades into the page. The render loop rescales it
+  scene.fog = new THREE.Fog(GROUND, FOG0, FOG1);     // the far end of the land fades into the sky. The render loop rescales it
+  const sky = makeSky(); scene.add(sky.group);
+  const flow = { value: 0 };                         // seconds of motion, shared by every shader here. It stops while motion is paused
 
   // Baked north to south (t from T_MAX down to 0): that is PlaneGeometry's row order after rotateX(-90 deg),
   // so the grid index is the vertex index and the fill loop needs no arithmetic.
@@ -87,14 +91,12 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   }
   terrain.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   land.y0 = land.y1 = Float32Array.from(pos.array.subarray(0, pos.count), (_, v) => pos.getY(v)); land.s0 = land.s1 = shading();
-  // Painted on, so it lies on the land whatever its shape: the line, the two edges of the critical strip, and a ruler.
+  // Painted on, so it lies on the land whatever its shape: the two edges of the critical strip, and a ruler.
   const fixed = new Uint8Array(pos.count), EDGE = NS * 0.5 / (SIG1 - SIG0);   // EDGE: how many columns from the line to Re(s) = 0 or 1
   const ink = (v, colour) => { c.set(colour).toArray(colors, v * 3); fixed[v] = 1; };
   for (let v = 0; v < pos.count; v++) {
     const col = Math.abs(v % W - ROAD);
-    if (col === 0) ink(v, GOLD);                                              // the critical line,
-    else if (col === 1) ink(v, GROUND);                                       // with a dark casing so it is gold against the ground even on high land
-    else if (col === EDGE) ink(v, DIM);                                       // Re(s) = 0 and Re(s) = 1
+    if (col === EDGE) ink(v, DIM);                                            // Re(s) = 0 and Re(s) = 1. The line itself is drawn by the shader below
   }
   // The ruler: a tick on the land's east edge at every 10 of Im(s), longer at every 50, with its number beside it (below).
   const RULER = Array.from({ length: Math.floor(T_MAX / 10) }, (_, k) => 10 * (k + 1));
@@ -104,13 +106,67 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   const vPit = Math.round((1 - ZEROS[0] / T_MAX) * NT) * (NS + 1) + ROAD, vPole = NT * (NS + 1) + NS * (1 - SIG0) / (SIG1 - SIG0);
   console.assert(Math.abs(pos.getZ(vPit) - zOf(ZEROS[0])) < LEN * T_MAX / NT && pos.getY(vPit) < 0.05 * RISE
     && Math.hypot(pos.getX(vPole) - xOf(1), pos.getZ(vPole) - zOf(0)) < 1e-3 && pos.getY(vPole) === RISE, 'terrain self-check failed: the mesh is flipped');
-  scene.add(new THREE.Mesh(terrain, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })));
+  // The land's surface. Its colours are the baked ones above, and the shader adds what moves. The line is a lane of light:
+  // a dark bed so it reads on high land, a bright core, two faint rails, and a glow that falls on the land beside it, with
+  // pulses running north. Rings spread from every zero that the roll call has reached. Contour lines mark each eighth of the
+  // pole's height. The land thins to nothing with distance, so the sky shows through its far end, and the core carries on.
+  const nearest = new Float32Array(pos.count);       // how far each vertex is from the nearest zero, in world units
+  for (let j = 0; j <= NT; j++) {
+    const t = T_MAX * (1 - j / NT), dt = LEN * Math.min(...ZEROS.map(g => Math.abs(g - t)));
+    for (let i = 0, v = j * W; i < W; i++, v++) nearest[v] = Math.hypot(pos.getX(v), dt);
+  }
+  terrain.setAttribute('aZero', new THREE.BufferAttribute(nearest, 1));
+  const look = new THREE.ShaderMaterial({
+    vertexColors: true, side: THREE.DoubleSide, transparent: true, forceSinglePass: true,
+    uniforms: { uTime: flow, uFog: { value: new THREE.Vector2(FOG0, FOG1) }, uFront: { value: 1e9 }, uGold: { value: new THREE.Color(GOLD) }, uInk: { value: new THREE.Color(INK) }, uGround: { value: new THREE.Color(GROUND) } },
+    vertexShader: `
+      attribute float aZero; varying vec3 vColor, vPos; varying float vZero, vDepth;
+      void main() {
+        vColor = color; vPos = position; vZero = aZero;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vDepth = -mv.z; gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform float uTime, uFront; uniform vec2 uFog; uniform vec3 uGold, uInk, uGround;
+      varying vec3 vColor, vPos; varying float vZero, vDepth;
+      void main() {
+        vec3 col = vColor;
+        float fog = smoothstep(uFog.x, uFog.y, vDepth);
+        float g = vPos.y * 8.0;
+        col += vec3(0.05, 0.065, 0.11) * (1.0 - smoothstep(0.0, 1.3, abs(fract(g - 0.5) - 0.5) / max(fwidth(g), 1e-5)));
+        col += uInk * 0.16 * pow(0.5 + 0.5 * sin(vZero * 6.5 - uTime * 1.5), 8.0) * exp(-vZero * 0.9) * step(uFront - 1.5, vPos.z);
+        float d = abs(vPos.x), aa = fwidth(vPos.x) + 1e-5;
+        float lane = 1.0 - smoothstep(0.17 - aa, 0.17 + aa, d), core = 1.0 - smoothstep(0.045 - aa, 0.045 + aa, d);
+        float pulse = pow(1.0 - fract(vPos.z * 0.2 + uTime * 0.5), 5.0);     // one every 5 along the line, 2.5 a second northward
+        col = mix(col, uGround * 0.45, lane * 0.85);
+        col += uGold * (exp(-d * d * 9.0) * (0.1 + 0.5 * pulse) + 0.3 * lane * smoothstep(0.1, 0.15, d));
+        col = mix(col, mix(uGold, vec3(1.0, 0.95, 0.8), 0.25 + 0.75 * pulse), core);
+        gl_FragColor = vec4(col, max(1.0 - fog, 0.9 * core * (1.0 - smoothstep(uFog.y, uFog.y * 3.0, vDepth))));
+        #include <colorspace_fragment>
+      }`,
+  });
+  scene.add(new THREE.Mesh(terrain, look)).children.at(-1).renderOrder = -1;   // first of what is see-through, so the sky is behind it and the rest in front
 
   // Pin heads sit above everything (the land never exceeds RISE) so no ridge hides them; the stalk's foot is the zero.
   const pin = new THREE.CylinderGeometry(HEAD / 7, HEAD / 7, PIN).translate(0, PIN / 2, 0), head = new THREE.SphereGeometry(HEAD, 16, 12).translate(0, PIN, 0);
   const dim = new THREE.MeshBasicMaterial({ color: UNCHECKED }), glow = new THREE.MeshBasicMaterial({ color: INK, fog: false });   // a checked pin shows through the fog
+  // A star on each head: a glow with four rays, drawn once on a canvas. It lights with its pin, and twinkles.
+  const flare = document.createElement('canvas'); flare.width = flare.height = 128;
+  {
+    const ctx = flare.getContext('2d'), soft = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    for (const [at, a] of [[0, 1], [0.1, 0.6], [0.3, 0.14], [0.6, 0.03], [1, 0]]) soft.addColorStop(at, `rgb(255 255 255 / ${a})`);
+    ctx.fillStyle = soft; ctx.fillRect(0, 0, 128, 128);
+    for (const turn of [0, 1]) {
+      const ray = ctx.createLinearGradient(0, 0, 128, 0);
+      for (const [at, a] of [[0, 0], [0.5, 0.9], [1, 0]]) ray.addColorStop(at, `rgb(255 255 255 / ${a})`);
+      ctx.save(); ctx.translate(64, 64); ctx.rotate(turn * Math.PI / 2); ctx.translate(-64, -64); ctx.fillStyle = ray; ctx.fillRect(0, 63, 128, 2); ctx.restore();
+    }
+  }
+  const shine = color => new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(flare), color, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const unlit = shine(UNCHECKED), star = shine(INK), hotStar = shine(ACT);
   const markers = ZEROS.map(t => {
-    const marker = new THREE.Group().add(new THREE.Mesh(pin, dim), new THREE.Mesh(head, dim));
+    const marker = new THREE.Group().add(new THREE.Mesh(pin, dim), new THREE.Mesh(head, dim), new THREE.Sprite(unlit));
+    marker.children[2].position.y = PIN;
     marker.position.set(0, 0, zOf(t));
     scene.add(marker);
     return marker;
@@ -122,7 +178,8 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   function rollCall(ms) {
     const n = still ? ZEROS.length : Math.min(ZEROS.length, ms / ROLL_MS);
     if (lit >= n) return;
-    for (; lit < n; lit++) if (CHECKED[lit]) { passed++; for (const m of markers[lit].children) m.material = glow; }
+    for (; lit < n; lit++) if (CHECKED[lit]) { passed++; const [stalk, knob, halo] = markers[lit].children; stalk.material = knob.material = glow; halo.material = star; }
+    look.uniforms.uFront.value = zOf(ZEROS[lit - 1]);                         // the rings start at each zero as the roll call reaches it
     if (count) count.textContent = `${passed} / ${ZEROS.length} zeros checked`;
   }
 
@@ -297,8 +354,8 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   world.light = t => {
     const k = ZEROS.indexOf(t);
     if (k === hot) return;
-    if (hot >= 0) markers[hot].children[1].material = CHECKED[hot] && hot < lit ? glow : dim;
-    if (k >= 0) markers[k].children[1].material = act;
+    if (hot >= 0) { const on = CHECKED[hot] && hot < lit; markers[hot].children[1].material = on ? glow : dim; markers[hot].children[2].material = on ? star : unlit; }
+    if (k >= 0) { markers[k].children[1].material = act; markers[k].children[2].material = hotStar; }
     hot = k;
   };
 
@@ -323,14 +380,42 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
   for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, () => { held = null; });
   world.holding = () => !!held;
 
+  // Motes of gold light that rise from the line and drift north, in a window that rides with the view.
+  const SPAN = 90, MOTES = 520, seed = new Float32Array(MOTES * 3);
+  for (let k = 0; k < MOTES; k++) seed.set([(Math.random() + Math.random() + Math.random() - 1.5) * 0.9, Math.random(), Math.random() * SPAN], k * 3);
+  const motes = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(seed, 3)), new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uTime: flow, uZ: { value: 0 }, uH: { value: 1 }, uEnds: { value: new THREE.Vector2(zOf(T_MAX), zOf(0)) }, uGold: { value: new THREE.Color(GOLD) } },
+    vertexShader: `
+      uniform float uTime, uZ, uH; uniform vec2 uEnds; varying float vA;
+      void main() {
+        float pace = fract(position.z * 0.371), life = fract(position.y + uTime * (0.04 + 0.07 * pace));
+        vec3 p = vec3(position.x * (0.2 + 1.2 * life), 0.05 + 2.6 * life * life, uZ + 18.0 - mod(uZ + 18.0 - position.z + uTime * 0.5, ${SPAN}.0));
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        vA = sin(3.14159 * life) * (0.25 + 0.75 * pace) * step(uEnds.x, p.z) * step(p.z, uEnds.y);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = max(1.5, 0.05 * projectionMatrix[1][1] * uH * 0.5 / -mv.z);
+      }`,
+    fragmentShader: `
+      uniform vec3 uGold; varying float vA;
+      void main() {
+        float a = smoothstep(1.0, 0.0, length(gl_PointCoord - 0.5) * 2.0);
+        gl_FragColor = vec4(mix(uGold, vec3(1.0), 0.3) * a * a * vA, 1.0);
+        #include <colorspace_fragment>
+      }`,
+  }));
+  motes.frustumCulled = false; scene.add(motes);
+
   const start = performance.now();
-  let lift = PIN;                                    // how tall the pins are now: PIN, or RAIL while the survey is up
+  let lift = PIN, last = start;                      // lift: how tall the pins are now, PIN, or RAIL while the survey is up
   const frame = now => {
+    if (!quiet()) flow.value += Math.min(now - last, 100) / 1000;             // a tab that was away does not jump ahead
+    last = now;
     rollCall(now - start);
     const to = survey.visible ? RAIL : PIN;
     if (lift !== to) {
       lift = quiet() || Math.abs(to - lift) < 0.004 ? to : lift + (to - lift) * 0.12;
-      for (const m of markers) { m.children[0].scale.y = lift / PIN; m.children[1].position.y = lift - PIN; }
+      for (const m of markers) { m.children[0].scale.y = lift / PIN; m.children[1].position.y = lift - PIN; m.children[2].position.y = lift; }
     }
     if (land.mix !== land.to) {                                               // the morph between the two lands
       land.mix = quiet() || Math.abs(land.to - land.mix) < 0.003 ? land.to : land.mix + (land.to - land.mix) * 0.06;
@@ -341,6 +426,10 @@ export function startWorld(canvas, { panel, count, quiet = () => false } = {}) {
     controls.update();
     const k = Math.max(camera.position.y / FOG_H, 1);                         // fog thins as the camera climbs: low down the road vanishes into it,
     scene.fog.near = FOG0 * k; scene.fog.far = FOG1 * k;                      // from high up the whole road is clear
+    look.uniforms.uFog.value.set(scene.fog.near, scene.fog.far);
+    markers.forEach((m, i) => m.children[2].scale.setScalar(1.25 + 0.2 * Math.sin(flow.value * 2.3 + i * 1.7)));   // the stars twinkle
+    motes.material.uniforms.uZ.value = controls.target.z; motes.material.uniforms.uH.value = renderer.domElement.height;
+    sky.update(flow.value, camera);
     renderer.render(scene, camera);
   };
   world.run(true);
