@@ -1,7 +1,8 @@
 // The site-wide navigation bar: Zeta World (home) · Learn · Explore · The proof.
 // Each page loads this with <script src="./nav.js" defer></script>. It inserts the bar as the first
 // element of <body> and publishes its height as the CSS variable --zw-nav-h, so pages can offset
-// their own fixed panels. It does nothing inside the front page's background view (?bg=1, or framed).
+// their own fixed panels. It also adds the credits line at the bottom of the page (the front page
+// carries its own, in its text panel). It does nothing inside the front page's background view.
 (function () {
   if (new URLSearchParams(location.search).has('bg') || window.top !== window.self) return;
 
@@ -10,6 +11,10 @@
     { key: 'explore', href: './landscape.html', label: 'Explore', title: 'The zeta landscape, ξ(s), L(s,χ) and the primes' },
     { key: 'proof', href: './proof.html', label: 'The proof', title: "The announced proof's strategy, in pictures" },
   ];
+  // Shared with the front page, which shows the same words in its text panel.
+  const CREDITS = 'Built by <a href="https://github.com/Alex-lop">Alexander Lopez</a> and ' +
+    '<a href="https://github.com/andrei-radulescu-banu">Andrei Radulescu-Banu</a> at Sundai AI Hack 150: Building 3D Worlds, November 2026. ' +
+    '<a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a>';
   const file = location.pathname.split('/').pop() || 'index.html';
   const current = { 'learn.html': 'learn', 'landscape.html': 'explore', 'proof.html': 'proof', 'step4.html': 'proof' }[file] || 'home';
   // Full-screen 3D pages get a fixed bar over the scene; scrolling pages get a sticky one.
@@ -27,6 +32,12 @@
     .zw-nav a[aria-current="page"] { color: #f5c542; background: rgba(245, 197, 66, 0.1); }
     .zw-nav .zw-home { display: flex; align-items: center; gap: 7px; margin-right: auto; color: #ebe9f5; font-weight: 600; }
     .zw-nav .zw-home b { color: #f5c542; font: italic 600 19px/1 Georgia, 'Times New Roman', serif; }
+    .zw-credits { box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 18px 16px 28px; color: #8c89a3;
+      font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    .zw-credits a { color: #8fd3ff; }
+    .zw-credits.zw-float { position: fixed; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 900; max-width: none;
+      width: max-content; padding: 4px 12px; border: 0; border-radius: 999px; background: rgba(5, 6, 15, 0.7); font-size: 11.5px; }
+    @media (max-width: 900px) { .zw-credits.zw-float { display: none; } }
     @media (max-width: 420px) {
       .zw-nav { padding: 0 6px; gap: 0; font-size: 13px; }
       .zw-nav a { padding: 7px 7px; }
@@ -55,4 +66,11 @@
     nav.appendChild(a);
   }
   document.body.prepend(nav);
+
+  if (current !== 'home') {
+    const credits = document.createElement('footer');
+    credits.className = 'zw-credits' + (current === 'explore' ? ' zw-float' : '');
+    credits.innerHTML = CREDITS;
+    document.body.appendChild(credits);
+  }
 })();
