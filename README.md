@@ -2,18 +2,20 @@
 
 A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai Hack 150 (Building 3D Worlds).
 
-The idea is still broad. The goal is a world you can fly through that lets you *see* the most famous problem in math and how it connects to the prime numbers.
+**Live: https://alex-lop.github.io/zeta-world/** · [From primes to the proof, in 28 steps](https://alex-lop.github.io/zeta-world/learn.html) · [The plan](PLAN.md) · [Brief for the interactive guide](GUIDE_BRIEF.md)
+
+The idea is still broad. The goal is a world you can fly through that lets you *see* the Riemann hypothesis, the most famous problem in math, and how it connects to the prime numbers.
 
 ## Status of the math
 
-On 20 November 2026 Levent Alpöge announced a proof of the Riemann hypothesis, and of the generalized Riemann hypothesis for Dirichlet L-functions, published as a formal proof in Lean (175,187 files).
+As of 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a [joint statement of the Lean and Mathlib communities](https://leanprover-community.github.io/blog/posts/riemann-hypothesis/). Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. In October 2026 a proof of a weaker "quasi-Riemann hypothesis" (no zeros with real part above 7/8) was released, checked in Lean and also not peer reviewed.
+
+More detail: Levent Alpöge announced the proof on 20 November 2026. It covers the Riemann hypothesis and the generalized Riemann hypothesis for Dirichlet L-functions, published as a formal proof in Lean (175,187 files).
 
 - **Machine-checked:** two independent proof checkers (Lean's kernel and NanoDA, written in Rust) accepted the complete proof, and several outside groups report reproducing that. It uses only Lean's three standard axioms, and its final statements match Mathlib's definition of the Riemann hypothesis.
 - **Not yet refereed:** there is no human-readable write-up of the argument, and mathematicians have not reviewed it.
 
-Before that, in October 2026, a proof of a weaker "quasi-Riemann hypothesis" was announced.
-
-This project visualizes the statement: the zeros, the critical line, and how the zeros shape the primes. It makes no claim about the proof. For a map of the announced proof and a record of who has checked what, see [riemann-rev](https://github.com/nasqret/riemann-rev) ([site](https://nasqret.github.io/riemann-rev/)).
+This project shows what the hypothesis says: the zeros, the critical line, and how the zeros shape the primes. It proves nothing. For a map of the announced proof and a record of who has checked what, see [riemann-rev](https://github.com/nasqret/riemann-rev) ([site](https://nasqret.github.io/riemann-rev/)).
 
 ## Getting started
 
@@ -34,6 +36,9 @@ ES modules need a server, not `file://`:
 ```sh
 python3 -m http.server 8000   # then open http://localhost:8000
 ```
+
+- `index.html`: the home page, a self-contained terrain with the first 13 zeros.
+- `landscape.html`: the explorer, with ζ(s)/ξ(s), L(s, χ) and Primes tabs, a movable window up to t = 110, a critical-line probe, and the curve panel. Open http://localhost:8000/landscape.html.
 
 - `zeta.js`: double-precision ζ(s) using the Borwein-accelerated eta series (valid in the critical strip), the completed function ξ(s), Hardy's Z(t), and a zero finder.
 - `main.js`: the terrain (ζ, ξ or L(s, χ) computed per vertex in a shader, chosen with tabs and radio buttons), critical-line probe, and the critical-line curve.

@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From primes to the proof | Zeta World</title>
+<meta name="description" content="A slow climb from prime numbers to the Riemann hypothesis and the proof released in November 2026, one small step at a time.">
+<meta property="og:title" content="From primes to the proof">
+<meta property="og:description" content="A slow climb from prime numbers to the Riemann hypothesis and the proof released in November 2026, one small step at a time.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://alex-lop.github.io/zeta-world/learn.html">
+<meta property="og:image" content="https://alex-lop.github.io/zeta-world/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='78' font-size='90' text-anchor='middle' fill='%23f5c542'>ζ</text></svg>">
+<style>
+  :root { --bg: #05060f; --panel: #0e1020; --line: #262a45; --text: #ebe9f5; --dim: #b9b6cc; --gold: #f5c542; --link: #8fd3ff; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, sans-serif; }
+  .wrap { max-width: 44rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  a { color: var(--link); }
+  header h1 { margin: 1.5rem 0 .25rem; font: italic 2.6rem/1.1 Georgia, 'Times New Roman', serif; }
+  header .tag { margin: 0; color: var(--gold); }
+  .status { margin: 1.25rem 0 0; padding: .75rem 1rem; border-left: 3px solid var(--gold); background: var(--panel); font-size: .9rem; color: var(--dim); }
+  nav ol { margin: 1.25rem 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; counter-reset: s; }
+  nav li { counter-increment: s; padding: .4rem .75rem; border: 1px solid var(--line); border-radius: 2rem; font-size: .9rem; }
+  nav li::before { content: counter(s) ". "; color: var(--dim); }
+  nav li span { color: var(--dim); font-size: .8rem; }
+  section { margin-top: 3.5rem; }
+  h2 { margin: 0; font: italic 2rem/1.15 Georgia, 'Times New Roman', serif; }
+  h2 .stage { display: block; font: 600 .8rem/1.6 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+  .blurb { margin: .25rem 0 0; color: var(--dim); }
+  .step { margin-top: 1.5rem; padding: 1.25rem 1.25rem 1rem; background: var(--panel); border: 1px solid var(--line); border-radius: .75rem; scroll-margin-top: 1rem; }
+  .step h3 { margin: 0; font-size: 1.2rem; line-height: 1.3; }
+  .step .n { display: inline-block; min-width: 1.7em; margin-right: .35em; padding: 0 .3em; box-sizing: border-box; border-radius: 1em; background: var(--gold); color: #1a1400; font-size: .85em; text-align: center; font-variant-numeric: tabular-nums; }
+  .step p { margin: .7rem 0 0; }
+  .idea { color: var(--gold); }
+  .formula { padding: .6rem 1rem; background: var(--bg); border-radius: .5rem; text-align: center; font: 1.1rem/1.5 Georgia, 'Times New Roman', serif; overflow-x: auto; }
+  .box { padding: .6rem .9rem; border-left: 3px solid var(--line); background: var(--bg); font-size: .95rem; }
+  .box.try { border-left-color: var(--link); }
+  .world, .src { font-size: .85rem; color: var(--dim); }
+  code { font: .9em ui-monospace, SFMono-Regular, Menlo, monospace; }
+  sup, sub { line-height: 0; }
+  footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--dim); }
+  @media (max-width: 30rem) { body { font-size: 16px; } header h1 { font-size: 2rem; } h2 { font-size: 1.6rem; } .step { padding: 1rem .9rem .8rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p><a href="./">← Back to the 3D world</a></p>
+  <h1>From primes to the proof</h1>
+  <p class="tag">28 small steps, in 5 stages. No background needed beyond school algebra.</p>
+  <p>Each step is one idea, with one worked example. The gold line under each title is the whole step in a sentence, so the climb can also be skimmed.</p>
+  <p class="status">Status, 22 Nov 2026: a computer-checked proof of the Riemann hypothesis was released on 20 Nov and certified correct on 21 Nov in a <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">joint statement of the Lean and Mathlib communities</a>. Its author has published it only as Lean code, with no paper yet, and it has not been peer reviewed. The last stage of this page reports what has been released and explained so far. It proves nothing.</p>
+  <nav aria-label="Stages">
+  <ol>
+    <li><a href="#stage-numbers">Numbers</a> <span>5 steps</span></li>
+    <li><a href="#stage-zeta">The zeta function</a> <span>5 steps</span></li>
+    <li><a href="#stage-hypothesis">The hypothesis</a> <span>5 steps</span></li>
+    <li><a href="#stage-algebra">The algebra</a> <span>6 steps</span></li>
+    <li><a href="#stage-proof">2026</a> <span>7 steps</span></li>
+  </ol>
+  </nav>
+</header>
+<main>
+<section id="stage-numbers">
+<h2><span class="stage">Stage 1</span> Numbers</h2>
+<p class="blurb">Whole numbers, primes, and the question of how primes are spread out.</p>
+<article class="step" id="primes">
+  <h3><span class="n">1</span> Primes are the atoms</h3>
+  <p class="idea">Every whole number above 1 breaks into primes, and it does so in exactly one way.</p>
+  <p>A whole number above 1 is called <strong>prime</strong> when the only whole numbers that divide it evenly are 1 and itself. The first few primes are 2, 3, 5, 7, 11 and 13. The number 6 is not prime, because 6 = 2 × 3.</p>
+  <p>Any whole number above 1 that is not prime can be split into two smaller factors. Each of those is either prime or can be split again. The splitting has to stop, because the pieces keep getting smaller. What remains is a list of primes that multiply back to the original number.</p>
+  <p>The <strong>fundamental theorem of arithmetic</strong> says more: every whole number above 1 is a product of primes in exactly one way, apart from the order in which the primes are written. A prime counts as a product with a single factor. Whatever route the splitting takes, the same primes come out, each the same number of times. This is also why 1 is not counted as a prime: extra factors of 1 would spoil the uniqueness.</p>
+  <p class="box"><b>Example.</b> 360 = 36 × 10 = (2 × 2 × 3 × 3) × (2 × 5) = 2<sup>3</sup> × 3<sup>2</sup> × 5. Starting another way, 360 = 8 × 45 = (2 × 2 × 2) × (3 × 3 × 5), gives the same primes: three 2s, two 3s and one 5.</p>
+  <p class="box try"><b>Try it.</b> What are the prime factors of 84? — 84 = 2 × 2 × 3 × 7.</p>
+</article>
+<article class="step" id="endless">
+  <h3><span class="n">2</span> The primes never run out</h3>
+  <p class="idea">Multiply any finite list of primes and add 1: the result has a prime factor that is not on the list.</p>
+  <p>A finite list of primes, however long, is never complete. Euclid proved this in his <em>Elements</em>, and the argument fits in a few lines.</p>
+  <p>Take any finite list of primes. Multiply them all together and add 1. Call the result N. Dividing N by any prime on the list leaves a remainder of 1, because the product divides evenly and the extra 1 is left over. So no prime on the list divides N.</p>
+  <p>But N is a whole number above 1, so by the previous step it is a product of primes. Each of those primes divides N, so none of them is on the list. The list was missing at least one prime.</p>
+  <p>Note what the argument does not say. N itself need not be prime. It only has a prime factor that is new. Since this works for every finite list, there are infinitely many primes.</p>
+  <p class="box"><b>Example.</b> 2 × 3 × 5 × 7 + 1 = 211, which is prime. But 2 × 3 × 5 × 7 × 11 × 13 + 1 = 30031 = 59 × 509, which is not prime. Its factors 59 and 509 are primes that were missing from the list.</p>
+  <p class="box try"><b>Try it.</b> Start with the list 2, 3. Which new prime does the argument produce? — 2 × 3 + 1 = 7.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Euclid%27s_theorem">Euclid's theorem (Elements, Book IX, Proposition 20), Wikipedia</a></p>
+</article>
+<article class="step" id="irregular">
+  <h3><span class="n">3</span> Primes look random up close</h3>
+  <p class="idea">Primes get rarer as numbers grow, but unevenly, and no simple formula is known that gives the next one.</p>
+  <p>There are 25 primes below 100. No simple formula is known that takes one prime and returns the next. The next prime is found by testing the numbers that follow, one after another.</p>
+  <p>Primes become rarer further along. The first hundred numbers contain 25 primes, the stretch from 101 to 200 contains 21, and the stretch from 901 to 1000 contains only 14.</p>
+  <p>The thinning is uneven, though. Some primes sit just two apart, such as 11 and 13, or 101 and 103. Pairs like these are called <strong>twin primes</strong>. Elsewhere there are longer stretches with no primes at all: after 113 the next prime is 127, a gap of 14. Small gaps and large gaps are mixed together with no visible pattern.</p>
+  <p>So the primes are fixed, exact numbers with nothing random about them, yet a short stretch of them looks as if it were scattered by chance. The next step moves back to see whether order appears at a larger scale.</p>
+  <p class="box"><b>Example.</b> The primes between 100 and 130 are 101, 103, 107, 109, 113 and 127. The gaps between neighbors are 2, 4, 2, 4 and then 14. Two pairs of twin primes are followed by thirteen numbers in a row with no prime.</p>
+  <p class="box try"><b>Try it.</b> What is the next prime after 89? — 97, since 91 = 7 × 13, 93 = 3 × 31 and 95 = 5 × 19.</p>
+</article>
+<article class="step" id="counting">
+  <h3><span class="n">4</span> Counting primes</h3>
+  <p class="idea">The number of primes up to x is roughly x / ln x; the central question is how far a sharpened estimate misses.</p>
+  <p>Write π(x) for the number of primes up to x. Here π is only a name for this count, not the circle number π ≈ 3.14159. The graph of π(x) is a staircase: flat between primes, with one step up at each prime.</p>
+  <p>Around 1792 or 1793, as a teenager, Gauss studied tables of primes and guessed that near a large number x about one number in ln x is prime. That puts π(x) near x / ln x. Here ln x is the <strong>natural logarithm</strong>: the power to which e ≈ 2.718 must be raised to give x. It grows by about 2.3 each time x gains a digit.</p>
+  <p>Up to 1,000: 168 primes, estimate 145. Up to 1,000,000: 78,498 primes, estimate 72,382. Up to 1,000,000,000: 50,847,534 primes, estimate 48,254,942.</p>
+  <p>The estimate misses by 23, then 6,116, then about 2.6 million. As a share of the true count the miss shrinks: 14%, 8%, 5%. A sharper form of Gauss's guess misses by only 10, 130 and 1,701, and the rest of this path asks how large its error is.</p>
+  <p class="formula">π(x) ≈ x / ln x</p>
+  <p class="box"><b>Example.</b> For x = 100: ln 100 ≈ 4.605, so x / ln x ≈ 100 / 4.605 ≈ 21.7. The true count is π(100) = 25. The estimate is low by about 3.</p>
+  <p class="box try"><b>Try it.</b> What is π(10)? — 4, because the primes up to 10 are 2, 3, 5 and 7.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Prime_number_theorem">Prime number theorem, history section (Gauss's recollection of 1792 or 1793), Wikipedia</a></p>
+</article>
+<article class="step" id="clock">
+  <h3><span class="n">5</span> Clock arithmetic</h3>
+  <p class="idea">Arithmetic can be done with remainders alone, and remainders sort the primes into classes.</p>
+  <p>On a 12-hour clock, 5 hours after 9 o'clock is 2 o'clock. The clock keeps only the remainder of 14 after dividing by 12. Arithmetic that keeps only remainders is called <strong>modular arithmetic</strong>. The remainder of a after dividing by n is written a mod n, so 14 mod 12 = 2.</p>
+  <p>The last digit of a whole number is that number mod 10. The useful fact is that remainders can be taken early: to find a sum or a product mod n, it is enough to know each of the numbers mod n. The last digit of 17 × 28 depends only on 7 × 8 = 56, so it is 6.</p>
+  <p>Remainders also sort the primes. Dividing by 4 leaves 0, 1, 2 or 3. A number that leaves 0 or 2 is even, and the only even prime is 2. So every prime except 2 leaves 1 or 3. For example 5, 13 and 17 leave 1, while 3, 7 and 11 leave 3. This sorting of primes by remainder returns in the algebra stage.</p>
+  <p class="box"><b>Example.</b> 7 × 8 = 56, and 56 mod 10 = 6. With larger numbers that end in the same digits: 17 × 28 = 476, which also ends in 6. Mod 4, the prime 13 leaves 1 (13 = 12 + 1) and the prime 11 leaves 3 (11 = 8 + 3).</p>
+  <p class="box try"><b>Try it.</b> What is 29 mod 4? — 1, since 29 = 28 + 1.</p>
+</article>
+</section>
+<section id="stage-zeta">
+<h2><span class="stage">Stage 2</span> The zeta function</h2>
+<p class="blurb">One function that knows every prime.</p>
+<article class="step" id="sums">
+  <h3><span class="n">6</span> Endless sums can settle</h3>
+  <p class="idea">Some endless sums settle on a finite total; ζ(s) is the total of 1/n<sup>s</sup> over all positive whole numbers n, for s above 1.</p>
+  <p>An endless sum can have a finite total. Start with 1, add 1/2, then 1/4, each term half the one before. The running total goes 1, 1.5, 1.75, 1.875. It gets as close to 2 as you like and never passes it. The sum is said to <em>converge</em> to 2.</p>
+  <p>Shrinking terms are not enough. The sum 1 + 1/2 + 1/3 + 1/4 + ⋯ grows without bound, though slowly: it takes 12,367 terms to pass 10. Such a sum is said to <em>diverge</em>.</p>
+  <p>The sum 1 + 1/4 + 1/9 + 1/16 + ⋯ uses the squares, and it converges. Finding its exact total was known as the Basel problem. Leonhard Euler solved it in 1734: the total is π<sup>2</sup>/6, about 1.645.</p>
+  <p>The last two sums share a pattern. Pick a number s and add 1/n<sup>s</sup> for n = 1, 2, 3, and so on. For every s greater than 1 this sum converges, and its total is written ζ(s), the <em>zeta function</em>. So ζ(2) = π<sup>2</sup>/6, while at s = 1 the sum diverges.</p>
+  <p class="formula">ζ(s) = 1 + 1/2<sup>s</sup> + 1/3<sup>s</sup> + 1/4<sup>s</sup> + ⋯   (s &gt; 1)</p>
+  <p class="box"><b>Example.</b> For s = 2, the first 10 terms add to 1.5498 and the first 1,000 terms add to 1.6439. The full total is π<sup>2</sup>/6 = 1.6449.</p>
+  <p class="box try"><b>Try it.</b> In 1 + 1/2 + 1/3 + ⋯, the terms 1/3 + 1/4 add to more than 1/2. Do 1/5 + 1/6 + 1/7 + 1/8 also? — Yes: each of the four terms is at least 1/8, and three of them are larger.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Basel_problem">Basel problem: posed 1650, solved by Euler in 1734, total π²/6</a></p>
+</article>
+<article class="step" id="euler-product">
+  <h3><span class="n">7</span> A sum that is a product</h3>
+  <p class="idea">Euler showed that ζ(s), a sum over all positive whole numbers, equals a product with one factor for each prime.</p>
+  <p>In 1737 Euler found a second way to write ζ(s): as a product with one factor for each prime p. The factor is 1/(1 − p<sup>−s</sup>), where p<sup>−s</sup> means 1/p<sup>s</sup>.</p>
+  <p>The reason starts with a fact about sums. Whenever x is between −1 and 1, the sum 1 + x + x<sup>2</sup> + x<sup>3</sup> + ⋯ equals 1/(1 − x). This is called a <em>geometric series</em>; with x = 1/2 it is the sum to 2 from the last step. So the factor for the prime 2 is 1 + 1/2<sup>s</sup> + 1/4<sup>s</sup> + 1/8<sup>s</sup> + ⋯, and likewise for 3, 5, 7 and every other prime.</p>
+  <p>Now multiply the factors together. Each term of the result takes one term from each factor, and their product is 1/n<sup>s</sup> for some whole number n. Every positive whole number is a product of primes in exactly one way, so every n turns up exactly once. For s greater than 1 this can be made rigorous, and the result is the sum that defines ζ(s).</p>
+  <p>This is the bridge. One side adds over all positive whole numbers; the other multiplies over the primes alone.</p>
+  <p class="formula">ζ(s) = ∏<sub>p prime</sub> 1 / (1 − p<sup>−s</sup>)   (s &gt; 1)</p>
+  <p class="box"><b>Example.</b> For s = 2 the factors for 2, 3, 5, 7 are 4/3, 9/8, 25/24, 49/48. Their product is 1.5951. Using every prime below 30 gives 1.6331. All primes together give π<sup>2</sup>/6 = 1.6449.</p>
+  <p class="box try"><b>Try it.</b> Which choices from the factors produce the term 1/12<sup>s</sup>? — 1/4<sup>s</sup> from the factor for 2, 1/3<sup>s</sup> from the factor for 3, and 1 from every other factor.</p>
+  <p class="src">Sources: <a href="https://scholarlycommons.pacific.edu/euler-works/72/">Euler Archive, paper E72 (Variae observationes circa series infinitas): written 1737, printed 1744</a> · <a href="https://en.wikipedia.org/wiki/Riemann_zeta_function">Riemann zeta function: Euler's product formula, 1737</a></p>
+</article>
+<article class="step" id="complex">
+  <h3><span class="n">8</span> Numbers with two parts</h3>
+  <p class="idea">With a complex number s = σ + it, each term n<sup>−s</sup> is an arrow, and ζ adds arrows that turn at different speeds.</p>
+  <p>A <em>complex number</em> has two parts: s = σ + it. Here σ and t are ordinary numbers, and i is a new number whose square is −1. The number σ is called the real part of s and t the imaginary part. Each complex number is a point in a plane: σ steps across, t steps up.</p>
+  <p>A complex number is also an arrow from the point 0 to its own point, with a length and an angle. Adding complex numbers places their arrows tip to tail.</p>
+  <p>When s is complex, the term n<sup>−s</sup> is an arrow of length n<sup>−σ</sup>, turned through an angle of −t ln n radians, where ln n is the natural logarithm of n. So σ sets the lengths and t sets the directions.</p>
+  <p>ζ(s) adds these arrows tip to tail. As t grows, the arrow for n turns at the steady rate ln n, so larger n spin faster and the arrow for 1 stays still. The lengths add up to ζ(σ), so the chain of arrows still converges whenever σ is greater than 1.</p>
+  <p class="formula">n<sup>−s</sup> = arrow of length n<sup>−σ</sup> at angle −t ln n</p>
+  <p class="box"><b>Example.</b> Take s = 1 + i and n = 2. The length is 2<sup>−1</sup> = 0.5. The angle is −ln 2 = −0.693 radians, about 39.7° clockwise. The arrow ends at the point 0.385 − 0.319i.</p>
+  <p class="box try"><b>Try it.</b> At t = 0, which way do all the arrows point? — Along the positive real direction; nothing has turned, so the total is the ordinary ζ(σ).</p>
+  <p class="world"><a href="./">In the 3D world:</a> Each point of the terrain's floor is one complex number s. The color there shows the angle of the arrow ζ(s).</p>
+</article>
+<article class="step" id="continuation">
+  <h3><span class="n">9</span> Past the edge of the sum</h3>
+  <p class="idea">The sum only works for real part above 1, but ζ has exactly one analytic extension to the whole plane except s = 1.</p>
+  <p>The sum for ζ(s) converges only when the real part of s is above 1. The function itself reaches much further.</p>
+  <p>A smaller case shows how. The sum 1 + x + x<sup>2</sup> + ⋯ converges only for x between −1 and 1, yet 1/(1 − x) makes sense for every x except 1 and agrees with the sum wherever the sum converges. In 1859 Bernhard Riemann showed that ζ extends the same way. Among <em>analytic</em> functions, those with a slope in the complex sense at every point, exactly one is defined on the whole plane except s = 1 and agrees with the sum. It is called the <em>analytic continuation</em> of ζ.</p>
+  <p>One concrete route: the alternating sum 1 − 2<sup>−s</sup> + 3<sup>−s</sup> − 4<sup>−s</sup> + ⋯ converges for real part above 0 and equals (1 − 2<sup>1−s</sup>) ζ(s). Dividing gives ζ(s) wherever that factor is not zero.</p>
+  <p>At s = 1 the factor is zero while the alternating sum is ln 2, so ζ grows without bound. Near s = 1, ζ(s) is close to 1/(s − 1). Such a point is called a <em>pole</em>.</p>
+  <p class="formula">1 − 2<sup>−s</sup> + 3<sup>−s</sup> − 4<sup>−s</sup> + ⋯ = (1 − 2<sup>1−s</sup>) ζ(s)</p>
+  <p class="box"><b>Example.</b> At s = 1/2 the alternating sum 1 − 1/√2 + 1/√3 − ⋯ equals 0.6049, and the factor 1 − √2 equals −0.4142. Dividing gives ζ(1/2) = −1.4604, although the original sum diverges there.</p>
+  <p class="box try"><b>Try it.</b> What does 1/(1 − x) give at x = 3? — −1/2, even though 1 + 3 + 9 + ⋯ grows without bound.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The mound at the south end marks the pole at s = 1. The true height there has no top; the scene squashes heights so that it fits.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude">Riemann's 1859 paper, On the Number of Primes Less Than a Given Magnitude</a> · <a href="https://en.wikipedia.org/wiki/Riemann_zeta_function">Riemann zeta function: analytic continuation, simple pole at s = 1</a> · <a href="https://en.wikipedia.org/wiki/Dirichlet_eta_function">Dirichlet eta function: the alternating sum and its relation to ζ</a></p>
+</article>
+<article class="step" id="landscape">
+  <h3><span class="n">10</span> A landscape with wells</h3>
+  <p class="idea">Draw the size of ζ(s) as the height of land; a zero is a point where the land touches the floor.</p>
+  <p>At each point s, the value ζ(s) is an arrow. Its length is called the <em>size</em> of ζ(s), written |ζ(s)|. Treat the plane as a floor and raise the land above each point s to the height |ζ(s)|. The result is a landscape. The pole at s = 1 is a peak with no top.</p>
+  <p>A <em>zero</em> of ζ is a point s where ζ(s) = 0. There the land touches the floor, at the bottom of a well.</p>
+  <p>Some zeros are easy to find. ζ is zero at −2, −4, −6 and every other negative even number. These follow directly from a formula in Riemann's 1859 paper and are fully understood. They are called the <em>trivial zeros</em>.</p>
+  <p>ζ has infinitely many other zeros, and none of them lies on the real number line. The first one above that line is near 1/2 + 14.1347i. These are the <em>nontrivial zeros</em>. Where they lie is the subject of everything that follows.</p>
+  <p class="box"><b>Example.</b> ζ(−2) = 0 and ζ(−4) = 0, while ζ(−1) = −1/12, so the land there has height 1/12. At s = 1/2 + 14.134725i the height is below 0.000001; a nontrivial zero sits right beside that point.</p>
+  <p class="box try"><b>Try it.</b> Can the land ever dip below the floor? — No: the height is a length, and a length is never negative.</p>
+  <p class="world"><a href="./">In the 3D world:</a> Each white pin stands on a nontrivial zero, where the terrain drops all the way to the floor.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Riemann_zeta_function">Riemann zeta function: trivial zeros and the first nontrivial zeros</a> · <a href="https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude">Riemann's 1859 paper, which contains the functional equation of ζ</a></p>
+</article>
+</section>
+<section id="stage-hypothesis">
+<h2><span class="stage">Stage 3</span> The hypothesis</h2>
+<p class="blurb">Where the zeros are, and what that says about primes.</p>
+<article class="step" id="strip">
+  <h3><span class="n">11</span> The strip and the mirror</h3>
+  <p class="idea">Every nontrivial zero of ζ lies in a strip of width 1, and these zeros mirror across the line through its middle.</p>
+  <p>ζ is zero at the negative even numbers −2, −4, −6 and so on. These are called the trivial zeros. All its other zeros are called nontrivial zeros.</p>
+  <p>Every nontrivial zero lies in the <strong>critical strip</strong>, the band of complex numbers whose real part is strictly between 0 and 1. Where the real part is above 1, ζ equals a product over the primes that cannot be zero. In 1896 Jacques Hadamard and Charles-Jean de la Vallée Poussin independently proved that no zero has real part exactly 1.</p>
+  <p>The <strong>functional equation</strong> is an identity that ties ζ(s) to ζ(1 − s). Zeros also match above and below the real number line. Together these facts make the nontrivial zeros symmetric about the <strong>critical line</strong>, the vertical line where the real part is 1/2. If β + iγ is a nontrivial zero, so is (1 − β) + iγ. This mirror also rules out nontrivial zeros with real part 0 or less. A nontrivial zero off the line always has a partner with the same imaginary part on the other side.</p>
+  <p class="box"><b>Example.</b> Suppose there were a zero at 0.7 + 20i. Then there would also be one at 0.3 + 20i, because 1 − 0.7 = 0.3. The first actual zero, 0.5 + 14.134725i, is its own mirror image, because 1 − 0.5 = 0.5.</p>
+  <p class="box try"><b>Try it.</b> A nontrivial zero with real part 0.9 would force a partner with which real part? — 0.1, with the same imaginary part.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The terrain covers the critical strip. The gold line is the mirror, and each white pin on it is its own partner.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Riemann_hypothesis">Hadamard and de la Vallée Poussin, 1896: no zeros on the line Re(s) = 1 (Wikipedia, Riemann hypothesis)</a> · <a href="https://en.wikipedia.org/wiki/Prime_number_theorem">Hadamard and de la Vallée Poussin, 1896 papers (Wikipedia, Prime number theorem)</a></p>
+</article>
+<article class="step" id="waves">
+  <h3><span class="n">12</span> Each zero is a wave</h3>
+  <p class="idea">An exact formula rebuilds the staircase of primes from a smooth ramp minus one wave for each pair of nontrivial zeros.</p>
+  <p>In 1859 Bernhard Riemann sketched an exact formula, the <strong>explicit formula</strong>, that builds the count of primes out of the zeros of ζ. Hans von Mangoldt gave the first full proof in 1895.</p>
+  <p>The cleanest version uses a weighted count ψ(x). Each prime p up to x adds the natural logarithm ln p, and so does each power of p up to x, such as 4, 8 or 9. Plotted against x, ψ is a staircase. The formula says that, between its jumps, the staircase equals the straight ramp x, minus one term for each nontrivial zero ρ, minus two small corrections.</p>
+  <p>Nontrivial zeros come in pairs β ± iγ, and each pair of terms adds up to a wave. Its size at x is 2x<sup>β</sup> divided by the distance from ρ to 0, and it completes one swing each time ln x grows by 2π/γ. So the real part β sets the wave's size, and the imaginary part γ sets its frequency. The ramp, minus the corrections, minus the waves in order of increasing γ, rebuilds the staircase.</p>
+  <p class="formula">ψ(x) = x − ∑<sub>ρ</sub> x<sup>ρ</sup>/ρ − ln(2π) − ½ ln(1 − x<sup>−2</sup>), for x above 1</p>
+  <p class="box"><b>Example.</b> The first zero is 0.5 + 14.134725i, at distance 14.1436 from 0. Its wave has size 2√x / 14.1436, about 1.41 at x = 100. It repeats each time ln x grows by 2π / 14.134725 ≈ 0.4445, which means each time x is multiplied by about 1.56.</p>
+  <p class="box try"><b>Try it.</b> At x = 10,000, which wave would be larger: one from a zero with real part 1/2, or one with the same imaginary part and real part 3/4? — The second: 10,000<sup>3/4</sup> = 1,000 against √10,000 = 100.</p>
+  <p class="world"><a href="./">In the 3D world:</a> Each white pin is one wave. How far along the gold line a pin stands is the frequency γ of its wave.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Explicit_formulae_for_L-functions">Riemann's 1859 explicit formula, first proved in full by von Mangoldt in 1895 (Wikipedia, Explicit formulae for L-functions)</a></p>
+</article>
+<article class="step" id="statement">
+  <h3><span class="n">13</span> The Riemann hypothesis</h3>
+  <p class="idea">The Riemann hypothesis says every nontrivial zero has real part exactly 1/2, which keeps every wave growing as slowly as the mirror allows.</p>
+  <p>In the same 1859 paper, Riemann wrote that very probably all the nontrivial zeros lie on the critical line. That statement is the <strong>Riemann hypothesis</strong>: every nontrivial zero of ζ has real part exactly 1/2.</p>
+  <p>A nontrivial zero with real part β gives a wave whose size grows like x<sup>β</sup>. By the mirror, a zero with β below 1/2 has a partner with real part above 1/2. So some wave always grows at least as fast as √x. The hypothesis says none grows faster.</p>
+  <p>An equivalent form does not mention zeros. Let π(x) be the number of primes up to x. The logarithmic integral Li(x), the area under the curve 1/ln t from 2 to x, estimates it. Helge von Koch proved in 1901 that the hypothesis implies the error |π(x) − Li(x)| is at most a fixed multiple of √x ln x for x ≥ 2. The bound also implies the hypothesis. No bound with a power of x below 1/2 can hold. In that sense the hypothesis says the primes are spread as evenly as they can be.</p>
+  <p class="formula">|π(x) − Li(x)| ≤ C · √x · ln x, for x ≥ 2</p>
+  <p class="box"><b>Example.</b> At x = 1,000,000 there are 78,498 primes and Li(x) ≈ 78,627, an error of about 129. Here √x ln x ≈ 13,816. Schoenfeld's 1976 form of the bound, valid under the hypothesis for x ≥ 2657, is √x ln x / (8π) ≈ 550. The error is well inside it.</p>
+  <p class="box try"><b>Try it.</b> What is √x when x is one million? — 1,000, which is small beside the 78,498 primes below one million.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The hypothesis says that every pin that could ever be placed, however far along, stands exactly on the gold line.</p>
+  <p class="src">Sources: <a href="https://www.claymath.org/millennium/riemann-hypothesis/">Formulated in Riemann's 1859 paper (Clay Mathematics Institute)</a> · <a href="https://en.wikipedia.org/wiki/Riemann_hypothesis">Riemann's 1859 remark, von Koch 1901 and Schoenfeld 1976 error bounds (Wikipedia, Riemann hypothesis)</a></p>
+</article>
+<article class="step" id="evidence">
+  <h3><span class="n">14</span> A century and a half of evidence</h3>
+  <p class="idea">Before 2026, proofs put over two fifths of the nontrivial zeros on the line and computers checked trillions, which is still not a proof.</p>
+  <p>Before 2026, proofs covered only some of the zeros. G. H. Hardy proved in 1914 that infinitely many zeros lie on the critical line. Atle Selberg proved in 1942 that a positive proportion of the nontrivial zeros do. Norman Levinson raised this to more than one third in 1974, and Brian Conrey to more than two fifths in 1989.</p>
+  <p>In 2021 David Platt and Timothy Trudgian published a rigorous verification that every nontrivial zero with imaginary part between 0 and 3 × 10<sup>12</sup> has real part 1/2.</p>
+  <p>A check of that size is not a proof, because a pattern in number theory can hold over an enormous range and then fail. The count π(x) is below Li(x) for every x from 8 up to 10<sup>19</sup>, yet J. E. Littlewood proved in 1914 that the order reverses infinitely often. The Mertens conjecture said that a certain running total of +1s and −1s over the whole numbers up to x stays within √x of zero. It held in every case computed, and Andrew Odlyzko and Herman te Riele disproved it in 1985.</p>
+  <p class="box"><b>Example.</b> At x = 1,000 there are 168 primes and Li(x) is about 177, so the count is below the estimate. That order holds for every x from 8 up to 10<sup>19</sup>. The first reversal is proved to occur somewhere below 1.4 × 10<sup>316</sup>.</p>
+  <p class="box try"><b>Try it.</b> Hardy proved infinitely many zeros lie on the line. Does that rule out a zero off the line? — No. Infinitely many on the line leaves room for others elsewhere.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The white pins mark the first nontrivial zeros above the real line. Computation places each of them on the gold line.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Riemann_hypothesis">Hardy 1914, Selberg 1942, Levinson 1974, Conrey 1989 (Wikipedia, Riemann hypothesis)</a> · <a href="https://arxiv.org/abs/2004.09765">Platt and Trudgian, The Riemann hypothesis is true up to 3·10^12 (arXiv:2004.09765)</a> · <a href="https://en.wikipedia.org/wiki/Skewes%27s_number">Littlewood 1914, the 10^19 check and the 1.4 × 10^316 bound (Wikipedia, Skewes's number)</a> · <a href="https://en.wikipedia.org/wiki/Mertens_conjecture">Mertens conjecture, disproved by Odlyzko and te Riele in 1985 (Wikipedia)</a></p>
+</article>
+<article class="step" id="stakes">
+  <h3><span class="n">15</span> Why so much rests on it</h3>
+  <p class="idea">The hypothesis sits on the two most famous problem lists in mathematics, and hundreds of theorems are proved only by assuming it.</p>
+  <p>In 1900 David Hilbert published a list of 23 problems for the coming century. The Riemann hypothesis is part of the eighth. In 2000 the Clay Mathematics Institute named it one of seven Millennium Prize Problems, each carrying a prize of one million dollars.</p>
+  <p>The reason is how much is built on it. Hundreds of published theorems open by assuming that the Riemann hypothesis is true. Each one is a chain of reasoning that hangs from that single assumption. A proof of the hypothesis proves all of them at once.</p>
+  <p>One example concerns the gaps between primes. Harald Cramér proved that if the hypothesis holds, the gap from a prime p to the next prime is at most a fixed multiple of √p ln p. In 2019 Emanuel Carneiro, Micah Milinovich and Kannan Soundararajan gave an explicit version: under the hypothesis, the gap is at most (22/25) √p ln p for every prime p above 3. Without the hypothesis, the best proved bound is a fixed multiple of p<sup>0.525</sup>, which is larger once p is large enough.</p>
+  <p class="formula">(next prime after p) − p ≤ (22/25) · √p · ln p</p>
+  <p class="box"><b>Example.</b> The largest gap between primes below one million follows p = 492,113: the next prime is 492,227, a gap of 114. For this p, (22/25) √p ln p ≈ 8,091. The real gap is far inside the bound the hypothesis gives.</p>
+  <p class="box try"><b>Try it.</b> For a prime p near 10,000, how large is √p? — About 100, so the bound (22/25) √p ln p is about 810.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Hilbert%27s_eighth_problem">Hilbert's eighth problem, posed in 1900 (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/Hilbert%27s_problems">Hilbert's 23 problems, published in 1900 (Wikipedia, Hilbert's problems)</a> · <a href="https://www.claymath.org/millennium-problems/">Millennium Prize Problems: seven problems, one million dollars each (Clay Mathematics Institute)</a> · <a href="https://en.wikipedia.org/wiki/Millennium_Prize_Problems">Millennium Prize Problems announced in 2000 (Wikipedia)</a> · <a href="https://empslocal.ex.ac.uk/people/staff/mrwatkin/zeta/riemannhyp.htm">Hundreds of theorems assume the hypothesis (M. Watkins, University of Exeter)</a> · <a href="https://en.wikipedia.org/wiki/Prime_gap">Cramér's conditional gap bound (Wikipedia, Prime gap)</a> · <a href="https://arxiv.org/abs/1708.04122">Carneiro, Milinovich and Soundararajan, Fourier optimization and prime gaps, 2019: the constant 22/25 (arXiv:1708.04122)</a> · <a href="https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_conjecture">Unconditional bound p^0.525 of Baker, Harman and Pintz (Wikipedia, Cramér's conjecture)</a></p>
+</article>
+</section>
+<section id="stage-algebra">
+<h2><span class="stage">Stage 4</span> The algebra</h2>
+<p class="blurb">Groups, characters and finite fields: the same question in other worlds.</p>
+<article class="step" id="groups">
+  <h3><span class="n">16</span> What a group is</h3>
+  <p class="idea">A group is a set with one way of combining elements that is associative, has an identity, and can always be undone.</p>
+  <p>A group is a set together with one way of combining any two of its elements into an element of the same set. Three rules must hold.</p>
+  <p>First, grouping does not matter: combining a with b and then with c gives the same result as combining a with the result of b and c. This is called being <em>associative</em>. Second, one element changes nothing when combined with any other; it is called the <em>identity</em>. Third, every element has an <em>inverse</em>, a partner that combines with it to give the identity. So every step can be undone.</p>
+  <p>The integers (whole numbers, positive, negative and zero) form a group under addition: the identity is 0 and the inverse of 5 is −5. The hours of a 12-hour clock form a group under addition. The four rotations of a square by 0, 90, 180 and 270 degrees form a group, where combining means doing one rotation after the other.</p>
+  <p>A clock with four hours and the rotations of a square follow the same pattern. Group theory studies the pattern, not the objects.</p>
+  <p class="box"><b>Example.</b> On a 12-hour clock, 9 + 5 = 14, which reads as 2. The identity is 12, since adding 12 hours changes nothing. The inverse of 9 is 3, because 9 + 3 = 12.</p>
+  <p class="box try"><b>Try it.</b> Which rotation of a square undoes a 90-degree turn? — A 270-degree turn in the same direction, since 90 + 270 = 360, a full turn.</p>
+</article>
+<article class="step" id="units">
+  <h3><span class="n">17</span> Multiplying on a clock</h3>
+  <p class="idea">Mod n, the numbers sharing no factor larger than 1 with n can be divided by, and they form a group under multiplication.</p>
+  <p>On a clock with n hours, multiplication works too: multiply, then keep the remainder after dividing by n. Division is harder. Dividing by a means finding a number that multiplies with a to give 1, and such a number may not exist.</p>
+  <p>It exists exactly when a and n share no factor larger than 1. Mod 10, the number 2 has no such partner, because every multiple of 2 ends in an even digit. The remainders that do have partners are called <em>units</em>.</p>
+  <p>The units mod n form a group under multiplication. The identity is 1, and the product of two units is again a unit. Mod 10 the units are 1, 3, 7 and 9. The number of units mod n is written φ(n), so φ(10) = 4.</p>
+  <p>The last digit of a number is its remainder mod 10. A number ending in 0, 2, 4, 6 or 8 is divisible by 2, and one ending in 0 or 5 is divisible by 5. So every prime other than 2 and 5 ends in 1, 3, 7 or 9.</p>
+  <p class="box"><b>Example.</b> Mod 10: 3 × 7 = 21, which leaves 1, so 7 is the inverse of 3. Also 9 × 9 = 81 leaves 1, so 9 is its own inverse. Dividing by 3 mod 10 is the same as multiplying by 7.</p>
+  <p class="box try"><b>Try it.</b> What is φ(12)? — 4, because the units mod 12 are 1, 5, 7 and 11.</p>
+</article>
+<article class="step" id="characters">
+  <h3><span class="n">18</span> Characters: pure tones of a group</h3>
+  <p class="idea">A character gives each group element a complex number of size 1, respecting the group; combined, characters can isolate a single unit mod n.</p>
+  <p>A character of a group is a rule, written χ, that gives each element a complex number of size 1. The rule must respect the group: χ(ab) = χ(a)χ(b) for all elements a and b. Combining in the group matches multiplying the numbers.</p>
+  <p>Take the units mod 4, which are 1 and 3. One character sends both to 1; it is called the <em>trivial</em> character. The other has χ(1) = 1 and χ(3) = −1. A character of the units mod n is extended to all whole numbers by using the remainder mod n, and by giving 0 to every number that shares a factor larger than 1 with n. So here χ is 0 on even numbers.</p>
+  <p>A finite group whose operation gives the same result in either order, like the units mod n, has exactly as many characters as elements. A sum of characters with suitable weights is 1 at a single unit and 0 elsewhere. Any rule that assigns numbers to the elements can be built from characters, as a sound is built from pure tones.</p>
+  <p class="formula">χ(ab) = χ(a) χ(b)</p>
+  <p class="box"><b>Example.</b> Mod 4, add the trivial character and χ, then halve. For 13: (1 + 1)/2 = 1. For 7: (1 − 1)/2 = 0. For 6: (0 + 0)/2 = 0. The result is 1 exactly for numbers that leave remainder 1 mod 4.</p>
+  <p class="box try"><b>Try it.</b> With the mod 4 character above, what is χ(15)? — It is −1, because 15 leaves remainder 3 mod 4.</p>
+</article>
+<article class="step" id="l-functions">
+  <h3><span class="n">19</span> A zeta function for each character</h3>
+  <p class="idea">Each character gives its own zeta-like function, with its own zeros; the generalized Riemann hypothesis puts their nontrivial zeros on the same line.</p>
+  <p>In 1837 Peter Gustav Lejeune Dirichlet built a function like ζ from each character χ of the units mod m. In the sum for ζ, he placed χ(n) on top of the n-th term. The result is written L(s, χ) and called an L-function. Because χ(ab) = χ(a)χ(b), the sum is also a product over the primes, as it was for ζ.</p>
+  <p>For every character other than the trivial one, Dirichlet proved that L(1, χ) is not zero. From this he showed that for each unit a mod m, infinitely many primes leave remainder a. With m = 10: infinitely many primes end in each of the digits 1, 3, 7 and 9.</p>
+  <p>Each L-function extends past the edge of its sum, as ζ does, and has the same strip and its own zeros. The character that sends every whole number to 1 gives ζ itself, the simplest case.</p>
+  <p>The generalized Riemann hypothesis is the statement that, for every one of these L-functions, all zeros with real part strictly between 0 and 1 have real part 1/2.</p>
+  <p class="formula">L(s, χ) = ∑ χ(n)/n<sup>s</sup> = ∏ 1/(1 − χ(p)/p<sup>s</sup>), for real part of s greater than 1</p>
+  <p class="box"><b>Example.</b> For the mod 4 character with χ(3) = −1, the sum at s = 1 is 1 − 1/3 + 1/5 − 1/7 + …, which settles to π/4 ≈ 0.7854. The first four terms give about 0.7238. Since π/4 is not zero, infinitely many primes leave remainder 1 mod 4, and infinitely many leave 3.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The terrain shows ζ, the L-function of the simplest character. Every other L-function has its own landscape over the same strip, with its own zeros.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Dirichlet%27s_theorem_on_arithmetic_progressions">Dirichlet's theorem on arithmetic progressions, proved in 1837 (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/Dirichlet_L-function">Dirichlet L-functions, introduced in 1837 (Wikipedia)</a></p>
+</article>
+<article class="step" id="fields">
+  <h3><span class="n">20</span> Number systems with finitely many numbers</h3>
+  <p class="idea">The remainders mod a prime form a finite field, and polynomials over it have their own primes, which can be counted by an exact formula.</p>
+  <p>A <em>field</em> is a number system in which you can add, subtract, multiply, and divide by anything except zero, with the usual rules of arithmetic. Fractions form a field. The integers do not, because 1 divided by 2 is not an integer.</p>
+  <p>For a prime p, every remainder mod p except 0 is a unit. So the remainders mod p form a field with exactly p numbers, a <em>finite field</em>, written F<sub>p</sub>. The smallest is F<sub>2</sub> = {0, 1}, where 1 + 1 = 0.</p>
+  <p>Polynomials with coefficients in F<sub>p</sub> behave like whole numbers. A non-constant polynomial that is not a product of two polynomials of lower degree is called <em>irreducible</em>, and irreducibles play the role of primes. Every non-constant polynomial factors into irreducibles in one way only, apart from order and constant multiples.</p>
+  <p>Irreducibles can be counted. The number of irreducible polynomials of degree n with leading coefficient 1 is close to p<sup>n</sup>/n, and an exact formula shows the gap is less than 2√(p<sup>n</sup>)/n. This is a prime number theorem for polynomials, with an exact error term.</p>
+  <p class="box"><b>Example.</b> Over F<sub>2</sub>: (x + 1)<sup>2</sup> = x<sup>2</sup> + 2x + 1 = x<sup>2</sup> + 1, since 2 = 0. So x<sup>2</sup> + 1 factors. But x<sup>2</sup> + x + 1 equals 1 at both x = 0 and x = 1, so neither x nor x + 1 divides it, and it is irreducible.</p>
+  <p class="box try"><b>Try it.</b> Over F<sub>2</sub>, is x<sup>2</sup> + x irreducible? — No, because x<sup>2</sup> + x = x(x + 1).</p>
+</article>
+<article class="step" id="finite-field-rh">
+  <h3><span class="n">21</span> A world where it is a theorem</h3>
+  <p class="idea">For curves over finite fields the analogous hypothesis is a theorem, proved by a geometric method that does not carry over directly to the integers.</p>
+  <p>A curve is the set of solutions of a polynomial equation in two unknowns, such as y<sup>2</sup> = x<sup>3</sup> + x + 1. Over a finite field the solutions can be counted, in that field and in the larger finite fields containing it. The counts are packed into a zeta function for the curve.</p>
+  <p>The analogous hypothesis says all its zeros have real part 1/2, and it is a theorem. Helmut Hasse proved it in 1933 for elliptic curves, smooth curves given by cubic equations like the one above. André Weil proved it in the 1940s for every smooth curve, completed by its points at infinity. Pierre Deligne's proof of the higher-dimensional version appeared in 1974.</p>
+  <p>The proofs are geometry. The zeros are given by the eigenvalues of one operator, called Frobenius, on a finite-dimensional space attached to the curve. An operator transforms a space; its eigenvalues are its stretch factors along the directions it preserves.</p>
+  <p>The integers do not come from a curve over a finite field, so this method does not carry over to ζ directly.</p>
+  <p class="formula">N = p + 1 − a, with |a| ≤ 2√p, where N counts the points of an elliptic curve over F<sub>p</sub></p>
+  <p class="box"><b>Example.</b> Over F<sub>5</sub>, the elliptic curve y<sup>2</sup> = x<sup>3</sup> + x + 1 has 8 solutions plus one point at infinity, 9 points in all. So a = 5 + 1 − 9 = −3, and |a| = 3 is below 2√5 ≈ 4.47. Hasse's theorem gives this bound for every elliptic curve over every F<sub>p</sub>.</p>
+  <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Hasse%27s_theorem_on_elliptic_curves">Hasse's theorem on elliptic curves: proved 1933, published 1936 (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/Weil_conjectures">Weil conjectures: Weil's proof for curves, Deligne 1974 (Wikipedia)</a> · <a href="https://en.wikipedia.org/wiki/Riemann_hypothesis">Riemann hypothesis, function field analogues: Hasse for genus 1, Weil 1948 in general (Wikipedia)</a></p>
+</article>
+</section>
+<section id="stage-proof">
+<h2><span class="stage">Stage 5</span> 2026</h2>
+<p class="blurb">What was released, what was checked, and what is still needed.</p>
+<article class="step" id="y2026-october">
+  <h3><span class="n">22</span> October: a strip of fixed width</h3>
+  <p class="idea">In October 2026, a machine-written paper stated that no zero of zeta has real part above 7/8, which would narrow where nontrivial zeros can lie.</p>
+  <p>The classical regions proved free of zeros are slivers along the right edge of the critical strip, narrowing toward zero width as the height grows.</p>
+  <p>On 6 October 2026 OpenAI published a collection of mathematical manuscripts that its README says were produced by an unnamed internal AI model. One paper, dated 30 September, states that zeta and every Dirichlet L-function (from <em>A zeta function for each character</em>) have no zeros with real part above 7/8. A shorter paper, dated 5 October, states the weaker bound 11/12.</p>
+  <p>By <em>The strip and the mirror</em>, the first statement would confine every nontrivial zero of zeta to real parts from 1/8 to 7/8. The repository's notes say the 7/8 bound has been formalized in Lean, a language in which a proof is spelled out in enough detail for a program to check each step.</p>
+  <p>The README calls the manuscripts raw research data, not polished papers. Quanta reported on 19 October that experts who studied the shorter paper largely agree its result is correct. The Riemann hypothesis asks for 1/2 in place of 7/8.</p>
+  <p class="box"><b>Example.</b> The critical strip has width 1. Removing real parts above 7/8 and, by the mirror, below 1/8 leaves a band of width 7/8 − 1/8 = 3/4. The 11/12 paper would leave 11/12 − 1/12 = 5/6. The Riemann hypothesis asks for width 0: a single line.</p>
+  <p class="box try"><b>Try it.</b> A zero with real part 0.9 would have a mirror partner with which real part? — 0.1, and the 7/8 statement excludes both.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The terrain covers the critical strip. The 7/8 paper would mean no pin can stand in its outer eighth on either side.</p>
+  <p class="src">Sources: <a href="https://openai.com/index/sharing-ai-progress-in-mathematics/">OpenAI announcement, dated 6 October 2026</a> · <a href="https://raw.githubusercontent.com/openai/math/HEAD/README.md">Repository README: how the manuscripts were produced and how to read them</a> · <a href="https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-September-30-2026/paper.pdf">The 7/8 paper, dated 30 September 2026 (199 pages)</a> · <a href="https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf">The 11/12 paper, dated 5 October 2026 (49 pages)</a> · <a href="https://raw.githubusercontent.com/openai/math/HEAD/lean/docs/003.md">Scope of the Lean formalization of the 7/8 bound</a> · <a href="https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019">Quanta Magazine, 19 October 2026: how experts read the result</a></p>
+</article>
+<article class="step" id="y2026-release">
+  <h3><span class="n">23</span> 20 November: 17 million lines of Lean</h3>
+  <p class="idea">On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.</p>
+  <p>On 20 November 2026 the mathematician Levent Alpöge posted a four-page note and a Lean archive in 14 parts. He writes that he believes he has found a proof of the Riemann hypothesis, working with Claude, the AI model made by Anthropic, and that the arguments are formalized without assumptions.</p>
+  <p>No paper came with it. Michael Rubinstein's page at the University of Waterloo counts 175,187 Lean files and about 17 million lines. The note says he chose to present only Lean, because a machine-written document would be huge and unreadable.</p>
+  <p>The note says the method extends to the Generalized Riemann Hypothesis. The MIT verification page lists five checked theorems and says that here this means Dirichlet L-functions, from <em>A zeta function for each character</em>. The theorems say that each of their zeros inside the critical strip has real part 1/2.</p>
+  <p>The note says he guided the direction and that Claude outpaced him near the end. It says he is presenting the argument before mastering the mathematics around it, and that he intends to write it up properly.</p>
+  <p class="box"><b>Example.</b> 175,187 files holding about 17 million lines comes to about 97 lines per file. Printed at 50 lines to a page, the code would fill about 340,000 pages. The MIT page gives the size of the proof exported for checking as about 61.6 GB.</p>
+  <p class="world"><a href="./">In the 3D world:</a> Every white pin stands on the gold line. The released Lean theorem says the same of every nontrivial zero, at every height.</p>
+  <p class="src">Sources: <a href="https://alpo.ge/remark.pdf">The author's four-page note, announced 20 November 2026</a> · <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">Joint statement of the Lean and Mathlib communities, 21 November 2026</a> · <a href="https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/">Michael Rubinstein's page: file and line counts, links to checks</a> · <a href="https://math.mit.edu/~drew/grh/">Andrew Sutherland's verification page at MIT: the five theorems and their scope</a></p>
+</article>
+<article class="step" id="y2026-checks">
+  <h3><span class="n">24</span> What the computer checked</h3>
+  <p class="idea">Four separate checks support that the code proves the right statement and that the checking programs were not fooled; none supplies a human explanation.</p>
+  <p>In Lean, a small program called the <em>kernel</em> accepts or rejects each proof. <em>Mathlib</em> is the public library of mathematics written in Lean and reviewed by people. <em>Axioms</em> are the starting assumptions.</p>
+  <p>A 12 November 2026 post on the Xena Project blog set four questions for any proof said to be checked in Lean. The joint statement of the Lean and Mathlib communities, dated 21 November, says all four are satisfied.</p>
+  <p><strong>Right statement:</strong> the target is Mathlib's own definition, shown in the formula. This says nothing about the proof. <strong>It builds:</strong> dozens of people reported compiling the code without errors. Alone, that would not catch a redefined symbol or an added axiom. <strong>It proves that statement:</strong> two independent tools matched the proved theorem against a file that imports only Mathlib, and the MIT page finds only Lean's three standard axioms. <strong>The kernel was not fooled:</strong> several independently written checkers accepted the full proof.</p>
+  <p>The MIT page adds a caveat: a pass relies on those checkers and on Mathlib's definitions meaning what is intended. No check supplies a human explanation.</p>
+  <p class="formula">ζ(s) = 0,  s ≠ −2, −4, −6, …,  s ≠ 1  ⟹  Re(s) = 1/2</p>
+  <p class="box"><b>Example.</b> One cross-check on the MIT page avoids Mathlib's zeta. Joined to a separate formalization of a criterion of Robin, the code yields a whole-number statement: for every n above 5040, the divisors of n sum to less than e<sup>γ</sup>·n·ln ln n, where γ ≈ 0.5772 is Euler's constant. At n = 10,080: 39,312 against about 39,878.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The mound at the south end, at s = 1, is the pole. Mathlib gives ζ a placeholder value there, so the statement sets s = 1 aside.</p>
+  <p class="src">Sources: <a href="https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/">Xena Project blog, 12 November 2026: four questions for a proof checked in Lean</a> · <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">Joint statement of the Lean and Mathlib communities, 21 November 2026</a> · <a href="https://math.mit.edu/~drew/grh/">Verification page at MIT: each check, its result, the caveat, the divisor-sum cross-check</a> · <a href="https://raw.githubusercontent.com/leanprover-community/mathlib4/master/Mathlib/NumberTheory/LSeries/RiemannZeta.lean">Mathlib source file with the definition of RiemannHypothesis</a></p>
+</article>
+<article class="step" id="y2026-size">
+  <h3><span class="n">25</span> Divisibility forces size</h3>
+  <p class="idea">A nonzero whole number divisible by many prime powers must be large, so its size caps the primes that divide it.</p>
+  <p>By <em>Primes are the atoms</em>, a whole number above 1 factors into primes in one way. So a positive whole number divisible by 8, by 9 and by 7 is divisible by 8·9·7 = 504, and is at least 504.</p>
+  <p>If a nonzero whole number is divisible by several primes, and its size is known, the product of those primes is at most that size. Two facts about one number give an upper bound on primes.</p>
+  <p>A draft guide to the 2026 argument, posted by Rubinstein, opens with a classical case that it credits to Chebyshev and Erdős. Let C(2n, n) be the number of ways to choose n things from 2n. It is a whole number, every prime above n and up to 2n divides it, and it is at most 4<sup>n</sup>. So the product of those primes is at most 4<sup>n</sup>.</p>
+  <p>That draft says the classical method stalls on rounding. In the product 1·2·…·n, the prime p appears n/p + n/p<sup>2</sup> + … times with each term rounded down, and the rounding hides the fine detail.</p>
+  <p class="box"><b>Example.</b> For n = 10: C(20, 10) = 184,756 = 4·11·13·17·19. The primes above 10 and up to 20 are 11, 13, 17 and 19, with product 46,189. And 46,189 ≤ 184,756 ≤ 4<sup>10</sup> = 1,048,576.</p>
+  <p class="box try"><b>Try it.</b> A positive whole number is divisible by 4, by 9 and by 25. What is the smallest it can be? — 900, the product 4·9·25.</p>
+  <p class="src">Sources: <a href="https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf">Rubinstein's working draft, sections I.0 and I.2: Chebyshev's method and where it stalls</a></p>
+</article>
+<article class="step" id="y2026-shape">
+  <h3><span class="n">26</span> The shape of the argument</h3>
+  <p class="idea">As two guides describe it: turn zeros into a prime count, bound it from above by divisibility against size, and balance errors at √x.</p>
+  <p>Rubinstein's draft and a shorter guide by Bartosz Naskręcki, both written with AI help, give the same outline, followed here. Neither claims to be a proof.</p>
+  <p>Both define G(x), a weighted count of prime powers up to x (compare <em>Counting primes</em>) minus its expected size. By <em>Each zero is a wave</em>, a zero with real part β adds a wave growing like x<sup>β</sup>. The draft proves that an upper bound alone, G(x) ≤ x<sup>θ</sup> on long ranges of x arbitrarily far out, excludes zeros with real part above θ. The target: every θ above 1/2. <em>The strip and the mirror</em> covers the left.</p>
+  <p>The bound comes as in <em>Divisibility forces size</em>, with one number replaced by a chain of m <em>theta lifts</em>, tables of numbers from automorphic forms, a theory outside this path. The author's note calls the argument a descendant of Stepanov's proof in the setting of <em>A world where it is a theorem</em>.</p>
+  <p>The lifts see only some primes. The characters of <em>Characters: pure tones of a group</em> average the result back to G, plus terms proved small.</p>
+  <p class="box"><b>Example.</b> Rubinstein's draft gives the two main errors as x/m and m. Take x = 10,000. With m = 10 lifts the total is 1,000 + 10 = 1,010. With m = 1,000 it is 10 + 1,000 = 1,010. With m = 100 = √x it is 100 + 100 = 200, the smallest. That square root is the 1/2.</p>
+  <p class="box try"><b>Try it.</b> For x = 1,000,000, which chain length m makes x/m equal to m? — m = 1,000, the square root of x.</p>
+  <p class="world"><a href="./">In the 3D world:</a> The argument aims to show that no well lies to the right of the gold line; the mirror symmetry then clears the left side.</p>
+  <p class="src">Sources: <a href="https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf">Rubinstein's working draft, 21 November 2026 (164 pages, zeta only): Part I gives the outline</a> · <a href="https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf">Naskręcki's guide (11 pages, all Dirichlet characters)</a> · <a href="https://nasqret.github.io/riemann-rev/">The riemann-rev site: what it is and is not</a> · <a href="https://alpo.ge/remark.pdf">The author's note: the Stepanov remark and the chain of length √X</a></p>
+</article>
+<article class="step" id="y2026-needed">
+  <h3><span class="n">27</span> What is still needed</h3>
+  <p class="idea">Still to come: the author's written proof, review by independent experts, a human account of the central inequality, and the end of two long checks.</p>
+  <p><strong>A paper.</strong> The author's note says he intends to write the argument properly and expects it to be much simplified. Naskręcki's riemann-rev project recorded on 20 November that no human-readable write-up existed and the argument was not refereed, meaning judged by independent experts.</p>
+  <p><strong>Understanding.</strong> Rubinstein's draft derives the hypothesis from one central inequality, called (M), plus two estimates it proves from published theorems. It takes (M) without proof from the Lean code, where, it says, almost all of the code goes. Naskręcki's guide likewise reads the chain of lifts from the Lean source without re-deriving it. A full proof of (M) is not yet written out in either guide.</p>
+  <p><strong>Checks.</strong> As of 22 November, 16:20 UTC, the MIT page's summary names two unfinished runs: Lean's own kernel on the full exported proof, and an end-to-end comparison tool. It notes that Lean's kernel has already accepted every module separately.</p>
+  <p><strong>Scope.</strong> The MIT page says L-functions beyond Dirichlet's are not among the checked statements. The Clay Mathematics Institute's prize rules require publication in a qualifying outlet, a two-year wait and general acceptance.</p>
+  <p class="box"><b>Example.</b> The draft tested the divisibility rule on the simplest object of its kind. At order 120 the full rule would have 3<sup>45</sup> divide a certain number, since 120·3/8 = 45. The draft computed only 3<sup>14</sup>. It concludes that the proof must use a different, particular object, and quotes that step without reproving it.</p>
+  <p class="src">Sources: <a href="https://alpo.ge/remark.pdf">The author's note: his plans to write the argument properly</a> · <a href="https://nasqret.github.io/riemann-rev/">The riemann-rev site: status line, not yet refereed</a> · <a href="https://raw.githubusercontent.com/nasqret/riemann-rev/main/README.md">The riemann-rev README, record of 20 November 2026: no human-readable write-up yet</a> · <a href="https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf">Rubinstein's working draft: what is proved there and what is quoted</a> · <a href="https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf">Naskręcki's guide, page 10: what is machine-checked and what is read from the source</a> · <a href="https://math.mit.edu/~drew/grh/">Verification page at MIT, updated 22 November 2026 16:20 UTC: checks still running, scope</a> · <a href="https://www.claymath.org/millennium-problems/rules/">Clay Mathematics Institute: Millennium Prize rules</a></p>
+</article>
+<article class="step" id="y2026-read">
+  <h3><span class="n">28</span> Where to read more</h3>
+  <p class="idea">The key sources are public: the author's note, the joint statement, the verification record, and two guides to the argument.</p>
+  <p>Start with the <strong>author's note</strong>: four pages, with the announcement and a rough timeline that he warns is partly paraphrased from an AI summary.</p>
+  <p>For the checking, the <strong>joint statement</strong> of the Lean and Mathlib communities gives the four criteria in a few paragraphs. The <strong>MIT verification page</strong> is the detailed record: each check, its result, and what is still running. The <strong>Xena Project post</strong> explains what a check in Lean can and cannot show.</p>
+  <p>For the mathematics, <strong>Rubinstein's draft</strong> is written for readers with a first course in analytic number theory, and says a reader can stop after its Part I. <strong>Naskręcki's guide</strong> covers all Dirichlet characters in 11 pages, and its site keeps a record of who has checked what.</p>
+  <p>For October, the <strong>11/12 paper</strong> is the shorter of the two, and <strong>Quanta's report</strong> describes how experts read it. Several of these pages say they are still being revised, so check their dates.</p>
+  <p class="box"><b>Example.</b> A reading order by length: the joint statement (a few paragraphs), the author's note (4 pages), Naskręcki's guide (11 pages), the 11/12 paper (49 pages), Rubinstein's draft (164 pages). The four documents with page counts total 4 + 11 + 49 + 164 = 228 pages.</p>
+  <p class="src">Sources: <a href="https://alpo.ge/remark.pdf">Author's note (4 pages): the announcement and a 20-item timeline</a> · <a href="https://leanprover-community.github.io/blog/posts/riemann-hypothesis/">Joint statement of the Lean and Mathlib communities: the four criteria</a> · <a href="https://math.mit.edu/~drew/grh/">MIT verification page: every check, with logs and status</a> · <a href="https://xenaproject.wordpress.com/2026/11/12/and-the-proof-is-checked-in-lean/">Xena Project post: what a Lean check does and does not show</a> · <a href="https://www.math.uwaterloo.ca/~mrubinst/alpoge_claude_grh/zeta-paper.pdf">Rubinstein's draft (164 pages): the argument for zeta, with what is proved and what is quoted</a> · <a href="https://nasqret.github.io/riemann-rev/guide/proof-guide.pdf">Naskręcki's guide (11 pages): the architecture for all Dirichlet characters</a> · <a href="https://nasqret.github.io/riemann-rev/">riemann-rev site: map of the proof and record of checks</a> · <a href="https://raw.githubusercontent.com/openai/math/HEAD/preprints/The-Quasi-Riemann-Hypothesis-October-5-2026/paper2.pdf">The 11/12 paper (49 pages): the shorter October result</a> · <a href="https://quantamagazine.org/ai-proved-the-quasi-riemann-hypothesis-what-happens-now-20261019">Quanta Magazine, 19 October 2026: the October result explained</a></p>
+</article>
+</section>
+</main>
+<footer>
+  <p>Written for <a href="./">Zeta World</a>, a Sundai Hack 150 project. Every step was checked by a second reader; the worked examples were recomputed. Found a mistake? <a href="https://github.com/Alex-lop/zeta-world/issues">Open an issue</a>.</p>
+</footer>
+</div>
+</body>
+</html>

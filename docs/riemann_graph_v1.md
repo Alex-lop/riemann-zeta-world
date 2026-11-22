@@ -6,7 +6,7 @@ The code is split across three files:
 | --- | --- |
 | [`zeta.js`](../zeta.js) | The math, in double precision on the CPU: $`\zeta(s)`$, Hardy's $`Z(t)`$, and a zero finder. |
 | [`main.js`](../main.js) | The Three.js scene. The terrain is computed on the GPU in a shader, with overlays, a probe, and an output-plane view. |
-| [`index.html`](../index.html) | The page and controls. Three.js is loaded from a CDN with an import map, so there is no build step. |
+| [`landscape.html`](../landscape.html) | The page and controls. Three.js is loaded from a CDN with an import map, so there is no build step. |
 
 Throughout, $`s = \sigma + it`$ is the complex input.
 
