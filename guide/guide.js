@@ -269,7 +269,7 @@ function primeCurve() {
     lx[k] = Math.log10(x); r[k] = (x * s1 - s0 - x * Math.log(x) + (1 + EULER) * x - Math.log(2 * Math.PI)) / Math.sqrt(x);
   }
   console.assert(r.every(v => Math.abs(v) <= BAND), 'prime curve self-check failed: the real primes left the band');
-  return curve = { lx, r };
+  return curve = { lx, r, share: r.reduce((most, v) => Math.max(most, Math.abs(v)), 0) / BAND };   // share: how far toward the band's edge the curve drawn here ever gets
 }
 // What a zero pair at beta ± i gamma adds to r(x): -2 Re(x^rho / (rho (rho - 1))) / sqrt(x). Its swings grow like x^(beta - 1/2).
 const rho2 = (beta, gamma) => Math.hypot(beta * (beta - 1) - gamma * gamma, gamma * (2 * beta - 1));   // |rho (rho - 1)|
@@ -558,7 +558,7 @@ const STEPS = [
     legend: [['gold', 'band', 'the band, if every nontrivial zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
     more: FULL,
     mount(stage, ui) {
-      const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
+      const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r, share } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
       ghost.beta = 0.85;                                     // far enough off the line that the break falls inside the real data
       let on = false, own = false, stop = () => {};
       const fig = plot(stage, 'clamp(150px, 27vh, 240px)', (ctx, w, h) => {
@@ -575,6 +575,8 @@ const STEPS = [
         line(ctx, L, mid + 0.5, w - R, mid + 0.5, C.strong);
         line(ctx, px(6) + 0.5, T, px(6) + 0.5, h - B, C.strong);
         ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(w > 600 ? 'real primes, every one up to 10⁶' : 'real primes to 10⁶', px(6) - 6, h - B - 6);
+        const most = Math.round(share * 100);                 // how much of the band they use
+        ctx.fillStyle = C.blue; ctx.fillText(w > 600 ? `never past ${most}% of the way to the band’s edge` : `≤ ${most}% of the band`, px(6) - 6, h - B - 19);
         ctx.save(); ctx.beginPath(); ctx.rect(L, T, w - L - R, h - T - B); ctx.clip();
         if (on) {
           const { beta, gamma } = ghost, amp = e => 2 * 10 ** ((beta - 0.5) * e) / rho2(beta, gamma);
