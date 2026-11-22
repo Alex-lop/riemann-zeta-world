@@ -262,7 +262,7 @@ const STEPS = [
         line(ctx, 8, oy + 0.5, w - 8, oy + 0.5, C.hair); line(ctx, ox + 0.5, 8, ox + 0.5, h - 8, C.hair);
         ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.fillText('0', ox - 9, oy + 15); ctx.fillText('1', ox + unit, oy + 15); line(ctx, ox + unit + 0.5, oy - 3, ox + unit + 0.5, oy + 4, C.strong);
         ctx.textAlign = 'left';
-        ctx.fillText(settles ? `real part ${sigma.toFixed(2)}: the arrows settle on ζ(s)` : `real part ${sigma.toFixed(2)}: the sum only works above 1. The square is ζ’s one extension`, 12, 18);
+        ctx.fillText(`real part ${sigma.toFixed(2)}` + (w < 520 ? '' : settles ? ': the arrows settle on ζ(s)' : ': the sum only works above 1. The square is ζ’s one extension'), 12, 18);
         ctx.strokeStyle = settles ? C.ink : C.muted; ctx.lineWidth = settles ? 1.5 : 1; ctx.beginPath(); ctx.moveTo(ox, oy);
         for (let n = 1, re = 0, im = 0; n < N; n++) { const a = t * Math.log(n), r = n ** -sigma; re += r * Math.cos(a); im -= r * Math.sin(a); ctx.lineTo(ox + re * unit, oy - im * unit); }   // arrow n: length n^-sigma, turned by -t ln n
         ctx.stroke(); ctx.lineWidth = 1; ctx.fillStyle = settles ? C.ink : C.muted;
@@ -364,7 +364,10 @@ const STEPS = [
     mount(stage, ui) {
       const box = el('<label class="slide">on the line<input type="range" min="0.5" max="0.875" step="0.005" aria-label="Real part of the hypothetical zero">7/8</label>');
       const input = box.querySelector('input'), read = el('<p class="readout"></p>');
-      stage.append(box, read);
+      // A switch for seeing what the gamma factor does: zeta's own land is lopsided, and the completed one is a mirror image.
+      const flip = el('<button type="button" class="btn" aria-pressed="true">Show ζ without its gamma factor</button>');
+      const bar = el('<div class="bar"></div>');
+      bar.append(flip, box); stage.append(bar, read);
       ghost.beta = 0.5;                                      // it starts on the line: taking it off is the visitor's act
       let own = false, stop = () => {};
       const sync = w => {
@@ -376,6 +379,11 @@ const STEPS = [
       withWorld(w => {
         lab(w); sync(w);
         input.addEventListener('input', () => { own = true; ghost.beta = +input.value; sync(w); ui.done(); });
+        flip.addEventListener('click', () => {
+          const completed = flip.getAttribute('aria-pressed') !== 'true';
+          clearTimeout(morph); w.mirror(completed); flip.setAttribute('aria-pressed', completed);
+          flip.textContent = completed ? 'Show ζ without its gamma factor' : 'Put the gamma factor back';
+        });
         w.onGhost = (beta, gamma) => { own = true; ghost.beta = beta; ghost.gamma = gamma; sync(); ui.done(); };
         const t0 = performance.now();
         w.tick = now => {                                    // nobody has moved it: it leaves the line by itself
