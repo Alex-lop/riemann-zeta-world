@@ -49,6 +49,21 @@ function openWorld() {
 // The view the world was tuned for: west of the line near its south end, looking north up it (PLAN.md, "The world").
 // Step 4 and the open world begin here, wherever a ride or the hypothetical zero left the camera.
 function startView(w) { w.camera.position.set(-3.5, 6.5, scene.zOf(7)); w.controls.target.set(0, 0, scene.zOf(22)); }
+// The way in: from high over the whole line, down to the start view in about three seconds. The visitor's first drag takes the
+// view from it. Returns what stops it. With motion paused it is the start view at once.
+function arrive(w) {
+  const HIGH = [[-70, 95, scene.zOf(-45)], [0, 0, scene.zOf(100)]], LOW = [[-3.5, 6.5, scene.zOf(7)], [0, 0, scene.zOf(22)]], t0 = performance.now();
+  const stop = () => { w.tick = null; w.controls.removeEventListener('start', stop); };
+  startView(w);
+  if (still()) return stop;
+  w.controls.addEventListener('start', stop);
+  w.tick = now => {
+    const u = Math.min(1, (now - t0) / 3400), e = u < 0.5 ? 4 * u ** 3 : 1 - (2 - 2 * u) ** 3 / 2;
+    w.camera.position.set(...HIGH[0].map((a, k) => a + (LOW[0][k] - a) * e)); w.controls.target.set(...HIGH[1].map((a, k) => a + (LOW[1][k] - a) * e));
+    if (u === 1) stop();
+  };
+  return stop;
+}
 // Runs fn(world) once the world is up, unless the visitor has moved on to another screen by then.
 function withWorld(fn) {
   const mine = turn;
@@ -115,7 +130,7 @@ function ride(stage, ui, each, pace = 11) {
       }
       const T = tOf(w.controls.target.z);
       const passed = w.zeros.filter(g => g < T - 0.004).length;
-      if (passed !== seen) { seen = passed; at = T; marks.paint(); }
+      if (passed !== seen) { if (passed === seen + 1) w.burst(w.zeros[seen]); seen = passed; at = T; marks.paint(); }   // one more zero passed: its star flares
       // The readout: where you are, zeta's value there (the arrow on the dial), and the zero you are on or coming to.
       const [re, im] = w.probe(T).map(v => Math.abs(v) < 0.005 ? 0 : v), on = w.zeros.findIndex(g => Math.abs(g - T) < 0.004), next = w.zeros[passed];   // so a zero reads 0.00 + 0.00i, never −0.00
       const text = `${passed} of 100 zeros passed<small>s = ½ + ${T.toFixed(2)}i<br>ζ(s) ≈ ${re.toFixed(2).replace('-', '−')} ${im < 0 ? '−' : '+'} ${Math.abs(im).toFixed(2)}i<br>`
@@ -367,7 +382,7 @@ const STEPS = [
     legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['dim', '', 'the edges of the critical strip, Re(s) = 0 and 1']],
     mount(stage, ui) {
       let stop = () => {};
-      withWorld(w => { startView(w); w.controls.addEventListener('start', ui.done); stop = () => w.controls.removeEventListener('start', ui.done); });
+      withWorld(w => { const land = arrive(w); w.controls.addEventListener('start', ui.done); stop = () => { land(); w.controls.removeEventListener('start', ui.done); }; });
       return () => stop();
     } },
 
@@ -656,7 +671,7 @@ function show() {
   for (const tab of $('tabs').children) if (mode !== 'intro' && tab.hash === location.hash) { tab.setAttribute('aria-current', 'step'); tab.scrollIntoView({ block: 'nearest', inline: 'center' }); } else tab.removeAttribute('aria-current');
   world?.run(mode === 'world' || mode === 'fly');             // no drawing while the land is off screen
   if (!step?.lab) { clearTimeout(morph); mirrored = false; if (world) { world.ghost(); world.mirror(false); } }   // the fiction never leaves its two steps
-  if (mode === 'fly') withWorld(w => { startView(w); $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
+  if (mode === 'fly') withWorld(w => { leave = arrive(w); $('fly-status').textContent = 'Drag to orbit, scroll or pinch to zoom.'; });
   if (!step) return;
 
   const stage = $('s-stage'), payoff = $('s-payoff');
