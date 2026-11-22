@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zeta World: the Riemann hypothesis in 3D</title>
+<meta name="description" content="A 3D landscape of the Riemann zeta function. See the zeros that the most famous unsolved problem in math is about.">
+<meta property="og:title" content="Zeta World: the Riemann hypothesis in 3D">
+<meta property="og:description" content="A 3D landscape of the Riemann zeta function. See the zeros that the most famous unsolved problem in math is about.">
+<meta property="og:type" content="website">
+<!-- Link previews need absolute URLs. Everything else on this site must stay relative (./x): it is served under /zeta-world/. -->
+<meta property="og:url" content="https://alex-lop.github.io/zeta-world/">
+<meta property="og:image" content="https://alex-lop.github.io/zeta-world/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='78' font-size='90' text-anchor='middle' fill='%23f5c542'>ζ</text></svg>">
+<!-- No build step: three.js comes from a pinned CDN version. -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
+} }
+</script>
+<style>
+  html, body { height: 100%; margin: 0; background: #05060f; color: #ebe9f5; font: 16px/1.5 system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  main {
+    position: fixed; left: 0; bottom: 0; box-sizing: border-box; width: min(34rem, 100%); padding: 1.25rem 1.5rem;
+    background: rgb(5 6 15 / .85); border-top-right-radius: .75rem; pointer-events: none;
+  }
+  h1 { margin: 0; font: italic 2.6rem/1.1 Georgia, 'Times New Roman', serif; }
+  p, details { margin: .5rem 0 0; }
+  .tag { color: #f5c542; }
+  .small { font-size: .85rem; color: #b9b6cc; }
+  a, summary { color: #8fd3ff; pointer-events: auto; }
+  summary { cursor: pointer; }
+  @media (max-width: 30rem) { h1 { font-size: 2rem; } main { font-size: .9rem; padding: 1rem; border-radius: 0; } }
+  @media (max-height: 30rem) and (orientation: landscape) { .long { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="world" role="img" aria-label="3D terrain showing the size of the Riemann zeta function over the critical strip. Thirteen pins mark its first zeros, all on the gold line where the real part is one half."></canvas>
+<main>
+  <h1>Zeta World</h1>
+  <p class="tag">The most famous unsolved problem in math, as a place you can look at.</p>
+  <p class="long">This landscape is the size of the Riemann zeta function, which encodes how the prime numbers are spread out. Each pin stands on a zero, where the land drops to height zero. These are the first 13 of infinitely many. The Riemann hypothesis says they all sit on the gold line.</p>
+  <p class="long small">Open since 1859. Trillions of zeros have been checked and every one is on the line, but nobody has proved it for all of them, and this page proves nothing either.</p>
+  <!-- The script replaces this once the scene is running, so it also covers no JavaScript and a blocked CDN. -->
+  <p class="small" id="status">Loading the 3D view. It needs JavaScript and WebGL.</p>
+  <details class="small">
+    <summary>How to read it</summary>
+    Height is |ζ(s)| over the critical strip, Re(s) from 0 to 1, drawn for Im(s) from 0 to 60. The hypothesis is about the zeros inside this strip. Color is the phase of ζ(s): cyan where it is positive, red where it is negative. The gold line is Re(s) = ½. The cut-off spike at one end is the pole at s = 1, where ζ is infinite.
+  </details>
+  <p class="small">An early build for Sundai Hack 150. <a href="https://github.com/Alex-lop/zeta-world">Source on GitHub</a></p>
+</main>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---- the math --------------------------------------------------------------
+// zeta(sigma + i t) by Borwein's algorithm (2000) for the alternating eta series:
+//   eta(s) = sum_k W[k] (k+1)^-s,   zeta(s) = eta(s) / (1 - 2^(1-s)).
+// Checked against mpmath at every vertex drawn (41 x 601): worst error 1e-12, at s = 1 + 54.4i.
+// Not uniform: the division is 0/0 at s = 1 + 2 pi i k / ln 2 (t = 9.06, 18.13, ... 54.39 on the sigma = 1 edge)
+// and the error grows like 1/distance to those points. Re-run the check if NS, NT or T_MAX change.
+// ponytail: N = 80 terms only holds to t ~ 60 (need N ~ 0.9 t + 25). Raise N with T_MAX,
+// and switch to Riemann-Siegel if the world ever goes past t of a few hundred.
+const N = 80, T_MAX = 60;
+const D = [];
+for (let i = 0, term = 1 / N, sum = 0; i <= N; i++) {
+  sum += term; D.push(N * sum);
+  term *= 4 * (N + i) * (N - i) / ((2 * i + 1) * (2 * i + 2));
+}
+const W = D.slice(0, N).map((d, k) => (k % 2 ? -1 : 1) * (1 - d / D[N]));
+const LN = W.map((_, k) => Math.log(k + 1));
+
+function zeta(sigma, t) {                       // returns [re, im]
+  let er = 0, ei = 0;
+  for (let k = 0; k < N; k++) {
+    const m = W[k] * Math.exp(-sigma * LN[k]), a = t * LN[k];
+    er += m * Math.cos(a); ei -= m * Math.sin(a);
+  }
+  const m = 2 ** (1 - sigma), a = t * Math.LN2, dr = 1 - m * Math.cos(a), di = m * Math.sin(a), q = dr * dr + di * di;
+  return [(er * dr + ei * di) / q, (ei * dr - er * di) / q];
+}
+
+// Imaginary parts of the first 13 nontrivial zeros (all those with t < 60), from mpmath.zetazero.
+const ZEROS = [14.134725, 21.022040, 25.010858, 30.424876, 32.935062, 37.586178, 40.918719,
+               43.327073, 48.005151, 49.773832, 52.970321, 56.446248, 59.347044];
+console.assert(ZEROS.every(t => Math.hypot(...zeta(0.5, t)) < 1e-5), 'zeta self-check failed: a listed zero is not a zero');
+
+// ---- the world -------------------------------------------------------------
+// x = WIDTH * (Re(s) - 1/2), z = T_MAX/2 - Im(s) (t = 0 is the end nearest the start camera), y = |zeta(s)| capped at CAP.
+const WIDTH = 12, NS = 40, NT = 600, CAP = 9;   // CAP only flattens the pole at s = 1
+const zOf = t => T_MAX / 2 - t;
+
+const canvas = document.getElementById('world'), panel = document.querySelector('main'), status = document.getElementById('status');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true }); }
+catch (e) { status.textContent = 'This browser could not start WebGL, so the 3D view is off.'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05060f);
+scene.fog = new THREE.Fog(0x05060f, 45, 130);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a3a, 1.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(30, 25, 20);
+scene.add(sun);
+
+const terrain = new THREE.PlaneGeometry(WIDTH, T_MAX, NS, NT).rotateX(-Math.PI / 2);
+const pos = terrain.attributes.position, colors = new Float32Array(pos.count * 3), c = new THREE.Color();
+for (let v = 0; v < pos.count; v++) {
+  const i = v % (NS + 1), sigma = i / NS, t = zOf(pos.getZ(v));
+  const [re, im] = zeta(sigma, t), a = Math.hypot(re, im), h = a < CAP ? a : CAP;   // the pole s = 1 gives NaN, which lands on CAP
+  pos.setY(v, h);
+  if (i === NS / 2) c.set(0xf5c542);                                         // the critical line, painted on
+  else c.setHSL((Math.atan2(im, re) / (2 * Math.PI) + 0.5) || 0, 0.75, 0.22 + 0.33 * Math.min(h / 4, 1));   // +0.5: positive real is cyan, so the gold line stands out
+  c.toArray(colors, v * 3);
+}
+terrain.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+terrain.computeVertexNormals();
+scene.add(new THREE.Mesh(terrain, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.1, side: THREE.DoubleSide })));
+
+// Pin heads sit on top (y = 7, above every ridge away from the pole) so no ridge hides them; the stalk's foot is the zero.
+const pin = new THREE.CylinderGeometry(0.04, 0.04, 7).translate(0, 3.5, 0), head = new THREE.SphereGeometry(0.28, 16, 12).translate(0, 7, 0);
+const glow = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false });
+for (const t of ZEROS) {
+  const marker = new THREE.Group().add(new THREE.Mesh(pin, glow), new THREE.Mesh(head, glow));
+  marker.position.set(0, 0, zOf(t));
+  scene.add(marker);
+}
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
+camera.position.set(26, 13, 10);                // from the Re(s) = 1 side, so t runs left to right
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(0, 1, -3);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.49;        // stay above the floor
+controls.minDistance = 4; controls.maxDistance = 110;
+controls.autoRotate = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotateSpeed = 0.35;
+controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+function resize() {
+  // Portrait: frame the scene in the space above the text, and widen the view so the whole strip still fits.
+  const free = innerWidth < innerHeight ? Math.max(innerHeight - panel.offsetHeight, innerHeight / 4) : innerHeight;
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.fov = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(25)) * Math.max(1, 1.6 * free / innerWidth)));
+  camera.setViewOffset(innerWidth, free, 0, 0, innerWidth, innerHeight);   // sets the aspect and updates the projection
+}
+addEventListener('resize', resize);
+panel.querySelector('details').addEventListener('toggle', resize);         // the panel's height just changed
+resize();
+
+let last = performance.now();
+renderer.setAnimationLoop(now => {
+  controls.update(Math.min((now - last) / 1000, 0.1));                      // seconds, so auto-rotate ignores the refresh rate
+  last = now;
+  renderer.render(scene, camera);
+});
+status.textContent = 'Drag to orbit, scroll or pinch to zoom.';
+</script>
+</body>
+</html>
