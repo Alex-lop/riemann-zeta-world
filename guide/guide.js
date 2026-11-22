@@ -279,19 +279,18 @@ function wave(x, beta, gamma) {
 }
 // Where those swings first reach the band, as a power of ten. Finite for every beta above 1/2, however close to the line.
 const breakExp = (beta, gamma) => Math.log(BAND * rho2(beta, gamma) / 2) / ((beta - 0.5) * Math.LN10);
-const FULL = '<p><a href="./proof.html">the full pictures, on the proof page</a></p>';
 const sup = n => String(n).replace(/./g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d] ?? '⁻');
 const pow10 = e => { if (e >= 15) return `10${sup(Math.round(e))}`; let k = Math.floor(e), m = Math.round(10 ** (e - k)); if (m === 10) { m = 1; k++; } return `${m} × 10${sup(k)}`; };
 
 // ---- the ten steps -----------------------------------------------------------------------------
 // id: the name in the URL hash. tab: its short name in the step bar and on the Next and Back buttons.
 // learn: the anchor of the long version in learn.html. world: the step runs over the 3D world.
-// lab: the step keeps the mirror land and the hypothetical zero up.
+// lab: the step keeps the mirror land and the hypothetical zero up. proof: the step links to the teammate's proof page, which has the full pictures.
 // mount(stage, ui) builds the interaction and may return a cleanup. ui.done() shows the payoff, ui.say(html) replaces the instruction.
 // A step with no mount yet shows fig, a static figure, and no instruction.
 const STEPS = [
   { id: 'primes', tab: 'Primes', learn: 'primes', title: 'Primes are the atoms',
-    idea: 'Every whole number above 1 breaks into primes, and it does so in exactly one way.',
+    idea: 'Every whole number above 1 breaks into primes, in exactly one way.',
     todo: 'Type a number.',
     payoff: 'Start 360 another way, as 8 × 45, and you get the same primes: three 2s, two 3s and one 5.',
     legend: [['blue', 'open', 'a prime']],
@@ -299,7 +298,7 @@ const STEPS = [
       const MAX = 999999999;
       const box = el(`<div><label class="slide" style="grid-template-columns:auto 1fr">a whole number<input class="num" type="number" min="2" max="${MAX}" value="360" inputmode="numeric"></label><p class="atoms"></p><p class="readout"></p>
         <div class="hundred" aria-hidden="true">${Array.from({ length: 100 }, (_, k) => `<i${isPrime(k + 1) ? ' class="p"' : ''}>${k + 1}</i>`).join('')}</div>
-        <p class="small">The first hundred numbers. The primes are outlined, and filled where they divide yours.</p></div>`);
+        <p class="small">The first hundred numbers: primes outlined, and filled where they divide yours.</p></div>`);
       const input = box.querySelector('input'), [atoms, read] = box.querySelectorAll('p');
       const split = () => {
         const n = +input.value, parts = [];
@@ -317,10 +316,10 @@ const STEPS = [
     } },
 
   { id: 'counting', tab: 'Counting', learn: 'counting', title: 'Random up close, smooth from afar',
-    idea: 'Primes get rarer as numbers grow, but unevenly. Still, the number of primes up to x is roughly x / ln x.',
+    idea: 'Primes get rarer, but unevenly. Still, the number of primes up to x is roughly x / ln x.',
     todo: 'Drag along the number line.',
-    payoff: 'Up to 100 there are 25 primes, and x / ln x says about 21.7. The central question is how far a sharpened estimate misses.',
-    legend: [['blue', '', 'the count of primes, one step at each'], ['inked', '', 'the smooth guess, x / ln x'], ['inked', 'dot', 'how far the guess misses']],
+    payoff: 'The central question is how far a sharpened estimate misses.',   // the chart's readout has the numbers: 25 primes up to 100, against 21.7
+    legend: [['blue', '', 'the count of primes'], ['inked', '', 'the smooth guess, x / ln x'], ['inked', 'dot', 'the miss']],
     mount(stage, ui) {
       const X0 = 2, X1 = 200, TOP = 50, PRIMES = Array.from({ length: X1 - 1 }, (_, k) => k + 2).filter(isPrime);   // the axis starts at 2: ln 1 is 0
       const box = el(`<label class="slide">2<input type="range" min="${X0}" max="${X1}" step="1" value="100" aria-label="x, how far along the number line">200</label>`);
@@ -350,9 +349,9 @@ const STEPS = [
         ctx.lineWidth = 3; line(ctx, px(x) + 0.5, py(count), px(x) + 0.5, py(guess), C.ink); ctx.lineWidth = 1;
         ctx.textAlign = x > 150 ? 'right' : 'left'; const dx = x > 150 ? -8 : 8;
         ctx.fillStyle = C.blue; ctx.fillText(`${count} primes up to ${x}`, px(x) + dx, py(count) - 8);
-        read.textContent = `up to ${x}: ${count} primes, and x / ln x ≈ ${guess.toFixed(1)}. The guess is ${Math.abs(miss).toFixed(1)} ${miss > 0 ? 'short' : 'over'}: ${Math.round(Math.abs(miss) / count * 100)}% of the count`;
+        read.textContent = `up to ${x}: ${count} primes · x / ln x ≈ ${guess.toFixed(1)} · ${Math.abs(miss).toFixed(1)} ${miss > 0 ? 'short' : 'over'} (${Math.round(Math.abs(miss) / count * 100)}%)`;
       });
-      // The count draws itself as the step opens, from 2 up to 100, where the payoff picks it up, unless the visitor takes the slider first.
+      // The count draws itself as the step opens, from 2 up to 100, unless the visitor takes the slider first.
       let own = false;
       const t0 = performance.now(), draw = now => {
         const u = Math.min(1, (now - t0) / 4000);
@@ -370,9 +369,9 @@ const STEPS = [
     } },
 
   { id: 'zeta', tab: 'Zeta', learn: 'complex', title: 'One function knows every prime',
-    idea: 'ζ(s) adds 1/n<sup>s</sup> over every whole number n. Each term is an arrow, and ζ adds arrows that turn at different speeds.',
+    idea: 'ζ(s) adds 1/n<sup>s</sup> over every whole number n. Each term is an arrow, and the arrows turn at different speeds.',
     todo: 'Drag the height t.',
-    payoff: 'At t = 0 nothing has turned, and the total is π<sup>2</sup>/6 ≈ 1.6449. Euler showed the same total is a product with one factor for each prime.',
+    payoff: 'At t = 0 the total is π<sup>2</sup>/6 ≈ 1.6449. Euler showed the same total is a product with one factor for each prime.',
     legend: [['inked', 'open', 'ζ(s)'], ['inked', 'dot', 'a height where its size touches 0']],
     mount(stage, ui) {
       // Two variables: t, the height of s, and its real part, which starts at 2, where the sum settles. The value of zeta is
@@ -456,7 +455,7 @@ const STEPS = [
   { id: 'landscape', tab: 'The land', learn: 'landscape', world: true, title: 'A landscape with wells',
     idea: 'Draw the size of ζ(s) as the height of land. A zero is a point where the land touches the floor.',
     todo: 'Drag to look around.',
-    payoff: 'Each pin stands on a nontrivial zero, at the bottom of a dark well. Height is squashed so the pole at s = 1 fits.',
+    payoff: 'Each pin stands on a nontrivial zero, at the bottom of a dark well.',
     legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['dim', '', 'the edges of the critical strip, Re(s) = 0 and 1']],
     mount(stage, ui) {
       const button = el('<button type="button" class="btn" aria-pressed="false">Show the whole plane</button>'), read = el('<p class="readout"></p>');
@@ -471,26 +470,25 @@ const STEPS = [
     } },
 
   { id: 'road', tab: 'The ride', learn: 'statement', world: true, title: 'Every well on one line',
-    idea: 'Here are the first 100 zeros in this strip, and every one is on the same straight line.',
+    idea: 'Here are the first 100 zeros, and every one is on the same straight line.',
     todo: 'Drag the slider to ride north, or click a pin.',
-    payoff: 'The gold line is Re(s) = ½. These are the first 100 of infinitely many, and the land here stops just past the 100th.',
+    payoff: 'The gold line is Re(s) = ½. These are the first 100 of infinitely many.',
     legend: [['gold', '', 'the critical line, Re(s) = ½'], ['inked', 'dot', 'a zero'], ['inked', '', 'the arrow ζ(s) where you are, and the path of its tip']],
     more: `<details><summary>What the dial and the white curve are</summary>
-      At each point s, the value ζ(s) is an arrow. Its length is called the size of ζ(s). The dial shows that arrow where you are on the line:
+      The value ζ(s) is an arrow, and its length is called the size of ζ(s). The dial shows that arrow where you are on the line:
       right is its real part, up is its imaginary part, and the ring is size 1. The white curve is where the arrow’s tip has been.
-      At a zero the arrow has no length, so the curve passes through the middle of the dial. Each pin’s head is on one of those crossings.
-      Lengths are squashed as the land’s heights are. The grey lines on the land are Re(s) = 0 and Re(s) = 1, the edges of the critical strip,
-      and the numbers along its east edge are heights.</details>`,
+      At a zero the arrow has no length, so the curve passes through the middle of the dial, where each pin’s head is.
+      Lengths are squashed as the land’s heights are.</details>`,
     mount: (stage, ui) => ride(stage, ui, () => {}, 4) },   // slow enough to watch the arrow turn
 
   { id: 'waves', tab: 'Waves', learn: 'waves', world: true, title: 'Each zero is a wave',
     idea: 'Add the waves of the zeros you have passed, and spikes rise at 2, 3, 5, 7, 11.',
     todo: 'Ride north again.',
-    payoff: 'No prime was given to the sum. The small bumps at 4, 8 and 9 are prime powers. Zeros and primes encode each other.',
+    payoff: 'No prime was given to the sum. Zeros and primes encode each other.',
     legend: [['blue', '', 'the sum of the waves, over the numbers 1.5 to 50 (log scale)']],
-    more: `<details><summary>How the score is counted</summary>
-      Take the whole numbers from 2 to 50 and rank them by how high the sum is at each. The score is how many of the 15 highest are primes.
-      There are 15 primes up to 50, so 15 of 15 means the sum has picked out every one of them, and nothing else.</details>`,
+    more: `<details><summary>The score, and the small bumps</summary>
+      Rank the whole numbers from 2 to 50 by how high the sum is at each. The score is how many of the 15 highest are primes, and there are 15 primes up to 50.
+      The small bumps at 4, 8 and 9 are prime powers.</details>`,
     mount(stage, ui) {
       // The axis starts at 1.5: at x = 1, ln x is 0 and the sum is infinite. It is spaced evenly in ln x, so every spike is as wide as the next.
       const X0 = 1.5, X1 = 50, SPAN = Math.log(X1 / X0), WHOLE = Array.from({ length: X1 - 1 }, (_, k) => k + 2), PRIMES = WHOLE.filter(isPrime);
@@ -526,13 +524,13 @@ const STEPS = [
   { id: 'suppose', tab: 'One zero off', learn: 'strip', world: true, lab: true, title: 'Suppose one zero were off the line',
     idea: 'Completed with its gamma factor, ζ’s land mirrors itself across the line. So a nontrivial zero off the line needs a twin.',
     todo: 'Drag the red zero off the line.',
-    payoff: 'A nontrivial zero left of the line forces one to its right. So it is enough to show that no zero lies to the right.',
+    payoff: 'So it is enough to show that no zero lies to the right of the line.',
     legend: [['red', 'open', HYPOTHETICAL]],
     more: `<details><summary>What the land, the walls and the stripes are</summary>
       The land here is the size of ξ(s) = ½ s(s − 1) π<sup>−s/2</sup> Γ(s/2) ζ(s), divided at each height by its size on the line. It has the same nontrivial zeros as ζ.
       The walls: proved 1896, every nontrivial zero lies between these walls.
       The stripes: a machine-written paper released on 6 Oct 2026 states that no zero lies in here. Its repository says this is formalized in Lean. Not peer reviewed.
-      The red zero stops at the stripes. That is this guide’s rule for the fiction, not a theorem.</details>` + FULL,
+      The red zero stops at the stripes. That is this guide’s rule for the fiction, not a theorem.</details>`, proof: true,
     mount(stage, ui) {
       const box = el('<label class="slide">on the line<input type="range" min="0.5" max="0.875" step="0.005" aria-label="Real part of the hypothetical zero">7/8</label>');
       const input = box.querySelector('input'), read = el('<p class="readout"></p>');
@@ -579,9 +577,9 @@ const STEPS = [
   { id: 'band', tab: 'The band', learn: 'y2026-shape', world: true, lab: true, title: 'The primes would show it',
     idea: 'If every nontrivial zero is on the line, a weighted, centred count of prime powers, over √x, stays in the gold band.',
     todo: 'Add the hypothetical zero’s wave.',
-    payoff: 'Its wave outgrows √x, so it always breaks out, only later nearer the line. The announced proof needs less than the band: a ceiling from above only, on some windows.',
+    payoff: 'Its wave outgrows √x, so it always breaks out, only later nearer the line. The announced proof needs less: a ceiling from above only, on some windows.',
     legend: [['gold', 'band', 'the band, if every nontrivial zero is on the line'], ['blue', '', 'the real primes'], ['red', 'dash', HYPOTHETICAL]],
-    more: FULL,
+    proof: true,
     mount(stage, ui) {
       const LX0 = 1, LX1 = 12, TOP = 0.14, { lx, r, share } = primeCurve();   // the chart: x from 10 to 10^12, heights within ±0.14
       ghost.beta = 0.85;                                     // far enough off the line that the break falls inside the real data
@@ -601,7 +599,7 @@ const STEPS = [
         line(ctx, px(6) + 0.5, T, px(6) + 0.5, h - B, C.strong);
         ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.fillText(w > 600 ? 'real primes, every one up to 10⁶' : 'real primes to 10⁶', px(6) - 6, h - B - 6);
         const most = Math.round(share * 100);                 // how much of the band they use
-        ctx.fillStyle = C.blue; ctx.fillText(w > 600 ? `never past ${most}% of the way to the band’s edge` : `≤ ${most}% of the band`, px(6) - 6, h - B - 19);
+        ctx.fillStyle = C.blue; ctx.fillText(`${w > 600 ? 'never past' : '≤'} ${most}% of the way to its edge`, px(6) - 6, h - B - 19);
         ctx.save(); ctx.beginPath(); ctx.rect(L, T, w - L - R, h - T - B); ctx.clip();
         if (on) {
           const { beta, gamma } = ghost, amp = e => 2 * 10 ** ((beta - 0.5) * e) / rho2(beta, gamma);
@@ -651,26 +649,25 @@ const STEPS = [
     todo: 'Toggle primes into the number.',
     payoff: 'As the guides describe the announced proof: arithmetic caps the upward swings; an off-line zero would break the cap; so no zero lies to the right of the line, and by the mirror no nontrivial zero lies to the left.',
     more: `<details><summary>Where groups come in</summary>As the guides describe it, one step of the argument averages over the characters of a finite abelian group. <a href="./learn.html#characters">The long version teaches them in six steps.</a></details>
-      <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>` + FULL,
+      <details><summary>What nobody has explained yet</summary>Both published guides take the central inequality from the Lean code without proving it.</details>`, proof: true,
     mount(stage, ui) {
       // Two pictures of the shape of the argument, as on proof.html, and both schematic: seven of these primes fit under the bound
       // and the eighth does not, and x is fixed at 10,000, the worked example of content y2026-shape. The explanations are cut from
       // content y2026-size and y2026-shape.
       const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19], CAP = 1e6, TOP = 8, X = 10000, on = new Set(), n = v => Math.round(v).toLocaleString('en');
       const one = el(`<div><p class="part">1 · Divisibility forces size</p>
-        <p class="explain">If a nonzero whole number is divisible by several primes, and its size is known, the product of those primes is at most that size. Two facts about one number give an upper bound on primes.</p>
+        <p class="explain">If a number’s size is known, the product of the primes dividing it is at most that size: two facts about one number give an upper bound on primes.</p>
         <p class="chips">${PRIMES.map(p => `<button type="button" class="btn chip" aria-pressed="false">${p}</button>`).join('')}</p>
         <div class="meter"><i></i><b></b><span>a bound on its size</span></div><p class="readout"></p>
-        <p class="small">A metaphor: the shape of the argument, not its real objects. Those are theta lifts between unitary groups, named here and not taught.</p></div>`);
+        <p class="small">A metaphor: the shape of the argument, not its real objects, which are theta lifts between unitary groups.</p></div>`);
       const two = el(`<div><p class="part">2 · Balancing two costs</p>
         <div class="explain">
-          <p><b>x</b> is how far up the number line the count of prime powers runs: here, up to 10,000. <b>m</b> is how many times the argument repeats its construction.</p>
-          <p>As the guides describe it, a choice of m brings two errors. One shrinks as m grows, like <b>x/m</b>. The other grows with it, like <b>m</b>. What the argument pays is their sum, <b>x/m + m</b>.</p>
-          <p>With few repeats x/m is large, and with many, m is. The sum is least where the two are equal, at <b>m = √x</b>. That square root is the ½ of the hypothesis.</p>
+          <p><b>x</b> is how far the count of prime powers runs: here, up to 10,000. <b>m</b> is how many times the argument repeats its construction.</p>
+          <p>As the guides describe it, m brings two errors, one like <b>x/m</b> and one like <b>m</b>, and the argument pays their sum. It is least where the two are equal, at <b>m = √x</b>. That square root is the ½ of the hypothesis.</p>
         </div>
         <label class="slide" style="text-transform:none">m = 10<input type="range" min="1" max="3" step="0.01" value="1" aria-label="The number of repeats, m">1,000</label>
         <div class="costs" aria-hidden="true"><i></i><i></i><b></b><span>the least their sum can be: 200</span></div>
-        <p class="legend"><span><i class="sw dot inked"></i>x/m</span><span><i class="sw dot dim"></i>m</span><span>the bar is their sum: slide m and one cost is traded for the other</span></p></div>`);
+        <p class="legend"><span><i class="sw dot inked"></i>x/m</span><span><i class="sw dot dim"></i>m</span><span>the bar is their sum</span></p></div>`);
       stage.append(one, two);
       one.querySelector('b').style.left = one.querySelector('span').style.left = `${Math.log10(CAP) / TOP * 100}%`;
       const squeeze = () => {
@@ -741,18 +738,18 @@ const STEPS = [
       const check = (name, text) => `<details name="check"><summary><b>${++n}</b>${name}<span>✓ passed</span></summary><p>${text}</p></details>`;
       // What happened when. A solid square has happened and an open one has not yet. The words are the status sentence's and content y2026-october.
       stage.append(el(`<ol class="when" aria-label="What happened when, in 2026">
-        <li><b>6 Oct</b>a machine-written paper states that no zero has real part above 7/8</li>
-        <li><b>20 Nov</b>a proof of the hypothesis is released, as Lean code only</li>
-        <li><b>21 Nov</b>the Lean and Mathlib communities certify it in a joint statement</li>
-        <li class="open"><b>22 Nov</b>two long checks are still running</li>
+        <li><b>6 Oct</b>a machine-written paper: no zero has real part above 7/8</li>
+        <li><b>20 Nov</b>a proof is released, as Lean code only</li>
+        <li><b>21 Nov</b>the Lean and Mathlib communities certify it</li>
+        <li class="open"><b>22 Nov</b>two long checks still running</li>
         <li class="open"><b>not yet</b>the author’s paper, and peer review</li></ol>`));
       // The record in figures, one under each date. They are the release's, from docs/guide-content.json (research, key "release"), and the status sentence's.
       stage.append(el(`<dl class="figs">
-        <div><dt>17 million</dt><dd>lines, by the joint statement’s count</dd></div>
-        <div><dt>175,187</dt><dd>Lean modules, compiled with zero errors</dd></div>
-        <div><dt>1,468,418</dt><dd>declarations in the exported proof</dd></div>
+        <div><dt>17 million</dt><dd>lines, the joint statement says</dd></div>
+        <div><dt>175,187</dt><dd>Lean modules</dd></div>
+        <div><dt>1,468,418</dt><dd>declarations</dd></div>
         <div><dt>3</dt><dd>axioms, Lean’s standard three</dd></div>
-        <div class="open"><dt>0</dt><dd>papers, and no peer review yet</dd></div></dl>`));
+        <div class="open"><dt>0</dt><dd>papers so far</dd></div></dl>`));
       stage.append(el(`<div class="checks">
         ${check('The statement is the right one', 'The target is Mathlib’s own definition of the hypothesis. The generalized hypothesis is covered for Dirichlet L-functions only. This says nothing about the proof.')}
         ${check('The code compiles', 'Dozens of people reported compiling the code without errors. Alone, that would not catch a redefined symbol or an added axiom.')}
@@ -792,7 +789,7 @@ function show() {
   $('s-title').innerHTML = step.title; $('s-idea').innerHTML = step.idea;
   $('s-do').innerHTML = step.todo; $('s-do').hidden = !step.mount;
   $('s-legend').innerHTML = (step.legend || []).map(([colour, kind, text]) => `<span><i class="sw ${kind} ${colour}"></i>${text}</span>`).join('');
-  $('s-more').innerHTML = (step.more || '') + `<p><a href="./learn.html#${step.learn}">the long version of this step</a></p>`;
+  $('s-more').innerHTML = (step.more || '') + `<p>${step.proof ? '<a href="./proof.html">the proof page</a> · ' : ''}<a href="./learn.html#${step.learn}">the long version of this step</a></p>`;
   payoff.innerHTML = step.payoff; payoff.classList.remove('on'); $('s-live').textContent = '';
   // Next and Back say where they lead, and the last step leads back to the home page, where every way on is.
   $('s-back').href = '#' + (STEPS[i - 1]?.id || ''); $('s-back').textContent = `‹ ${STEPS[i - 1]?.tab || 'Start'}`;
