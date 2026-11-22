@@ -532,6 +532,13 @@ const STEPS = [
       // A passed check is a tick and the word. The texts are content y2026-checks and y2026-needed.
       let n = 0;
       const check = (name, text) => `<details name="check"><summary><b>${++n}</b>${name}<span>✓ passed</span></summary><p>${text}</p></details>`;
+      // What happened when. A solid square has happened and an open one has not yet. The words are the status sentence's and content y2026-october.
+      stage.append(el(`<ol class="when" aria-label="What happened when, in 2026">
+        <li><b>6 Oct</b>a machine-written paper states that no zero has real part above 7/8</li>
+        <li><b>20 Nov</b>a proof of the hypothesis is released, as Lean code only</li>
+        <li><b>21 Nov</b>the Lean and Mathlib communities certify it in a joint statement</li>
+        <li class="open"><b>22 Nov</b>two long checks are still running</li>
+        <li class="open"><b>not yet</b>the author’s paper, and peer review</li></ol>`));
       stage.append(el(`<div class="checks">
         ${check('The statement is the right one', 'The target is Mathlib’s own definition of the hypothesis. The generalized hypothesis is covered for Dirichlet L-functions only. This says nothing about the proof.')}
         ${check('The code compiles', 'Dozens of people reported compiling the code without errors. Alone, that would not catch a redefined symbol or an added axiom.')}
