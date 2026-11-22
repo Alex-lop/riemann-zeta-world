@@ -24,7 +24,7 @@
     [hidden] { display: none !important; }
     .tabs { display: flex; gap: 4px; margin: 0 0 10px; padding: 3px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.06); }
-    .tab { flex: 1; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent;
+    .tab { flex: 1; padding: 6px 4px; white-space: nowrap; border: 0; border-radius: 6px; background: transparent;
       color: var(--muted); font: 600 13px system-ui, sans-serif; cursor: pointer; }
     .tab:hover { color: var(--text); }
     .tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.14); color: var(--text); }
@@ -51,6 +51,17 @@
     select { margin-left: 4px; background: #1a1e28; color: var(--text); border: 1px solid var(--border);
       border-radius: 5px; padding: 2px 4px; font: inherit; }
     label.check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .row2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
+    .row2 label { margin-top: 6px; }
+    .row2 select { display: block; width: 100%; margin: 3px 0 0; }
+    .presets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .chip { padding: 3px 8px; border: 1px solid var(--border); border-radius: 999px; background: rgba(255, 255, 255, 0.06);
+      color: var(--text); font: 11.5px system-ui, sans-serif; cursor: pointer; }
+    .chip:hover { background: rgba(255, 255, 255, 0.14); }
+    #chiStrip { display: block; width: 100%; height: 44px; margin-top: 10px; }
+    .caption { color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .seg { display: flex; gap: 14px; margin-top: 10px; }
+    .seg label { display: flex; align-items: center; gap: 5px; margin: 0; color: var(--text); cursor: pointer; }
     .mono { margin: 10px 0; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 4.5em; }
     #curvePanel { right: 16px; bottom: 16px; width: 300px; }
     #curvePanel h2 { font-size: 13px; margin: 0 0 6px; font-weight: 600; }
@@ -71,7 +82,7 @@
   </style>
 </head>
 <body>
-  <div id="scene" data-for="zeta xi"></div>
+  <div id="scene" data-for="zeta xi dirichlet"></div>
   <canvas id="primesView" data-for="primes" hidden></canvas>
 
   <div id="controls" class="panel">
@@ -79,6 +90,7 @@
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-mode="zeta" aria-selected="true">ζ(s) &nbsp;zeta</button>
       <button class="tab" role="tab" data-mode="xi" aria-selected="false">ξ(s) &nbsp;xi</button>
+      <button class="tab" role="tab" data-mode="dirichlet" aria-selected="false">L(s,χ)</button>
       <button class="tab" role="tab" data-mode="primes" aria-selected="false">Primes</button>
     </div>
 
@@ -156,21 +168,77 @@
       </details>
     </div>
 
-    <label data-for="zeta xi">Window starts at t = <b id="tStartVal"></b>
+    <p data-for="dirichlet" hidden>Dirichlet L-functions generalize ζ: each character χ weights the terms of the series.
+      The ground, colors and probe work as in the ζ tab. The window can now go below t = 0,
+      because for a complex χ the lower half is not a copy of the upper.</p>
+
+    <div data-for="dirichlet" hidden>
+      <div class="row2">
+        <label>Modulus <select id="lq"></select></label>
+        <label>Character <select id="lchar"></select></label>
+      </div>
+      <div class="presets">
+        <button class="chip" data-preset="4:1">(−4/·)</button>
+        <button class="chip" data-preset="3:1">(−3/·)</button>
+        <button class="chip" data-preset="5:2">mod 5, complex</button>
+        <button class="chip" data-preset="7:2">mod 7, order 3</button>
+        <button class="chip" data-preset="13:11">mod 13, order 12</button>
+      </div>
+      <canvas id="chiStrip" aria-label="Values of the character for a = 1 to q"></canvas>
+      <div class="caption">χ(a) for a = 1 … q: the color and the hand show the angle; hollow means χ(a) = 0</div>
+      <div class="seg" role="radiogroup">
+        <label><input type="radio" name="lfn" value="L" checked /> L(s, χ)</label>
+        <label><input type="radio" name="lfn" value="Lambda" /> completed Λ(s, χ)</label>
+      </div>
+      <div id="chiInfo" class="mono"></div>
+
+      <details>
+        <summary>How L(s, χ) generalizes ζ</summary>
+        <p><b>The character.</b> A Dirichlet character χ mod q repeats every q steps, is multiplicative
+          (χ(mn) = χ(m)χ(n)), and is 0 on numbers sharing a factor with q. Its values are roots of unity.
+          ζ is the case q = 1, where every weight is 1.</p>
+        <span class="math">L(s, χ) = Σ χ(n)/nˢ = ∏<sub>p</sub> 1/(1 − χ(p)p<sup>−s</sup>)</span>
+        <p>Characters separate the primes by their remainder mod q. That is how Dirichlet proved that every
+          progression a, a + q, a + 2q, … with gcd(a, q) = 1 contains infinitely many primes.</p>
+        <p><b>Completed function.</b> With 𝔞 = 0 for even χ (χ(−1) = 1) and 𝔞 = 1 for odd χ:</p>
+        <span class="math">Λ(s, χ) = (q/π)<sup>(s+𝔞)/2</sup> Γ((s+𝔞)/2) L(s, χ)</span>
+        <span class="math">Λ(s, χ) = ε(χ) · Λ(1 − s, χ̄), &nbsp;|ε(χ)| = 1</span>
+        <p><b>What to look for.</b></p>
+        <ul>
+          <li><b>Left–right mirror, always.</b> In the Λ view the terrain is mirrored across σ = ½ for every χ:
+            |Λ(s, χ)| = |Λ(1 − s̄, χ)|.</li>
+          <li><b>Up–down mirror, only for real χ.</b> Since L(σ − it, χ) = conj L(σ + it, χ̄), the terrain below
+            t = 0 is the terrain of χ̄. For a complex χ the zeros sit at different heights above and below the axis;
+            the counts below the controls show it.</li>
+          <li><b>Trivial zero.</b> In the L view, near the real axis: s = 0 for even χ, s = −1 for odd χ
+            (gray marker). Λ has none, because the Γ factor cancels it.</li>
+        </ul>
+        <p><b>GRH.</b> The generalized Riemann hypothesis says that for every χ all zeros in the strip lie on
+          σ = ½. A reflected zero of L(s, χ) is a zero of L(s, χ̄), a different function, so a proof has to treat
+          all characters together. (See the README for the proof announced in November 2026.)</p>
+        <p><b>Scaling in the Λ view.</b> As for ξ, Λ is divided by its size on the critical line, a positive function
+          of t, and rotated by ε<sup>−1/2</sup>. Then it is real on the line and |Λ̃| = |L| there, so both views
+          have the same height along the white line.</p>
+      </details>
+    </div>
+
+    <label data-for="zeta xi dirichlet">Window starts at t = <b id="tStartVal"></b>
       <input id="tStart" type="range" min="0" max="70" step="0.1" value="10" />
     </label>
-    <label data-for="zeta xi">Probe on the critical line, t = <b id="probeVal"></b>
+    <label data-for="zeta xi dirichlet">Probe on the critical line, t = <b id="probeVal"></b>
       <input id="probe" type="range" min="0" max="1" step="0.0005" value="0.105" />
     </label>
-    <div id="readout" data-for="zeta xi"></div>
-    <div class="hint" data-for="zeta xi">Drag to orbit · scroll to zoom · W/S to move along t</div>
+    <div id="readout" data-for="zeta xi dirichlet"></div>
+    <div class="hint" data-for="zeta xi dirichlet">Drag to orbit · scroll to zoom · W/S to move along t</div>
   </div>
 
-  <div id="curvePanel" class="panel" data-for="zeta xi">
+  <div id="curvePanel" class="panel" data-for="zeta xi dirichlet">
+    <h2 data-for="dirichlet" id="lCurveTitle" hidden></h2>
     <h2 data-for="zeta">ζ(½ + it) in the output plane</h2>
     <h2 data-for="xi" hidden>ξ̃(½ + it) against t</h2>
     <canvas id="curve" width="560" height="560"></canvas>
     <p data-for="zeta">As t moves through the window, this curve passes through the origin at every zero on the critical line.</p>
+    <p data-for="dirichlet" id="lCurveText" hidden></p>
     <p data-for="xi" hidden>On the critical line ξ is real, so its "curve" just slides back and forth along the real axis.
       Plotted against t, it crosses zero at every zero on the line.</p>
   </div>
