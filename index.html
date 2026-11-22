@@ -67,6 +67,7 @@
   html[data-mode=fly] #count, html[data-step=landscape] #count, html[data-step=road] #passed, html[data-step=waves] #passed { display: block; }
   #passed { padding: .55rem .8rem .6rem; text-align: right; background: rgb(13 17 23 / .88); border: 1px solid var(--hair); }   /* the ride's readout, on a ground of its own: from the side view the road runs behind it */
   #passed small { display: block; margin-top: .3rem; font-size: .8rem; line-height: 1.6; color: var(--muted); }
+  html #passed:empty { display: none; }   /* until the world is up there is nothing to read out */
 
   /* The step bar, on every screen but the intro: where you are in the climb, and a way to jump anywhere in it. */
   #tabs { position: fixed; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: stretch; height: 46px; padding: 0 var(--pad); background: rgb(13 17 23 / .92); border-bottom: 1px solid var(--hair); overflow-x: auto; scrollbar-width: none; white-space: nowrap; font: 400 .72rem/1 var(--mono); letter-spacing: .04em; }
