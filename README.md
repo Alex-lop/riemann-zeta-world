@@ -2,9 +2,9 @@
 
 A way to visualize the Riemann hypothesis in 3D, built with Three.js for Sundai Hack 150 (Building 3D Worlds).
 
-[![The home page: the land of the zeta function under a night sky, with the critical line in gold and a star on each zero](og.jpg)](https://alex-lop.github.io/zeta-world/)
+[![The home page: the land of the zeta function under a night sky, with the critical line in gold and a star on each zero](og.jpg)](https://alex-lop.github.io/riemann-zeta-world/)
 
-**Live: https://alex-lop.github.io/zeta-world/** · [From primes to the proof, in 28 steps](https://alex-lop.github.io/zeta-world/learn.html) · [The plan](PLAN.md) · [Brief for the interactive guide](GUIDE_BRIEF.md)
+**Live: https://alex-lop.github.io/riemann-zeta-world/** · [From primes to the proof, in 28 steps](https://alex-lop.github.io/riemann-zeta-world/learn.html) · [The plan](PLAN.md) · [Brief for the interactive guide](GUIDE_BRIEF.md)
 
 The home page is a guided climb in ten short steps, each with one thing to do:
 

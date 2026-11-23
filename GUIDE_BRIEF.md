@@ -45,7 +45,7 @@ How this brief reads that. These are assumptions; if one is wrong, Alex will say
 
 ## 3. Where things stand
 
-**Live:** https://alex-lop.github.io/zeta-world/ . **Repo:** `Alex-lop/zeta-world`, public. GitHub Pages serves `main` from the repo root. A merge is live about 30 seconds later. There is no build step and no check between a push and the public page.
+**Live:** https://alex-lop.github.io/riemann-zeta-world/ . **Repo:** `Alex-lop/riemann-zeta-world` (renamed from `zeta-world` on 22 Nov), public. GitHub Pages serves `main` from the repo root. A merge is live about 30 seconds later. There is no build step and no check between a push and the public page.
 
 | File | What it is |
 |---|---|
