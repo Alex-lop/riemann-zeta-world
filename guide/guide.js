@@ -731,7 +731,7 @@ const STEPS = [
     idea: 'On 20 November 2026, Levent Alpöge announced a proof of the hypothesis, found with the AI model Claude, and released it as Lean code only.',
     todo: 'Open each check.',
     payoff: 'Still to come: the author’s written proof, review by independent experts, a human account of the central inequality, and the end of two long checks.',
-    more: '<dl class="rows onward"><div><dt>Keep going</dt><dd><a href="#fly">Fly the world</a><a href="./proof.html">The proof page</a><a href="./landscape.html">The explorer</a><a href="./learn.html">The long version</a></dd></div></dl>',
+    more: '<dl class="rows onward"><div><dt>Keep going</dt><dd><a href="#fly">Fly the world</a><a href="./proof.html">The proof page</a><a href="./landscape.html">The explorer</a><a href="./learn.html">The long version</a></dd></div><div><dt>Next world</dt><dd><a href="https://alex-lop.github.io/navier-stokes/">Navier–Stokes: stretch a whirlpool, watch it blow up ›</a></dd></div></dl>',
     mount(stage, ui) {
       // A passed check is a tick and the word. The texts are content y2026-checks and y2026-needed.
       let n = 0;
